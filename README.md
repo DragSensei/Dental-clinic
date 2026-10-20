@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dental Reservation system
 
-## Getting Started
+A Next.js clinic website with service and clinician pages, staged simulated booking, and a public admin demonstration.
 
-First, run the development server:
+## Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app/` — routes and page composition
+- `src/features/` — isolated business feature slices
+- `src/shared/` — shared UI primitives and utilities
+- `src/app/globals.css` — central shadcn theme and brand tokens
+- `architecture/` — architecture decisions and pending domain rules
 
-## Learn More
+Change `--brand-primary`, `--brand-hover`, `--brand-subtle`, and `--brand-border` in `src/app/globals.css` to try another theme. ESLint enforces the app → feature/shared and feature → shared/same-feature boundaries.
 
-To learn more about Next.js, take a look at the following resources:
+Current product scope is public patient booking, staff schedule management, patient name/contact details only, no payments, and English (`en-US`). The appointment model, staff authorization, clinic hours, service durations, and persistence provider remain undecided.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Demo routes and data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Explore `/services`, `/doctors`, and `/visit`, then `/book` for the complete simulated journey. `/admin` provides appointment management, calendar, clinician/service editors, session-derived patient contacts, and reset. The shared navbar supports light and dark modes. The dashboard uses the user-supplied overview and capsule sidebar references, adapted to the existing clinic palette.
 
-## Deploy on Vercel
+All scheduling and admin changes are simulated in browser memory. Refresh resets the session; no real reservation, login, message delivery, or server persistence is provided. Enter fictional contacts only. Theme preferences may persist separately.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [MOCK_DATA.md](MOCK_DATA.md) for the canonical data owners, simulated scheduling assumptions, and backend replacement steps. [DESIGN.md](DESIGN.md) owns current design decisions; [IMPLEMENTATION_PROGRESS.md](IMPLEMENTATION_PROGRESS.md) records review and verification progress.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verification
+
+```bash
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+The focused repository tests use Node 22 TypeScript stripping and an alias loader; Node may print experimental-loader/module-format warnings. No additional test dependency is needed.
