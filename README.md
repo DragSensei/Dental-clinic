@@ -22,15 +22,26 @@ Change `--brand-primary`, `--brand-hover`, `--brand-subtle`, and `--brand-border
 
 Current product scope is public patient booking, staff schedule management, patient name/contact details only, no payments, and English (`en-US`). The appointment model, staff authorization, clinic hours, service durations, and persistence provider remain undecided.
 
-## Demo routes and data
+<details>
+<summary>What exists and what to test</summary>
 
-Explore `/services`, `/doctors`, and `/visit`, then `/book` for the complete simulated journey. `/admin` provides appointment management, calendar, clinician/service editors, session-derived patient contacts, and reset. The shared navbar supports light and dark modes. The dashboard uses the user-supplied overview and capsule sidebar references, adapted to the existing clinic palette.
+### What exists
 
-All scheduling and admin changes are simulated in browser memory. Refresh resets the session; no real reservation, login, message delivery, or server persistence is provided. Enter fictional contacts only. Theme preferences may persist separately.
+- Public clinic landing page, service directory and details, clinician directory and profiles, and a first-visit guide.
+- A staged `/book` demo: choose a service, clinician, date and time, enter contact details, review, then see a confirmation. Back navigation preserves selections and the steps animate between stages.
+- An `/admin` demo gate followed by overview, appointments and appointment details, calendar, clinicians, services, patients, and settings. Admin search, filters, scheduling edits, catalog edits, and reset are simulated.
+- Shared animated navigation, light/dark themes, responsive layouts, keyboard-accessible controls, and reduced-motion support.
 
-See [MOCK_DATA.md](MOCK_DATA.md) for the canonical data owners, simulated scheduling assumptions, and backend replacement steps. [DESIGN.md](DESIGN.md) owns current design decisions; [IMPLEMENTATION_PROGRESS.md](IMPLEMENTATION_PROGRESS.md) records review and verification progress.
+Booking and admin data live in browser memory. Refreshing resets the demo; there is no real reservation, staff authentication, message delivery, or server persistence. Use fictional contact details only. Theme preference may persist separately.
 
-## Verification
+### Manual test checklist
+
+1. Browse the landing page, `/services`, `/doctors`, and `/visit`; follow a service or clinician card to its detail page and use its booking link.
+2. At `/book`, select a service and clinician, continue through date/time, contact, review, and confirmation. Check that each step transitions smoothly, the form stays centered, Back preserves prior inputs, and invalid or unavailable choices show feedback.
+3. Open `/admin`, enter the demo, and try the overview, appointment search and filters, appointment details/rescheduling, calendar filters, clinician/service editing, patient list, settings, and reset. Check the admin comboboxes with typing and keyboard selection.
+4. Repeat navigation and form interactions in light and dark themes, at a narrow/mobile width, and with the operating system's reduced-motion setting enabled.
+
+### Automated checks
 
 ```bash
 npm test
@@ -40,3 +51,7 @@ npm run build
 ```
 
 The focused repository tests use Node 22 TypeScript stripping and an alias loader; Node may print experimental-loader/module-format warnings. No additional test dependency is needed.
+
+See [MOCK_DATA.md](MOCK_DATA.md) for canonical data owners, simulated scheduling assumptions, and backend replacement steps. [DESIGN.md](DESIGN.md) owns current design decisions; [IMPLEMENTATION_PROGRESS.md](IMPLEMENTATION_PROGRESS.md) records review and verification progress.
+
+</details>

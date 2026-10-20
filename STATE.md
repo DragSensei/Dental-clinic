@@ -1,5 +1,9 @@
 # Project state
 
+## README handoff — 2026-10-20
+- Added a collapsible README guide listing implemented public/admin routes and demo behavior, with manual booking/admin/theme checks and the automated verification commands. It states the in-memory simulation limits and fictional-contact guidance.
+- Next recommended phase remains defining verified clinic details, scheduling rules, staff access, and persistence before replacing the simulations with production integrations.
+
 ## Current website evolution — 2026-10-20
 - The user authorized a complete simulated clinic experience, retaining the existing blue/navy identity. Public service/provider detail routes, a first-visit guide, staged booking, and dedicated admin routes are implemented. Shared navbar/footer and light/dark controls persist across client navigation.
 - User-supplied overview and capsule-sidebar references now govern the admin panel hierarchy, animated expanded/collapsed sidebar, and active icon states; both light/dark variants preserve clinic tokens.
