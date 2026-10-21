@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  devIndicators: false,
+  devIndicators: {
+    position: "bottom-left",
+  },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

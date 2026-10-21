@@ -1,5 +1,14 @@
 # Project state
 
+## Arabic localization — 2026-10-21
+- Added English and Arabic across the public site, booking, and admin screens. The navbar combobox (read-only, opens the list on click) switches the language; the choice is stored in browser storage like the theme. Arabic sets `lang="ar"` and `dir="rtl"`, uses system Arabic fonts, drops letter-spacing, and mirrors directional icons, the booking slide-in, the mobile menu sheet, and the advanced-care photo.
+- Repository errors are now stable codes (`ClinicError`) translated in the UI; tests assert the codes.
+- Shared `AppCombobox` gained `readOnly`, `hideLabel`, and `className` props; its popup now sits above the mobile menu.
+- Removed the admin header's language button. The navbar combobox is global, so admin pages use it too.
+- Verification: `tsc`, `lint`, `npm test` (14/14, including new i18n checks), and `next build` (36 routes) pass. Browser checks on a production build at 375/1024/1280: read-only field ignores typing, language switch sets `dir=rtl`, mobile menu list is clickable and has no visible "Language" text, no horizontal overflow, the photo mirrors, and no console errors. Not yet done: a full screenshot audit at 768 and 1440 across every route.
+- Limits: returning Arabic visitors see English briefly before hydration; the document title is set on the client; Arabic clinical wording needs review by the clinic's dental team. Research: web search found patient Q&A pages but no authoritative Arabic dental glossary (accessed 2026-10-21), so terms follow common usage.
+- No database is involved; all data remains in browser memory.
+
 ## README handoff — 2026-10-20
 - Added a collapsible README guide listing implemented public/admin routes and demo behavior, with manual booking/admin/theme checks and the automated verification commands. It states the in-memory simulation limits and fictional-contact guidance.
 - Next recommended phase remains defining verified clinic details, scheduling rules, staff access, and persistence before replacing the simulations with production integrations.

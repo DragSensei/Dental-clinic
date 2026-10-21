@@ -1,0 +1,2965 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-21T00:03:50.029Z",
+  "project": "Dental Reservation system",
+  "git": {
+    "repositoryIdentity": {
+      "root": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system",
+      "gitDir": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git"
+    },
+    "head": "2e8344bddcf98ae24db5096f48ebd6b3ded93233",
+    "workingTreeHash": "a2dcfcda149b93b197076b3b20e6cb6dba00311944b2f7977a6ba18d2be42caf",
+    "securityHash": "39ad3744817490db9e7f46342be5198d137cb1bc774220076d5654ef20c40415",
+    "indexTree": "71d5b864c81607755c434daa7626b49ff34bc152"
+  },
+  "verification": {
+    "toolSignature": {
+      "node": "v22.23.3",
+      "projectManifests": "28a7832bcdac3a345d411ee9ca346e01cfdfab10c12fceedf2ba5229871517fd",
+      "workspaceTools": "4582122e816d9fd0855375f46ea207dc9cefa3086812d05bd910bd842776d29c"
+    },
+    "changeCategories": [
+      "domain",
+      "tests",
+      "tooling",
+      "ui"
+    ],
+    "changedFileCount": 61,
+    "mode": "working-checkpoint",
+    "dependencyIdentities": {
+      "tests": {
+        "all": "a25b486c43b50b835fcfdd9055528fcee0eea46bfe582ae58f82e49165e6a86d"
+      },
+      "security": "ef04ee2fccf6ebe84fe49af0b3abd4e131626fe66b5f9b4839af7811fa6d7e72",
+      "performance": "b01d7b48befa86a2d9dece2637d4e5053649d5326e86f7b5b5500ee14f7ffbca",
+      "revisor": "6487753b8543278b3328e481933448d5d346917c1a6610079b4cb43c51641594"
+    },
+    "testScopes": [
+      "all"
+    ],
+    "requiredTestScopes": [
+      "all"
+    ],
+    "testDatabaseTargetIdentity": null,
+    "testEnvironmentIdentity": "7ca2a2e0df5a9fb4f07b8bdd2c6b0e60aaf9995511a6a3227e4e1b5ebd5d35dd",
+    "schemaCompatibility": {
+      "status": "not-required"
+    },
+    "identityStable": true,
+    "reusedPillars": [],
+    "pillarExecution": {
+      "tests": {
+        "mode": "executed"
+      },
+      "security": {
+        "mode": "executed"
+      },
+      "performance": {
+        "mode": "executed"
+      },
+      "revisor": {
+        "mode": "executed"
+      }
+    }
+  },
+  "failures": [
+    {
+      "pillar": "revisor",
+      "message": "frontend checks failed"
+    }
+  ],
+  "overallStatus": "fail",
+  "pillars": {
+    "tests": {
+      "status": "pass",
+      "command": "npm test",
+      "exitCode": 0,
+      "scope": "automated-test-execution",
+      "passed": 14,
+      "failed": 0,
+      "total": 14,
+      "testSummary": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "runner": "tap"
+      },
+      "durationMs": 501,
+      "scopes": {
+        "all": {
+          "scope": "all",
+          "status": "pass",
+          "exitCode": 0,
+          "command": "npm test",
+          "identity": "a25b486c43b50b835fcfdd9055528fcee0eea46bfe582ae58f82e49165e6a86d",
+          "countsIncludedInFullSuite": true
+        }
+      }
+    },
+    "security": {
+      "status": "pass",
+      "command": "repository-secret-and-env-sentinel",
+      "exitCode": 0,
+      "scope": "repository-secret-and-env-sentinel",
+      "details": {
+        "scannedFiles": 105,
+        "inspectionComplete": true,
+        "inspectionErrors": [],
+        "secretsDetected": 0,
+        "findings": [],
+        "detectedSecretType": null,
+        "envFilesClean": true,
+        "envLeakPath": null,
+        "contextualReview": {
+          "state": "not-applicable",
+          "machineAuthenticated": false,
+          "contextualReviewInput": {
+            "surfaces": []
+          },
+          "securityGateStatus": "PASS",
+          "surfaces": [],
+          "findings": [],
+          "limits": "Path classification covers known auth, route, server-action and money-related names; it does not detect every business-logic security surface."
+        }
+      }
+    },
+    "performance": {
+      "status": "pass",
+      "command": "runUiArchitectureLint(requireAst:true)",
+      "exitCode": 0,
+      "scope": "frontend-static-architecture-checks",
+      "details": {
+        "pagesScanned": 17,
+        "boundaryGatesPassed": true,
+        "coverage": {
+          "mode": "ast",
+          "sourceFiles": 67,
+          "astAvailable": true,
+          "complete": true
+        },
+        "gate1Reviews": [],
+        "gate1Violations": [],
+        "gate2Violations": [],
+        "gate3Violations": [],
+        "violations": [],
+        "uiArchitectureStatus": "pass",
+        "scaleGate": {
+          "schemaVersion": 1,
+          "status": "PASS",
+          "workload": null,
+          "sourceFiles": [
+            "next.config.ts",
+            "src/app/admin/appointments/[id]/page.tsx",
+            "src/app/admin/doctors/[id]/page.tsx",
+            "src/app/admin/layout.tsx",
+            "src/app/admin/services/[id]/page.tsx",
+            "src/app/book/page.tsx",
+            "src/app/doctors/[id]/page.tsx",
+            "src/app/error.tsx",
+            "src/app/layout.tsx",
+            "src/app/loading.tsx",
+            "src/app/not-found.tsx",
+            "src/app/services/[id]/page.tsx",
+            "src/features/admin/admin-appointments.tsx",
+            "src/features/admin/admin-calendar.tsx",
+            "src/features/admin/admin-catalog.tsx",
+            "src/features/admin/admin-demo-gate.tsx",
+            "src/features/admin/admin-navigation.tsx",
+            "src/features/admin/admin-overview.tsx",
+            "src/features/admin/admin-patients.tsx",
+            "src/features/admin/admin-settings.tsx",
+            "src/features/admin/admin-ui.tsx",
+            "src/features/admin/admin-view.tsx",
+            "src/features/booking-flow/booking-flow.tsx",
+            "src/features/booking/advanced-care-banner.tsx",
+            "src/features/booking/appointment-cta.tsx",
+            "src/features/booking/appointment-section.tsx",
+            "src/features/booking/before-after-comparison.tsx",
+            "src/features/booking/booking-faq.tsx",
+            "src/features/booking/booking-search-preview.tsx",
+            "src/features/booking/care-guide.tsx",
+            "src/features/booking/clinic-information.tsx",
+            "src/features/booking/clinic-story.tsx",
+            "src/features/booking/landing-hero.tsx",
+            "src/features/booking/patient-metrics.tsx",
+            "src/features/booking/patient-satisfaction.tsx",
+            "src/features/booking/visit-guide.tsx",
+            "src/features/public/doctor-directory.tsx",
+            "src/features/public/doctor-profile.tsx",
+            "src/features/public/service-detail.tsx",
+            "src/features/public/service-directory.tsx",
+            "src/features/public/visit-information.tsx",
+            "src/shared/components/language-combobox.tsx",
+            "src/shared/components/service-card.tsx",
+            "src/shared/components/site-brand.tsx",
+            "src/shared/components/site-footer.tsx",
+            "src/shared/components/site-nav.tsx",
+            "src/shared/components/theme-toggle.tsx",
+            "src/shared/components/ui/combobox.tsx",
+            "src/shared/data/clinic-repository.ts",
+            "src/shared/data/mock/localized-copy.ts",
+            "src/shared/i18n/dictionaries/ar.ts",
+            "src/shared/i18n/dictionaries/en.ts",
+            "src/shared/i18n/dictionaries/index.ts",
+            "src/shared/i18n/errors.ts",
+            "src/shared/i18n/format.ts",
+            "src/shared/i18n/locale-provider.tsx",
+            "src/shared/i18n/locales.ts"
+          ],
+          "queries": [],
+          "queryPlanEvidence": [],
+          "findings": [],
+          "reviewed": [
+            {
+              "code": "UNSUPPORTED_MATERIAL_PATH",
+              "path": "src/features/public/service-directory.tsx",
+              "sourceHash": "b4f0cd92c3301ffb4c954e7a8afa027d6537b0073f8a55c6f256994a4345fe8e",
+              "disposition": "accepted",
+              "rationale": "Renders the in-memory service snapshot from the clinic repository with a plain map. It performs no search, filter, query or fetch; the word directory triggered the heuristic. Cardinality is owned by the seeded catalog in src/shared/data/ and by staff edits held in memory only."
+            },
+            {
+              "code": "UNSUPPORTED_MATERIAL_PATH",
+              "path": "src/shared/data/clinic-repository.ts",
+              "sourceHash": "a5b509f8dc9ee496d9d1adf67229fee5f555aaca006580327e1c3d61a8d85174",
+              "disposition": "accepted",
+              "rationale": "In-memory simulation repository with no database, network or browser persistence. Availability is a linear scan over the demo appointment list, bounded by the seeded fixtures plus simulated bookings in one browser session. Production scale, persistence and staff access are undefined per AGENTS.md and are not claimed."
+            },
+            {
+              "code": "UNSUPPORTED_MATERIAL_PATH",
+              "path": "src/shared/data/mock/localized-copy.ts",
+              "sourceHash": "26fa907b0b673894153842d10c29c96606dea5f693c6167b01df50ed596943df",
+              "disposition": "accepted",
+              "rationale": "Frozen literal English and Arabic copy for the fixed demo catalog and team. No retrieval, query or user input. The search property is static display text for the example search preview, not a search path."
+            }
+          ],
+          "limits": [
+            "Static inspection cannot prove production-scale performance.",
+            "PASS means bounded source patterns only; validate workload and plans for material risk."
+          ]
+        },
+        "note": "AST coverage is required for inputs needing the UI boundary gates. Not-applicable means no UI gate inputs were found. Route-size findings remain review prompts; runtime performance/latency is not machine-verified."
+      }
+    },
+    "revisor": {
+      "status": "fail",
+      "command": "node _shared-skills/scripts/token-lint.mjs && node scripts/verify-frontend.mjs",
+      "exitCode": 1,
+      "scope": "frontend-code-quality-and-token-invariants",
+      "details": {
+        "tokenPurityPassed": true,
+        "routeIsolationPassed": true,
+        "routeIsolationStatus": "pass",
+        "routeIsolationApplicable": true,
+        "routeIsolationReason": null,
+        "tokenLintAvailable": true,
+        "frontendVerifierAvailable": true,
+        "uiSourceFiles": [
+          "src/app/admin/appointments/[id]/page.tsx",
+          "src/app/admin/appointments/page.tsx",
+          "src/app/admin/calendar/page.tsx",
+          "src/app/admin/doctors/[id]/page.tsx",
+          "src/app/admin/doctors/page.tsx",
+          "src/app/admin/layout.tsx",
+          "src/app/admin/page.tsx",
+          "src/app/admin/patients/page.tsx",
+          "src/app/admin/services/[id]/page.tsx",
+          "src/app/admin/services/page.tsx",
+          "src/app/admin/settings/page.tsx",
+          "src/app/book/page.tsx",
+          "src/app/doctors/[id]/page.tsx",
+          "src/app/doctors/page.tsx",
+          "src/app/error.tsx",
+          "src/app/globals.css",
+          "src/app/layout.tsx",
+          "src/app/loading.tsx",
+          "src/app/not-found.tsx",
+          "src/app/page.tsx",
+          "src/app/services/[id]/page.tsx",
+          "src/app/services/page.tsx",
+          "src/app/template.tsx",
+          "src/app/visit/page.tsx",
+          "src/features/admin/admin-appointments.tsx",
+          "src/features/admin/admin-calendar.tsx",
+          "src/features/admin/admin-catalog.tsx",
+          "src/features/admin/admin-demo-gate.tsx",
+          "src/features/admin/admin-navigation.tsx",
+          "src/features/admin/admin-overview.tsx",
+          "src/features/admin/admin-patients.tsx",
+          "src/features/admin/admin-settings.tsx",
+          "src/features/admin/admin-ui.tsx",
+          "src/features/admin/admin-view.tsx",
+          "src/features/booking-flow/booking-flow.tsx",
+          "src/features/booking/advanced-care-banner.tsx",
+          "src/features/booking/appointment-cta.tsx",
+          "src/features/booking/appointment-section.tsx",
+          "src/features/booking/before-after-comparison.tsx",
+          "src/features/booking/booking-faq.tsx",
+          "src/features/booking/booking-preview.tsx",
+          "src/features/booking/booking-search-preview.tsx",
+          "src/features/booking/care-guide.tsx",
+          "src/features/booking/clinic-information.tsx",
+          "src/features/booking/clinic-story.tsx",
+          "src/features/booking/landing-footer.tsx",
+          "src/features/booking/landing-hero.tsx",
+          "src/features/booking/landing-nav.tsx",
+          "src/features/booking/patient-metrics.tsx",
+          "src/features/booking/patient-satisfaction.tsx",
+          "src/features/booking/visit-guide.tsx",
+          "src/features/public/doctor-directory.tsx",
+          "src/features/public/doctor-profile.tsx",
+          "src/features/public/service-detail.tsx",
+          "src/features/public/service-directory.tsx",
+          "src/features/public/visit-information.tsx",
+          "src/shared/components/language-combobox.tsx",
+          "src/shared/components/service-card.tsx",
+          "src/shared/components/service-icons.ts",
+          "src/shared/components/site-brand.tsx",
+          "src/shared/components/site-footer.tsx",
+          "src/shared/components/site-nav.tsx",
+          "src/shared/components/theme-provider.tsx",
+          "src/shared/components/theme-toggle.tsx",
+          "src/shared/components/ui/button.tsx",
+          "src/shared/components/ui/combobox.tsx",
+          "src/shared/i18n/locale-provider.tsx"
+        ],
+        "visual": {
+          "status": "fail",
+          "scope": {
+            "required": true,
+            "inputs": [
+              "src/app/admin/appointments/[id]/page.tsx",
+              "src/app/admin/doctors/[id]/page.tsx",
+              "src/app/admin/layout.tsx",
+              "src/app/admin/services/[id]/page.tsx",
+              "src/app/book/page.tsx",
+              "src/app/doctors/[id]/page.tsx",
+              "src/app/error.tsx",
+              "src/app/globals.css",
+              "src/app/layout.tsx",
+              "src/app/loading.tsx",
+              "src/app/not-found.tsx",
+              "src/app/services/[id]/page.tsx",
+              "src/features/admin/admin-appointments.tsx",
+              "src/features/admin/admin-calendar.tsx",
+              "src/features/admin/admin-catalog.tsx",
+              "src/features/admin/admin-demo-gate.tsx",
+              "src/features/admin/admin-navigation.tsx",
+              "src/features/admin/admin-overview.tsx",
+              "src/features/admin/admin-patients.tsx",
+              "src/features/admin/admin-settings.tsx",
+              "src/features/admin/admin-ui.tsx",
+              "src/features/admin/admin-view.tsx",
+              "src/features/booking-flow/booking-flow.tsx",
+              "src/features/booking/advanced-care-banner.tsx",
+              "src/features/booking/appointment-cta.tsx",
+              "src/features/booking/appointment-section.tsx",
+              "src/features/booking/before-after-comparison.tsx",
+              "src/features/booking/booking-faq.tsx",
+              "src/features/booking/booking-search-preview.tsx",
+              "src/features/booking/care-guide.tsx",
+              "src/features/booking/clinic-information.tsx",
+              "src/features/booking/clinic-story.tsx",
+              "src/features/booking/landing-hero.tsx",
+              "src/features/booking/patient-metrics.tsx",
+              "src/features/booking/patient-satisfaction.tsx",
+              "src/features/booking/visit-guide.tsx",
+              "src/features/public/doctor-directory.tsx",
+              "src/features/public/doctor-profile.tsx",
+              "src/features/public/service-detail.tsx",
+              "src/features/public/service-directory.tsx",
+              "src/features/public/visit-information.tsx",
+              "src/shared/components/language-combobox.tsx",
+              "src/shared/components/service-card.tsx",
+              "src/shared/components/site-brand.tsx",
+              "src/shared/components/site-footer.tsx",
+              "src/shared/components/site-nav.tsx",
+              "src/shared/components/theme-toggle.tsx",
+              "src/shared/components/ui/combobox.tsx",
+              "src/shared/i18n/locale-provider.tsx"
+            ],
+            "baseUrl": "http://127.0.0.1:3000",
+            "routes": [
+              "/",
+              "/admin",
+              "/admin/appointments",
+              "/admin/appointments/demo-preview",
+              "/admin/calendar",
+              "/admin/doctors/doctor-1",
+              "/admin/patients",
+              "/admin/services",
+              "/admin/services/service-1",
+              "/admin/settings",
+              "/book",
+              "/doctors",
+              "/doctors/doctor-1",
+              "/services",
+              "/services/missing",
+              "/services/service-1",
+              "/visit"
+            ],
+            "coverage": {
+              "src/app/admin/appointments/[id]/page.tsx": [
+                "/admin/appointments/demo-preview"
+              ],
+              "src/app/admin/doctors/[id]/page.tsx": [
+                "/admin/doctors/doctor-1"
+              ],
+              "src/app/admin/layout.tsx": [
+                "/"
+              ],
+              "src/app/admin/services/[id]/page.tsx": [
+                "/admin/services/service-1"
+              ],
+              "src/app/book/page.tsx": [
+                "/book"
+              ],
+              "src/app/doctors/[id]/page.tsx": [
+                "/doctors/doctor-1"
+              ],
+              "src/app/error.tsx": [
+                "/"
+              ],
+              "src/app/globals.css": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/app/layout.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/app/loading.tsx": [
+                "/"
+              ],
+              "src/app/not-found.tsx": [
+                "/services/missing"
+              ],
+              "src/app/services/[id]/page.tsx": [
+                "/services/service-1"
+              ],
+              "src/features/admin/admin-appointments.tsx": [
+                "/admin/appointments",
+                "/admin/appointments/demo-preview"
+              ],
+              "src/features/admin/admin-calendar.tsx": [
+                "/admin/calendar"
+              ],
+              "src/features/admin/admin-catalog.tsx": [
+                "/admin/services",
+                "/admin/doctors/doctor-1"
+              ],
+              "src/features/admin/admin-demo-gate.tsx": [
+                "/admin"
+              ],
+              "src/features/admin/admin-navigation.tsx": [
+                "/admin"
+              ],
+              "src/features/admin/admin-overview.tsx": [
+                "/admin"
+              ],
+              "src/features/admin/admin-patients.tsx": [
+                "/admin/patients"
+              ],
+              "src/features/admin/admin-settings.tsx": [
+                "/admin/settings"
+              ],
+              "src/features/admin/admin-ui.tsx": [
+                "/admin"
+              ],
+              "src/features/admin/admin-view.tsx": [
+                "/admin"
+              ],
+              "src/features/booking-flow/booking-flow.tsx": [
+                "/book"
+              ],
+              "src/features/booking/advanced-care-banner.tsx": [
+                "/"
+              ],
+              "src/features/booking/appointment-cta.tsx": [
+                "/"
+              ],
+              "src/features/booking/appointment-section.tsx": [
+                "/"
+              ],
+              "src/features/booking/before-after-comparison.tsx": [
+                "/"
+              ],
+              "src/features/booking/booking-faq.tsx": [
+                "/"
+              ],
+              "src/features/booking/booking-search-preview.tsx": [
+                "/"
+              ],
+              "src/features/booking/care-guide.tsx": [
+                "/"
+              ],
+              "src/features/booking/clinic-information.tsx": [
+                "/"
+              ],
+              "src/features/booking/clinic-story.tsx": [
+                "/"
+              ],
+              "src/features/booking/landing-hero.tsx": [
+                "/"
+              ],
+              "src/features/booking/patient-metrics.tsx": [
+                "/"
+              ],
+              "src/features/booking/patient-satisfaction.tsx": [
+                "/"
+              ],
+              "src/features/booking/visit-guide.tsx": [
+                "/"
+              ],
+              "src/features/public/doctor-directory.tsx": [
+                "/doctors"
+              ],
+              "src/features/public/doctor-profile.tsx": [
+                "/doctors/doctor-1"
+              ],
+              "src/features/public/service-detail.tsx": [
+                "/services/service-1"
+              ],
+              "src/features/public/service-directory.tsx": [
+                "/services"
+              ],
+              "src/features/public/visit-information.tsx": [
+                "/visit"
+              ],
+              "src/shared/components/language-combobox.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/shared/components/service-card.tsx": [
+                "/services"
+              ],
+              "src/shared/components/site-brand.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/shared/components/site-footer.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/shared/components/site-nav.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/shared/components/theme-toggle.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ],
+              "src/shared/components/ui/combobox.tsx": [
+                "/admin/calendar",
+                "/admin/appointments",
+                "/admin/appointments/demo-preview"
+              ],
+              "src/shared/i18n/locale-provider.tsx": [
+                "/",
+                "/services",
+                "/book",
+                "/admin"
+              ]
+            },
+            "authRole": null,
+            "authStatePath": null
+          },
+          "routes": [
+            {
+              "route": "/",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\8a5edab28263\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 10556,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 11223,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 26,
+                        "passing": 26,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 7,
+                        "passing": 7,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\8a5edab28263\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 8079,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 9103,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\8a5edab28263\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 6191,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 7091,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 26,
+                    "passing": 26,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 7,
+                    "passing": 7,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\84a04c248965\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\84a04c248965\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\84a04c248965\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/appointments",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/appointments",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/appointments",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\331bfd954250\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/appointments",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\331bfd954250\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/appointments",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\331bfd954250\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/appointments/demo-preview",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/appointments/demo-preview",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/appointments/demo-preview",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\98fb245fddd6\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/appointments/demo-preview",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\98fb245fddd6\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/appointments/demo-preview",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\98fb245fddd6\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/calendar",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/calendar",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/calendar",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\383220f25e29\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/calendar",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\383220f25e29\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/calendar",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\383220f25e29\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/doctors/doctor-1",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/doctors/doctor-1",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/doctors/doctor-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\12d87042c27d\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/doctors/doctor-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\12d87042c27d\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/doctors/doctor-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\12d87042c27d\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/patients",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/patients",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/patients",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\662fc959e4ae\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/patients",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\662fc959e4ae\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/patients",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\662fc959e4ae\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/services",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/services",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/services",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\c52857b99d16\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/services",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\c52857b99d16\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/services",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\c52857b99d16\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/services/service-1",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/services/service-1",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/services/service-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\953462aa2813\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/services/service-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\953462aa2813\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/services/service-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\953462aa2813\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/admin/settings",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/admin/settings",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/settings",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\f6245d45de94\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 312,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 979,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/settings",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\f6245d45de94\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": false,
+                      "overflowDeltaY": 0,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1024,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/admin/settings",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\f6245d45de94\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 7,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 907,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/book",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/book",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/book",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\529d990cd1a9\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 2663,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 3330,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 18,
+                        "passing": 18,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 15,
+                        "passing": 15,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/book",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\529d990cd1a9\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1142,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 2166,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/book",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\529d990cd1a9\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 866,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 1766,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 18,
+                    "passing": 18,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 15,
+                    "passing": 15,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/doctors",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/doctors",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/doctors",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\31cbd48260e5\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1862,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 2529,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 1,
+                        "passing": 1,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/doctors",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\31cbd48260e5\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 572,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1596,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/doctors",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\31cbd48260e5\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 411,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 1311,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 1,
+                    "passing": 1,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/doctors/doctor-1",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/doctors/doctor-1",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/doctors/doctor-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\a5c909a761d9\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1192,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 1859,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 11,
+                        "passing": 11,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 1,
+                        "passing": 1,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/doctors/doctor-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\a5c909a761d9\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 454,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1478,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/doctors/doctor-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\a5c909a761d9\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 209,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 1109,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 11,
+                    "passing": 11,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 1,
+                    "passing": 1,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/services",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/services",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\3b1aeccb742d\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 4112,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 4779,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 16,
+                        "passing": 16,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 1,
+                        "passing": 1,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\3b1aeccb742d\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1724,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 2748,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\3b1aeccb742d\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1031,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 1931,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 16,
+                    "passing": 16,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 1,
+                    "passing": 1,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/services/missing",
+              "exitCode": 1,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/services/missing",
+                "hasErrors": true,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services/missing",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\7f8b718078e8\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 686,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 1353,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 4,
+                        "passing": 4,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 1,
+                        "passing": 1,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": false,
+                      "errors": [
+                        "Main landmark rendered no visible text"
+                      ],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services/missing",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\7f8b718078e8\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 245,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1269,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": false,
+                      "errors": [
+                        "Main landmark rendered no visible text"
+                      ],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services/missing",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\7f8b718078e8\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 39,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 939,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": false,
+                      "errors": [
+                        "Main landmark rendered no visible text"
+                      ],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 4,
+                    "passing": 4,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 1,
+                    "passing": 1,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/services/service-1",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/services/service-1",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services/service-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\569f43fd4a25\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1156,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 1823,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 8,
+                        "passing": 8,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 1,
+                        "passing": 1,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services/service-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\569f43fd4a25\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 390,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1414,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/services/service-1",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\569f43fd4a25\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 253,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 1153,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 8,
+                    "passing": 8,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 1,
+                    "passing": 1,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            },
+            {
+              "route": "/visit",
+              "exitCode": 0,
+              "report": {
+                "targetUrl": "http://127.0.0.1:3000/visit",
+                "hasErrors": false,
+                "resultsByViewport": [
+                  {
+                    "viewport": {
+                      "name": "mobile",
+                      "width": 375,
+                      "height": 667
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/visit",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\9ed450207099\\mobile.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 1886,
+                      "scrollWidth": 360,
+                      "clientWidth": 375,
+                      "scrollHeight": 2553,
+                      "innerHeight": 667,
+                      "isViewportPinned": false,
+                      "touchTargets": {
+                        "total": 6,
+                        "passing": 6,
+                        "failing": 0,
+                        "items": []
+                      },
+                      "fontScales": {
+                        "total": 1,
+                        "passing": 1,
+                        "failing": 0,
+                        "items": []
+                      }
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "tablet",
+                      "width": 768,
+                      "height": 1024
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/visit",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\9ed450207099\\tablet.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 898,
+                      "scrollWidth": 753,
+                      "clientWidth": 768,
+                      "scrollHeight": 1922,
+                      "innerHeight": 1024,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  },
+                  {
+                    "viewport": {
+                      "name": "desktop",
+                      "width": 1440,
+                      "height": 900
+                    },
+                    "finalUrl": "http://127.0.0.1:3000/visit",
+                    "screenshotPath": "C:\\Users\\drag\\agentic-workflow\\Projects\\Dental Reservation system\\.git\\tier2-visual\\9ed450207099\\desktop.png",
+                    "metrics": {
+                      "hasHorizontalOverflow": false,
+                      "overflowDeltaX": 0,
+                      "hasVerticalScroll": true,
+                      "overflowDeltaY": 509,
+                      "scrollWidth": 1425,
+                      "clientWidth": 1440,
+                      "scrollHeight": 1409,
+                      "innerHeight": 900,
+                      "isViewportPinned": false
+                    },
+                    "evalResult": {
+                      "passes": true,
+                      "issues": [],
+                      "warnings": []
+                    },
+                    "acceptance": {
+                      "passes": true,
+                      "errors": [],
+                      "warnings": []
+                    },
+                    "isPinned": false
+                  }
+                ],
+                "mobileErgonomicsReport": {
+                  "touchTargets": {
+                    "total": 6,
+                    "passing": 6,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "fontScales": {
+                    "total": 1,
+                    "passing": 1,
+                    "failing": 0,
+                    "items": []
+                  },
+                  "overflow": {
+                    "hasHorizontalOverflow": false,
+                    "overflowDeltaX": 0,
+                    "scrollWidth": 360,
+                    "clientWidth": 375
+                  }
+                }
+              }
+            }
+          ],
+          "exitCode": 1,
+          "errors": [
+            "Rendered visual check is missing or failed for /services/missing"
+          ]
+        }
+      }
+    }
+  },
+  "coverageAssessment": {
+    "tests": {
+      "scope": "automated-test-execution",
+      "machineVerified": "declared test-runner execution with a positive observed count and zero failures; this does not establish requirement coverage",
+      "contextualReview": "manual edge-case and requirement-coverage review",
+      "agentReviewed": "manual edge-case and requirement-coverage review",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "whether arbitrary tests semantically cover every product requirement; live production end-to-end integration tests"
+    },
+    "security": {
+      "scope": "repository-secret-and-env-sentinel",
+      "machineVerified": "repository-wide secret credential patterns across tracked/untracked files & unignored .env check",
+      "contextualReview": "contextual authorization, IDOR, input validation, and server-action review bound per declared changed surface",
+      "agentReviewed": "contextual authorization, IDOR, input validation, and server-action review bound per declared changed surface",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "dynamic penetration testing, runtime exploit scanning, and fuzzing"
+    },
+    "performance": {
+      "scope": "frontend-static-architecture-checks",
+      "machineVerified": "static component boundary constraints and Prisma UI isolation; route orchestrator size prompts review and is not a LOC gate",
+      "contextualReview": "runtime layout shifts (CLS), mobile tap targets, and render cycles",
+      "agentReviewed": "runtime layout shifts (CLS), mobile tap targets, and render cycles",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "runtime latency benchmarking, load testing, and production profiling"
+    },
+    "revisor": {
+      "scope": "frontend-code-quality-and-token-invariants",
+      "machineVerified": "raw-color checks, frontend route isolation, working-tree diff bounds, applicable rendered route verification",
+      "contextualReview": "single responsibility, naming clarity, and diff ergonomics",
+      "agentReviewed": "single responsibility, naming clarity, and diff ergonomics",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "automated cyclomatic complexity tooling (reported evidence gap)"
+    }
+  },
+  "reviewScopes": {
+    "tests": {
+      "scope": "automated-test-execution",
+      "machineVerified": "declared test-runner execution with a positive observed count and zero failures; this does not establish requirement coverage",
+      "contextualReview": "manual edge-case and requirement-coverage review",
+      "agentReviewed": "manual edge-case and requirement-coverage review",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "whether arbitrary tests semantically cover every product requirement; live production end-to-end integration tests"
+    },
+    "security": {
+      "scope": "repository-secret-and-env-sentinel",
+      "machineVerified": "repository-wide secret credential patterns across tracked/untracked files & unignored .env check",
+      "contextualReview": "contextual authorization, IDOR, input validation, and server-action review bound per declared changed surface",
+      "agentReviewed": "contextual authorization, IDOR, input validation, and server-action review bound per declared changed surface",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "dynamic penetration testing, runtime exploit scanning, and fuzzing"
+    },
+    "performance": {
+      "scope": "frontend-static-architecture-checks",
+      "machineVerified": "static component boundary constraints and Prisma UI isolation; route orchestrator size prompts review and is not a LOC gate",
+      "contextualReview": "runtime layout shifts (CLS), mobile tap targets, and render cycles",
+      "agentReviewed": "runtime layout shifts (CLS), mobile tap targets, and render cycles",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "runtime latency benchmarking, load testing, and production profiling"
+    },
+    "revisor": {
+      "scope": "frontend-code-quality-and-token-invariants",
+      "machineVerified": "raw-color checks, frontend route isolation, working-tree diff bounds, applicable rendered route verification",
+      "contextualReview": "single responsibility, naming clarity, and diff ergonomics",
+      "agentReviewed": "single responsibility, naming clarity, and diff ergonomics",
+      "humanApproval": "not collected or authenticated by this tool",
+      "notVerified": "automated cyclomatic complexity tooling (reported evidence gap)"
+    }
+  },
+  "executionReceipt": {
+    "version": 1,
+    "algorithm": "hmac-sha256-local-key",
+    "keyId": "1f52f7861979b078",
+    "digest": "ef1c4fb990c5a55fc83ecb29d9210fd68124df5fa079239bda105ef00b5f1f6a"
+  }
+}

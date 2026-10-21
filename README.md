@@ -20,7 +20,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Change `--brand-primary`, `--brand-hover`, `--brand-subtle`, and `--brand-border` in `src/app/globals.css` to try another theme. ESLint enforces the app → feature/shared and feature → shared/same-feature boundaries.
 
-Current product scope is public patient booking, staff schedule management, patient name/contact details only, no payments, and English (`en-US`). The appointment model, staff authorization, clinic hours, service durations, and persistence provider remain undecided.
+Current product scope is public patient booking, staff schedule management, patient name/contact details only, no payments, English (`en-US`) by default, with Arabic (`ar`, right-to-left) selectable from the navbar language combobox. The appointment model, staff authorization, clinic hours, service durations, and persistence provider remain undecided.
 
 <details>
 <summary>What exists and what to test</summary>
@@ -33,6 +33,10 @@ Current product scope is public patient booking, staff schedule management, pati
 - Shared animated navigation, light/dark themes, responsive layouts, keyboard-accessible controls, and reduced-motion support.
 
 Booking and admin data live in browser memory. Refreshing resets the demo; there is no real reservation, staff authentication, message delivery, or server persistence. Use fictional contact details only. Theme preference may persist separately.
+
+### Backend foundation
+
+Use the [synapsys-tech/nextjs-template](https://github.com/synapsys-tech/nextjs-template) as the starting template for the future backend integration. Connect this demo to it only after defining the clinic's appointment, availability, persistence, and staff-access contracts; the current app does not yet use that backend.
 
 ### Manual test checklist
 

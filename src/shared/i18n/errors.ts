@@ -1,0 +1,7 @@
+import { ClinicError } from "@/shared/data/clinic-repository";
+import type { ErrorKey } from "@/shared/i18n/dictionaries";
+
+// Repository failures carry stable codes so messages follow the active language.
+export function errorKeyFrom(cause: unknown, fallback: ErrorKey): ErrorKey {
+  return cause instanceof ClinicError ? cause.code : fallback;
+}

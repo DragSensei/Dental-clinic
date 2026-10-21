@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --loader ./src/shared/data/ts-path-loader.mjs --test ./src/shared/data/clinic-repository.test.mjs"
+    "test": "node --experimental-strip-types --loader ./src/shared/data/ts-path-loader.mjs --test ./src/shared/data/clinic-repository.test.mjs ./src/shared/i18n/i18n.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -225,6 +225,12 @@
         "src/features/public/visit-information.tsx": [
           "/visit"
         ],
+        "src/shared/components/language-combobox.tsx": [
+          "/",
+          "/services",
+          "/book",
+          "/admin"
+        ],
         "src/shared/components/service-card.tsx": [
           "/services"
         ],
@@ -267,7 +273,13 @@
           "/book",
           "/admin"
         ],
-        "public/file.svg": [
+        "src/shared/i18n/locale-provider.tsx": [
+        "/",
+        "/services",
+        "/book",
+        "/admin"
+      ],
+      "public/file.svg": [
           "/"
         ],
         "public/globe.svg": [

@@ -258,3 +258,32 @@
     background: transparent;
   }
 }
+
+/* Arabic: system fonts with Arabic glyphs, no Latin tracking (it breaks joined letters), and mirrored motion. */
+html[lang="ar"] {
+  font-family: "Segoe UI", Tahoma, Arial, "Noto Sans Arabic", sans-serif;
+}
+
+html[lang="ar"] * {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3 {
+  line-height: 1.3;
+}
+
+html[dir="rtl"] .booking-step-enter {
+  animation-name: booking-step-enter-rtl;
+}
+
+@keyframes booking-step-enter-rtl {
+  from { opacity: 0; transform: translateX(-1.75rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+html[dir="rtl"] .site-nav-link::after {
+  transform-origin: right;
+}

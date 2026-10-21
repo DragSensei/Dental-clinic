@@ -24,7 +24,7 @@ test("booking rejects an ineligible clinician for the selected service", async (
     patientName: "Demo Patient",
     email: "demo@example.test",
     phone: "5550100",
-  }), /available service and clinician/);
+  }), { code: "service_clinician_mismatch" });
 });
 
 test("same-slot concurrent submissions are conflict guarded and duplicate pending submits are idempotent", async () => {
@@ -39,7 +39,7 @@ test("same-slot concurrent submissions are conflict guarded and duplicate pendin
   assert.strictEqual(first, duplicate);
   const appointment = await first;
   assert.equal(repository.getSnapshot().appointments.length, 1);
-  await assert.rejects(repository.bookAppointment({ ...input, email: "other@example.test" }), /no longer available/);
+  await assert.rejects(repository.bookAppointment({ ...input, email: "other@example.test" }), { code: "slot_unavailable" });
   assert.equal(repository.getSnapshot().appointments.length, 1);
   assert.equal(appointment.status, "confirmed");
 });
@@ -71,7 +71,7 @@ test("reschedule rejects conflicts without exposing a transient removal", async 
   const first = await repository.bookAppointment({ ...base, serviceId: shortService.id, time: secondTime, email: "demo@example.test" });
   await repository.bookAppointment({ ...base, serviceId: service.id, time: firstTime, patientName: "Another Patient", email: "other@example.test" });
   const before = repository.getSnapshot().appointments;
-  await assert.rejects(repository.rescheduleAppointment(first.id, date, firstTime), /not available/);
+  await assert.rejects(repository.rescheduleAppointment(first.id, date, firstTime), { code: "time_unavailable" });
   assert.deepEqual(repository.getSnapshot().appointments, before);
 });
 
@@ -84,11 +84,11 @@ test("service durations prevent cross-service overlap and conflicting catalog ed
   const firstTime = repository.getAvailableSlots(firstService.id, doctor.id, date)[0];
   const laterTime = repository.getAvailableSlots(firstService.id, doctor.id, date)[1];
   await repository.bookAppointment({ serviceId: firstService.id, doctorId: doctor.id, date, time: firstTime, patientName: "Patient One", email: "one@example.test", phone: "5550100" });
-  await assert.rejects(repository.bookAppointment({ serviceId: secondService.id, doctorId: doctor.id, date, time: firstTime, patientName: "Patient Two", email: "two@example.test", phone: "5550101" }), /no longer available/);
+  await assert.rejects(repository.bookAppointment({ serviceId: secondService.id, doctorId: doctor.id, date, time: firstTime, patientName: "Patient Two", email: "two@example.test", phone: "5550101" }), { code: "slot_unavailable" });
   await repository.bookAppointment({ serviceId: secondService.id, doctorId: doctor.id, date, time: laterTime, patientName: "Patient Two", email: "two@example.test", phone: "5550101" });
-  await assert.rejects(repository.updateService({ ...firstService, durationMinutes: 60 }), /overlap/);
-  await assert.rejects(repository.updateService({ ...firstService, durationMinutes: 30.5 }), /whole-number/);
-  await assert.rejects(repository.updateDoctor({ ...doctor, serviceIds: doctor.serviceIds.filter((id) => id !== firstService.id) }), /confirmed appointments/);
+  await assert.rejects(repository.updateService({ ...firstService, durationMinutes: 60 }), { code: "duration_overlap" });
+  await assert.rejects(repository.updateService({ ...firstService, durationMinutes: 30.5 }), { code: "invalid_service" });
+  await assert.rejects(repository.updateDoctor({ ...doctor, serviceIds: doctor.serviceIds.filter((id) => id !== firstService.id) }), { code: "doctor_service_blocked" });
 });
 
 test("cancelled appointments free their time and invalid contact data is rejected", async () => {
@@ -98,7 +98,7 @@ test("cancelled appointments free their time and invalid contact data is rejecte
   const date = repository.getAvailableDates(service.id, doctor.id)[0];
   const time = repository.getAvailableSlots(service.id, doctor.id, date)[0];
   const input = { serviceId: service.id, doctorId: doctor.id, date, time, patientName: "Patient", email: "bad-email", phone: "5550100" };
-  await assert.rejects(repository.bookAppointment(input), /valid email/);
+  await assert.rejects(repository.bookAppointment(input), { code: "invalid_contact" });
   const appointment = await repository.bookAppointment({ ...input, email: "patient@example.test" });
   await repository.cancelAppointment(appointment.id);
   assert.ok(repository.getAvailableSlots(service.id, doctor.id, date).includes(time));

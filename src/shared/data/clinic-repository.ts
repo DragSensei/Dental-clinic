@@ -3,6 +3,31 @@ import { doctors, services, type Appointment, type BookingDetails, type Doctor, 
 type Listener = () => void;
 type ClinicSnapshot = Readonly<{ appointments: readonly Appointment[]; services: readonly Service[]; doctors: readonly Doctor[] }>;
 
+export type ClinicErrorCode =
+  | "service_clinician_mismatch"
+  | "invalid_contact"
+  | "slot_unavailable"
+  | "appointment_not_found"
+  | "confirmed_not_found"
+  | "time_unavailable"
+  | "invalid_service"
+  | "service_not_found"
+  | "duration_overlap"
+  | "invalid_doctor"
+  | "doctor_not_found"
+  | "doctor_service_blocked";
+
+// Codes let the interface present each failure in the active language.
+export class ClinicError extends Error {
+  readonly code: ClinicErrorCode;
+
+  constructor(code: ClinicErrorCode) {
+    super(code);
+    this.name = "ClinicError";
+    this.code = code;
+  }
+}
+
 const listeners = new Set<Listener>();
 const pendingBookings = new Map<string, Promise<Appointment>>();
 const initialSnapshot: ClinicSnapshot = Object.freeze({ appointments: [], services, doctors });
@@ -72,9 +97,9 @@ export function getAvailableSlots(serviceId: string, doctorId: string, date: str
 function validateBooking(input: BookingDetails) {
   const service = snapshot.services.find((item) => item.id === input.serviceId);
   const doctor = snapshot.doctors.find((item) => item.id === input.doctorId);
-  if (!service || !doctor || !doctor.serviceIds.includes(input.serviceId)) throw new Error("Choose an available service and clinician.");
-  if (!input.patientName.trim() || !/^\S+@\S+\.\S+$/.test(input.email) || !input.phone.trim()) throw new Error("Enter your name, a valid email, and phone number.");
-  if (!getAvailableSlots(input.serviceId, input.doctorId, input.date).includes(input.time)) throw new Error("That time is no longer available. Choose another slot.");
+  if (!service || !doctor || !doctor.serviceIds.includes(input.serviceId)) throw new ClinicError("service_clinician_mismatch");
+  if (!input.patientName.trim() || !/^\S+@\S+\.\S+$/.test(input.email) || !input.phone.trim()) throw new ClinicError("invalid_contact");
+  if (!getAvailableSlots(input.serviceId, input.doctorId, input.date).includes(input.time)) throw new ClinicError("slot_unavailable");
 }
 
 export function bookAppointment(input: BookingDetails): Promise<Appointment> {
@@ -93,23 +118,23 @@ export function bookAppointment(input: BookingDetails): Promise<Appointment> {
 
 export async function cancelAppointment(id: string): Promise<void> {
   const appointment = snapshot.appointments.find((item) => item.id === id);
-  if (!appointment) throw new Error("Appointment not found.");
+  if (!appointment) throw new ClinicError("appointment_not_found");
   if (appointment.status === "cancelled") return;
   publish({ ...snapshot, appointments: snapshot.appointments.map((item) => item.id === id ? { ...item, status: "cancelled" } : item) });
 }
 
 export async function rescheduleAppointment(id: string, date: string, time: string): Promise<Appointment> {
   const appointment = snapshot.appointments.find((item) => item.id === id && item.status === "confirmed");
-  if (!appointment) throw new Error("Confirmed appointment not found.");
-  if (!availableSlots(appointment.serviceId, appointment.doctorId, date, id).includes(time)) throw new Error("That time is not available.");
+  if (!appointment) throw new ClinicError("confirmed_not_found");
+  if (!availableSlots(appointment.serviceId, appointment.doctorId, date, id).includes(time)) throw new ClinicError("time_unavailable");
   const updated = { ...appointment, date, time };
   publish({ ...snapshot, appointments: snapshot.appointments.map((item) => item.id === id ? updated : item) });
   return updated;
 }
 
 export async function updateService(service: Service): Promise<Service> {
-  if (!service.id || !service.title.trim() || !service.description.trim() || !Number.isInteger(service.durationMinutes) || service.durationMinutes < 15 || service.durationMinutes > 180) throw new Error("Enter a title, description, and whole-number duration from 15 to 180 minutes.");
-  if (!snapshot.services.some((item) => item.id === service.id)) throw new Error("Service not found.");
+  if (!service.id || !service.title.trim() || !service.description.trim() || !Number.isInteger(service.durationMinutes) || service.durationMinutes < 15 || service.durationMinutes > 180) throw new ClinicError("invalid_service");
+  if (!snapshot.services.some((item) => item.id === service.id)) throw new ClinicError("service_not_found");
   if (snapshot.services.find((item) => item.id === service.id)?.durationMinutes !== service.durationMinutes) {
     const affected = snapshot.appointments.filter((item) => item.status === "confirmed" && item.serviceId === service.id);
     for (let index = 0; index < affected.length; index += 1) {
@@ -126,7 +151,7 @@ export async function updateService(service: Service): Promise<Service> {
         const otherService = snapshot.services.find((item) => item.id === other.serviceId);
         return start < otherStart + (otherService?.durationMinutes ?? 45) && otherStart < start + service.durationMinutes;
       });
-      if (conflict || externalConflict) throw new Error("Duration cannot change because it would overlap a confirmed appointment.");
+      if (conflict || externalConflict) throw new ClinicError("duration_overlap");
     }
   }
   publish({ ...snapshot, services: snapshot.services.map((item) => item.id === service.id ? { ...service, title: service.title.trim(), description: service.description.trim() } : item) });
@@ -134,9 +159,9 @@ export async function updateService(service: Service): Promise<Service> {
 }
 
 export async function updateDoctor(doctor: Doctor): Promise<Doctor> {
-  if (!doctor.id || !doctor.name.trim() || !doctor.specialty.trim() || !doctor.bio.trim() || !doctor.serviceIds.length || doctor.serviceIds.some((id) => !snapshot.services.some((service) => service.id === id))) throw new Error("Enter clinician details and choose at least one valid service.");
-  if (!snapshot.doctors.some((item) => item.id === doctor.id)) throw new Error("Clinician not found.");
-  if (snapshot.appointments.some((item) => item.status === "confirmed" && item.doctorId === doctor.id && !doctor.serviceIds.includes(item.serviceId))) throw new Error("This clinician has confirmed appointments for a service you are removing.");
+  if (!doctor.id || !doctor.name.trim() || !doctor.specialty.trim() || !doctor.bio.trim() || !doctor.serviceIds.length || doctor.serviceIds.some((id) => !snapshot.services.some((service) => service.id === id))) throw new ClinicError("invalid_doctor");
+  if (!snapshot.doctors.some((item) => item.id === doctor.id)) throw new ClinicError("doctor_not_found");
+  if (snapshot.appointments.some((item) => item.status === "confirmed" && item.doctorId === doctor.id && !doctor.serviceIds.includes(item.serviceId))) throw new ClinicError("doctor_service_blocked");
   publish({ ...snapshot, doctors: snapshot.doctors.map((item) => item.id === doctor.id ? { ...doctor, name: doctor.name.trim(), specialty: doctor.specialty.trim(), bio: doctor.bio.trim() } : item) });
   return doctor;
 }
