@@ -1,5 +1,5 @@
-import { VisitInformation } from "@/features/public/visit-information";
+import { ContactUs } from "@/features/public/contact-us";
 
 export default function Page() {
-  return <VisitInformation />;
+  return <ContactUs />;
 }

@@ -1,5 +1,5 @@
-import { DoctorDirectory } from "@/features/public/doctor-directory";
+import { AboutUs } from "@/features/public/about-us";
 
 export default function Page() {
-  return <DoctorDirectory />;
+  return <AboutUs />;
 }

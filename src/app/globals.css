@@ -79,9 +79,9 @@
   --border: var(--brand-border);
   --input: var(--brand-border);
   --ring: #398fc5;
-  --action: #55a9dc;
-  --action-foreground: #102634;
-  --action-hover: #398fc5;
+  --action: #0070f3;
+  --action-foreground: #ffffff;
+  --action-hover: #0060df;
   --chart-1: #19476b;
   --chart-2: #398fc5;
   --chart-3: #55a9dc;
@@ -163,8 +163,8 @@
   .page-title { margin-top: .75rem; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; letter-spacing: -.05em; line-height: 1.05; }
   .eyebrow { color: var(--brand-primary); font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
   .surface { border: 1px solid var(--brand-border); border-radius: 1.25rem; background: var(--card); }
-  .route-enter { animation: route-enter 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-  @keyframes route-enter { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: translateY(0); } }
+  .route-enter { animation: route-enter 260ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+  @keyframes route-enter { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; } }
   .booking-step-enter { animation: booking-step-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   @keyframes booking-step-enter { from { opacity: 0; transform: translateX(1.75rem); } to { opacity: 1; transform: translateX(0); } }
   .site-nav-link::after { position: absolute; inset-inline: .75rem; bottom: .35rem; height: 2px; content: ""; border-radius: 9999px; background: var(--brand-primary); transform: scaleX(0); transform-origin: left; transition: transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1); }

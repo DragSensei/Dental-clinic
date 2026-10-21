@@ -1,7 +1,7 @@
-import { doctors, services, type Appointment, type BookingDetails, type Doctor, type Service } from "@/shared/data/mock/catalog";
+import { demoAccounts, doctors, services, type Account, type Appointment, type BookingDetails, type Doctor, type Service } from "@/shared/data/mock/catalog";
 
 type Listener = () => void;
-type ClinicSnapshot = Readonly<{ appointments: readonly Appointment[]; services: readonly Service[]; doctors: readonly Doctor[] }>;
+type ClinicSnapshot = Readonly<{ appointments: readonly Appointment[]; services: readonly Service[]; doctors: readonly Doctor[]; accounts: readonly Account[] }>;
 
 export type ClinicErrorCode =
   | "service_clinician_mismatch"
@@ -30,7 +30,7 @@ export class ClinicError extends Error {
 
 const listeners = new Set<Listener>();
 const pendingBookings = new Map<string, Promise<Appointment>>();
-const initialSnapshot: ClinicSnapshot = Object.freeze({ appointments: [], services, doctors });
+const initialSnapshot: ClinicSnapshot = Object.freeze({ appointments: [], services, doctors, accounts: demoAccounts });
 let snapshot = initialSnapshot;
 
 function publish(next: ClinicSnapshot) {
@@ -154,7 +154,21 @@ export async function updateService(service: Service): Promise<Service> {
       if (conflict || externalConflict) throw new ClinicError("duration_overlap");
     }
   }
-  publish({ ...snapshot, services: snapshot.services.map((item) => item.id === service.id ? { ...service, title: service.title.trim(), description: service.description.trim() } : item) });
+  publish({
+    ...snapshot,
+    services: snapshot.services.map((item) =>
+      item.id === service.id
+        ? {
+            ...service,
+            title: service.title.trim(),
+            description: service.description.trim(),
+            category: service.category?.trim() || item.category || "Preventive Care",
+            image: service.image || item.image || "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+            extendedDetails: service.extendedDetails ?? item.extendedDetails,
+          }
+        : item
+    ),
+  });
   return service;
 }
 
@@ -166,7 +180,71 @@ export async function updateDoctor(doctor: Doctor): Promise<Doctor> {
   return doctor;
 }
 
+export async function createService(serviceInput: Omit<Service, "id"> & { id?: string }): Promise<Service> {
+  const title = serviceInput.title.trim();
+  const description = serviceInput.description.trim();
+  const durationMinutes = Number(serviceInput.durationMinutes);
+  const category = serviceInput.category?.trim() || "Preventive Care";
+  const image = serviceInput.image || "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80";
+  if (!title || !description || !Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180) {
+    throw new ClinicError("invalid_service");
+  }
+  const id = serviceInput.id?.trim() || `service-${Date.now()}`;
+  const service: Service = {
+    id,
+    title,
+    description,
+    durationMinutes,
+    category,
+    image,
+    extendedDetails: serviceInput.extendedDetails || {
+      overview: description,
+      procedure: "Comprehensive diagnostic assessment and clinical care plan performed by specialized clinicians.",
+      benefits: "High precision dental care, transparent treatment phases, and lasting oral health.",
+      aftercare: "Follow routine hygiene and dentist recommendations.",
+    },
+  };
+  publish({ ...snapshot, services: [...snapshot.services, Object.freeze(service)] });
+  return service;
+}
+
+export async function createAccount(accountInput: Omit<Account, "id" | "createdAt"> & { id?: string; createdAt?: string }): Promise<Account> {
+  const name = accountInput.name.trim();
+  const email = accountInput.email.trim().toLowerCase();
+  const phone = accountInput.phone.trim();
+  if (!name || !email) throw new ClinicError("invalid_contact");
+  const id = accountInput.id?.trim() || `account-${Date.now()}`;
+  const createdAt = accountInput.createdAt || new Date().toISOString().slice(0, 10);
+  const account: Account = {
+    id,
+    name,
+    email,
+    phone,
+    role: accountInput.role,
+    status: accountInput.status,
+    specialty: accountInput.specialty?.trim(),
+    bio: accountInput.bio?.trim(),
+    serviceIds: accountInput.serviceIds,
+    createdAt,
+  };
+  let nextDoctors = snapshot.doctors;
+  if (account.role === "doctor") {
+    const docId = `doctor-${Date.now()}`;
+    const newDoctor: Doctor = {
+      id: docId,
+      name,
+      specialty: account.specialty || "General Dentistry",
+      bio: account.bio || "",
+      serviceIds: account.serviceIds || [],
+    };
+    nextDoctors = [...snapshot.doctors, Object.freeze(newDoctor)];
+  }
+  publish({ ...snapshot, accounts: [...snapshot.accounts, Object.freeze(account)], doctors: nextDoctors });
+  return account;
+}
+
 export function resetDemo() {
   pendingBookings.clear();
   publish(initialSnapshot);
 }
+

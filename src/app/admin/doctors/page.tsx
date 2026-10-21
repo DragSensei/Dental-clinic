@@ -1,3 +1,8 @@
-import { AdminView } from "@/features/admin/admin-view";
+import { redirect } from "next/navigation";
+
 export const instant = false;
-export default function Page() { return <AdminView view="doctors"/>; }
+
+export default function Page() {
+  redirect("/admin/accounts");
+}
+

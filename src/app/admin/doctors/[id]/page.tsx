@@ -1,14 +1,10 @@
-import { Suspense } from "react";
-import { AdminView, DoctorFallback } from "@/features/admin/admin-view";
+import { redirect } from "next/navigation";
+
 export const instant = false;
 
 type RouteProps = { params: Promise<{ id: string }> };
 
-async function ResolvedDoctor({ params }: RouteProps) {
+export default async function Page({ params }: RouteProps) {
   const { id } = await params;
-  return <AdminView view="doctor" id={id}/>;
-}
-
-export default function Page({ params }: RouteProps) {
-  return <Suspense fallback={<DoctorFallback/>}><ResolvedDoctor params={params}/></Suspense>;
+  redirect(`/admin/accounts/${id}`);
 }

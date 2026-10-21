@@ -28,6 +28,9 @@ Current product scope is public patient booking, staff schedule management, pati
 ### What exists
 
 - Public clinic landing page, service directory and details, clinician directory and profiles, and a first-visit guide.
+- Service cards on `/services` and the homepage care guide now feature an uncluttered presentation with plus buttons removed from collapsed cards. Clicking any card opens a detailed clinical procedure modal with an explicit close button and a direct "Book now" action.
+- Automatic service selection in the booking form: Clicking "Book now" from any service card links directly to `/book?serviceId=...` and automatically pre-selects the treatment with an accessible checkmark indicator and active state.
+- Standardized error handling with shadcn `alert-error-with-everything`: Any runtime or user error across the site (booking validation and submission failures, root error boundaries, admin authentication, service editing, and account creation) displays a unified, high-contrast error alert with icon, title, description, retry, and dismiss actions.
 - A staged `/book` demo: choose a service, clinician, date and time, enter contact details, review, then see a confirmation. Back navigation preserves selections and the steps animate between stages.
 - An `/admin` demo gate followed by overview, appointments and appointment details, calendar, clinicians, services, patients, and settings. Admin search, filters, scheduling edits, catalog edits, and reset are simulated.
 - Shared animated navigation, light/dark themes, responsive layouts, keyboard-accessible controls, and reduced-motion support.

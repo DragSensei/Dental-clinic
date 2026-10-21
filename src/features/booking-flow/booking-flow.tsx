@@ -13,6 +13,7 @@ import { errorKeyFrom } from "@/shared/i18n/errors";
 import { interpolate } from "@/shared/i18n/format";
 import type { ErrorKey } from "@/shared/i18n/dictionaries";
 import { useI18n } from "@/shared/i18n/locale-provider";
+import { AlertErrorWithEverything } from "@/shared/components/ui/alert-error";
 
 function focusBelowStickyHeader(element: HTMLElement | null) {
   if (!element) return;
@@ -40,8 +41,8 @@ export function BookingFlow() {
   const { appointments, services, doctors, bookAppointment } = useClinic();
   const { locale, t } = useI18n();
   const steps = t.booking.steps;
-  const requestedService = query.get("serviceId") ?? "";
-  const requestedDoctor = query.get("doctorId") ?? "";
+  const requestedService = query.get("serviceId") || query.get("service") || "";
+  const requestedDoctor = query.get("doctorId") || query.get("doctor") || "";
   const requestStep = query.get("step") ?? "0";
   const entryParamsRef = useRef({ service: requestedService, doctor: requestedDoctor });
   const [serviceId, setServiceId] = useState(() => services.some((item) => item.id === requestedService) ? requestedService : "");
@@ -78,8 +79,10 @@ export function BookingFlow() {
 
       let nextServiceId = serviceId;
       let nextDoctorId = doctorId;
-      if (serviceChanged && requestedService) {
-        nextServiceId = services.some((item) => item.id === requestedService) ? requestedService : "";
+      if (requestedService && (serviceChanged || !nextServiceId)) {
+        if (services.some((item) => item.id === requestedService)) {
+          nextServiceId = requestedService;
+        }
       }
 
       if (doctorChanged && requestedDoctor) {
@@ -215,7 +218,18 @@ export function BookingFlow() {
             <h2 id="step-title" ref={headingRef} tabIndex={-1} className="mt-2 scroll-mt-24 text-2xl font-semibold tracking-tight outline-none sm:text-3xl">{steps[step]}</h2>
           </div>
           <div key={step} className="booking-step-enter">
-            {error && <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"><span>{t.errors[error]}</span><Button type="button" variant="outline" className="min-h-11" onClick={retry}>{t.booking.tryAgain}</Button></div>}
+            {error && (
+              <div className="mb-6">
+                <AlertErrorWithEverything
+                  title={locale === "ar" ? "تعذر إكمال الحجز" : "Booking Notice"}
+                  description={t.errors[error]}
+                  onRetry={retry}
+                  retryLabel={t.booking.tryAgain}
+                  onDismiss={() => setError("")}
+                  dismissLabel={locale === "ar" ? "تجاهل" : "Dismiss"}
+                />
+              </div>
+            )}
             {step === 0 && <ServiceChoices services={services} selectedId={serviceId} onSelect={(id) => { const currentDoctor = doctors.find((item) => item.id === doctorId); setServiceId(id); if (currentDoctor && !currentDoctor.serviceIds.includes(id)) { setDoctorId(""); setError("clinician_mismatch"); } setDate(""); setTime(""); }} />}
             {step === 1 && <DoctorChoices doctors={doctors.filter((item) => !service || item.serviceIds.includes(service.id))} selectedId={doctorId} onSelect={(id) => { setDoctorId(id); setDate(""); setTime(""); }} />}
             {step === 2 && <DateChoices dates={availableDates} slots={availableSlots} date={date} time={time} onDate={(value) => { setDate(value); setTime(""); }} onTime={setTime} />}
@@ -304,12 +318,37 @@ function Confirmation({ appointment, service, doctor, onRestart }: { appointment
     <h1 id="booking-title" ref={headingRef} tabIndex={-1} className="mt-3 scroll-mt-24 text-3xl font-semibold tracking-tight outline-none sm:text-4xl">{t.booking.confirmation.title}</h1>
     <p className="mt-4 leading-7 text-muted-foreground">{t.booking.confirmation.body}</p>
     <dl className="mt-8 grid min-w-0 gap-4 rounded-2xl bg-muted p-5 sm:grid-cols-2"><Info label={t.labels.reference} value={appointment.id} /><Info label={t.labels.service} value={service} /><Info label={t.labels.clinician} value={doctor} /><Info label={t.labels.date} value={formatDate(appointment.date, { weekday: "long", month: "long", day: "numeric" })} /><Info label={t.labels.time} value={t.labels.utc.replace("{time}", formatTime(appointment.time))} /><Info label={t.labels.name} value={appointment.patientName} /><Info label={t.labels.email} value={appointment.email} /><Info label={t.labels.phone} value={appointment.phone} /></dl>
-    <div className="mt-8 flex flex-wrap gap-3"><Button type="button" variant="outline" className="min-h-11" onClick={onRestart}>{t.booking.confirmation.startAnother}</Button><Link href="/" className="inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">{t.booking.confirmation.home}</Link><Link href="/admin" className="inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">{t.booking.confirmation.staff}</Link></div>
+    <div className="mt-8 flex flex-wrap gap-3"><Button type="button" variant="outline" className="min-h-11" onClick={onRestart}>{t.booking.confirmation.startAnother}</Button><Link href="/" className="inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">{t.booking.confirmation.home}</Link><Link href="/admin/overview" className="inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">{t.booking.confirmation.staff}</Link></div>
   </section></main>;
 }
 
 function Info({ label, value }: { label: string; value: string }) { return <div className="min-w-0"><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt><dd className="mt-1 min-w-0 [overflow-wrap:anywhere] font-medium">{value}</dd></div>; }
 
 function Choice({ selected, onClick, title, detail }: { selected: boolean; onClick: () => void; title: string; detail: string }) {
-  return <button type="button" aria-pressed={selected} onClick={onClick} className={`min-h-20 rounded-2xl border p-4 text-start transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-ring ${selected ? "border-primary bg-brand-subtle" : "border-border hover:bg-muted"}`}><span className="font-semibold">{title}</span><span className="mt-1 block text-sm leading-6 text-muted-foreground">{detail}</span></button>;
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`group relative min-h-20 rounded-2xl border p-4 text-start transition-all motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-ring ${
+        selected
+          ? "border-brand-primary bg-brand-subtle ring-1 ring-brand-primary/50 shadow-xs"
+          : "border-border hover:bg-muted/70"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className={`font-semibold transition-colors ${selected ? "text-brand-primary" : "text-foreground group-hover:text-foreground"}`}>
+          {title}
+        </span>
+        {selected ? (
+          <span className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-primary text-primary-foreground shadow-xs">
+            <Check aria-hidden="true" className="size-3 stroke-[2.5]" />
+          </span>
+        ) : (
+          <span className="size-5 shrink-0 rounded-full border border-brand-border/80 group-hover:border-brand-primary/50" />
+        )}
+      </div>
+      <span className="mt-1.5 block text-sm leading-6 text-muted-foreground">{detail}</span>
+    </button>
+  );
 }

@@ -3,6 +3,7 @@
 import { Clock3, MapPin, Users } from "lucide-react";
 import { localizedClinic } from "@/shared/data/mock/localized-copy";
 import { useI18n } from "@/shared/i18n/locale-provider";
+import { Badge } from "@/shared/components/ui/badge";
 
 export function ClinicInformation() {
   const { locale, t } = useI18n();
@@ -21,7 +22,9 @@ export function ClinicInformation() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-primary">{t.landing.clinicInfo.eyebrow}</p>
             <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] sm:text-4xl" id="clinic-title">{t.landing.clinicInfo.title}</h2>
           </div>
-          <span className="w-fit rounded-full border border-border bg-background px-3 py-2 text-xs font-medium">{t.landing.clinicInfo.badge}</span>
+          <Badge variant="outline" className="w-fit px-3 py-1 text-xs font-medium">
+            {t.landing.clinicInfo.badge}
+          </Badge>
         </div>
         <div className="mt-9 grid gap-8 md:grid-cols-3">
           {details.map(({ icon: Icon, title, lines }) => (

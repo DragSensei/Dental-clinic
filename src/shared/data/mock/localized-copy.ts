@@ -55,11 +55,11 @@ const arabicDoctors: Readonly<Record<string, { name: string; specialty: string; 
 
 const arabicClinic: ClinicCopy = Object.freeze({
   name: "بلوهيفن دنتال",
-  address: "12 شارع المثال، القاهرة الجديدة",
+  address: "مقر سينابسيس، مكرم عبيد، مدينة نصر، القاهرة، مصر",
   email: demoClinic.email,
   phone: demoClinic.phone,
-  hours: "السبت – الخميس، 9:00 ص – 7:00 م بتوقيت UTC (توضيحي)",
-  closed: "الجمعة: مغلقة في جدول UTC التجريبي",
+  hours: "السبت – الخميس، 9:00 ص – 8:00 م (بتوقيت القاهرة)",
+  closed: "الجمعة: حالات الطوارئ بموعد مسبق فقط",
   team: Object.freeze(Object.values(arabicDoctors).map((doctor) => doctor.name)),
   metrics: Object.freeze([
     Object.freeze(["زيارات المرضى", "12,500+"]),
@@ -72,7 +72,7 @@ const arabicClinic: ClinicCopy = Object.freeze({
     { name: "يوسف م.", visit: "فحص دوري", quote: "كان الاستقبال دافئًا، وخرجت بفهم أفضل لخطواتي التالية." },
     { name: "سلمى ك.", visit: "زيارة عائلية", quote: "أجواء هادئة وحديث ودود جعلا تنظيم زياراتنا العائلية أسهل." },
   ].map((item) => Object.freeze(item))),
-  search: Object.freeze({ area: "القاهرة الجديدة", visit: "فحص دوري", time: "الاثنين، 10:30 ص" }),
+  search: Object.freeze({ area: "مدينة نصر، القاهرة", visit: "فحص دوري", time: "الاثنين، 10:30 ص" }),
 });
 
 export function localizedClinic(locale: Locale): ClinicCopy {
@@ -84,12 +84,13 @@ function pick(current: string, seed: string | undefined, translated: string | un
   return locale === "ar" && translated !== undefined && current === seed ? translated : current;
 }
 
-export function localizedService(service: Service, locale: Locale): { title: string; description: string } {
+export function localizedService(service: Service, locale: Locale): { title: string; description: string; category: string } {
   const seed = seedServices.find((item) => item.id === service.id);
   const translated = arabicServices[service.id];
   return {
     title: pick(service.title, seed?.title, translated?.title, locale),
     description: pick(service.description, seed?.description, translated?.description, locale),
+    category: service.category || "Preventive Care",
   };
 }
 

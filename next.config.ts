@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  allowedDevOrigins: [
+    "dental-preview-1.synapsystech.com",
+    "*.dental-preview-1.synapsystech.com",
+  ],
   devIndicators: {
     position: "bottom-left",
   },

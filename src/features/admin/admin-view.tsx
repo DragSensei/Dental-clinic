@@ -5,12 +5,13 @@ import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-
 import { useI18n } from "@/shared/i18n/locale-provider";
 import { Appointments as AdminAppointments, AppointmentDetail } from "@/features/admin/admin-appointments";
 import { Calendar as AdminCalendar } from "@/features/admin/admin-calendar";
-import { DoctorEditor, Doctors, ServiceEditor, Services } from "@/features/admin/admin-catalog";
+import { DoctorEditor, ServiceCreator, ServiceEditor, Services } from "@/features/admin/admin-catalog";
+import { Accounts } from "@/features/admin/admin-accounts";
+import { AccountCreator } from "@/features/admin/admin-account-creator";
 import { AdminOverview } from "@/features/admin/admin-overview";
-import { Patients } from "@/features/admin/admin-patients";
 import { AdminSettings } from "@/features/admin/admin-settings";
 
-type View = "overview" | "appointments" | "appointment" | "calendar" | "doctors" | "doctor" | "services" | "service" | "patients" | "settings";
+type View = "overview" | "appointments" | "appointment" | "calendar" | "accounts" | "account-create" | "doctors" | "doctor" | "services" | "service" | "service-create" | "patients" | "settings";
 
 export function AdminView({ view, id }: { view: View; id?: string }) {
   const clinic = useClinic();
@@ -29,11 +30,14 @@ export function AdminView({ view, id }: { view: View; id?: string }) {
     case "appointments": return <AdminAppointments appointments={appointments} serviceFor={serviceFor} doctorFor={doctorFor}/>;
     case "appointment": return <AppointmentDetail id={id ?? ""} appointments={appointments} serviceFor={serviceFor} doctorFor={doctorFor}/>;
     case "calendar": return <AdminCalendar appointments={appointments} serviceFor={serviceFor} doctorFor={doctorFor}/>;
-    case "doctors": return <Doctors doctors={doctors}/>;
+    case "accounts": return <Accounts/>;
+    case "account-create": return <AccountCreator/>;
+    case "doctors": return <Accounts initialRole="doctor"/>;
     case "doctor": return <DoctorEditor id={id ?? ""} doctors={doctors} services={services} save={(doctor) => clinic.updateDoctor(doctor)}/>;
     case "services": return <Services services={services}/>;
+    case "service-create": return <ServiceCreator save={(service) => clinic.createService(service)}/>;
     case "service": return <ServiceEditor id={id ?? ""} services={services} save={(service) => clinic.updateService(service)}/>;
-    case "patients": return <Patients appointments={appointments}/>;
+    case "patients": return <Accounts initialRole="patient"/>;
     case "settings": return <AdminSettings clinic={clinic}/>;
   }
 }
