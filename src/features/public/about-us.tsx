@@ -2,57 +2,24 @@
 
 import Link from "next/link";
 import {
-  Award,
   CheckCircle2,
-  HeartHandshake,
-  Microscope,
-  ShieldCheck,
   Sparkles,
   Users,
   ArrowRight,
 } from "lucide-react";
 import { useClinic } from "@/shared/data/use-clinic";
 import { localizedDoctor } from "@/shared/data/mock/localized-copy";
+import {
+  aboutValues as values,
+  aboutMilestones as milestones,
+  aboutTechnologies as technologies,
+} from "@/shared/data/mock/about-data";
 import { useI18n } from "@/shared/i18n/locale-provider";
 import { buttonVariants } from "@/shared/components/ui/button";
 
 export function AboutUs() {
   const { doctors } = useClinic();
   const { locale } = useI18n();
-
-  const values = [
-    {
-      icon: HeartHandshake,
-      title: "Patient-First Gentle Care",
-      description:
-        "We believe dental appointments should be calming and stress-free. Every treatment is conducted with gentle touch and clear communication at your pace.",
-    },
-    {
-      icon: Microscope,
-      title: "Cutting-Edge Technology",
-      description:
-        "From ultra-low dose 3D Cone Beam CT imaging to intraoral 3D scanners, we invest in modern equipment for pinpoint diagnostic accuracy.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Hospital-Grade Sterilization",
-      description:
-        "Your safety is non-negotiable. We adhere to rigorous Class-B autoclave sterilization and CDC/WHO bio-safety protocols.",
-    },
-    {
-      icon: Award,
-      title: "Clinical Excellence",
-      description:
-        "Our dentists hold advanced postgraduate qualifications and stay at the forefront of modern conservative and aesthetic dentistry.",
-    },
-  ];
-
-  const milestones = [
-    { number: "12+", label: "Years of Clinical Excellence" },
-    { number: "12,500+", label: "Smiles Restored" },
-    { number: "99.4%", label: "Patient Satisfaction" },
-    { number: "100%", label: "Digital Workflow" },
-  ];
 
   return (
     <main className="page-shell min-h-[70vh] py-12">
@@ -197,12 +164,7 @@ export function AboutUs() {
               We continually adopt state-of-the-art dental equipment to minimize procedural discomfort, shorten chair times, and achieve predictable aesthetic and surgical outcomes.
             </p>
             <ul className="mt-6 space-y-3">
-              {[
-                "High-definition 3D Cone Beam Computed Tomography (CBCT)",
-                "Intraoral digital scanners for putty-free impression taking",
-                "Gentle dental lasers for minimally invasive gum treatments",
-                "Computer-controlled local anesthesia delivery systems",
-              ].map((item) => (
+              {technologies.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-foreground">
                   <CheckCircle2 className="size-5 shrink-0 text-brand-primary mt-0.5" />
                   <span>{item}</span>

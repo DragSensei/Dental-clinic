@@ -10,9 +10,9 @@ export function AdminNavigation(props?: {
   return (
     <Suspense
       fallback={
-        <div aria-hidden="true" className="hidden p-3 h-full md:block md:w-[272px]">
-          <div className="h-full rounded-[2rem] border border-border bg-card" />
-        </div>
+        <aside aria-label="Admin Navigation" className="hidden p-3 h-full md:block md:w-[272px]">
+          <div className="h-full rounded-[2rem] border border-border bg-card animate-pulse" />
+        </aside>
       }
     >
       <AdminNavigationClient {...props} />

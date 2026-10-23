@@ -76,12 +76,12 @@ export function AdminLayoutShell({
       >
         <Suspense
           fallback={
-            <div
+            <aside
               aria-hidden="true"
               className={`hidden p-3 h-full md:block ${collapsed ? "md:w-[88px]" : "md:w-[272px]"}`}
             >
               <div className="h-full rounded-[2rem] border border-border bg-card" />
-            </div>
+            </aside>
           }
         >
           {sidebar}

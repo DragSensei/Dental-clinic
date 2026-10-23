@@ -350,7 +350,7 @@ export function ServiceEditor({ id, services, save }: { id: string; services: re
             />
           )}
           {saved && (
-            <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium" aria-live="polite">
+            <p className="text-sm text-primary font-medium" aria-live="polite">
               {t.admin.services.saved}
             </p>
           )}

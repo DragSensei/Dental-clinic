@@ -42,43 +42,46 @@
       "baseUrl": "http://127.0.0.1:3000",
       "routes": {
         "src/app/admin/appointments/page.tsx": [
-          "/admin/appointments"
+          "/admin/login"
         ],
         "src/app/admin/appointments/[id]/page.tsx": [
-          "/admin/appointments/demo-preview"
+          "/admin/login"
         ],
         "src/app/admin/calendar/page.tsx": [
-          "/admin/calendar"
+          "/admin/login"
         ],
         "src/app/admin/doctors/page.tsx": [
-          "/admin/doctors"
+          "/admin/login"
         ],
         "src/app/admin/doctors/[id]/page.tsx": [
-          "/admin/doctors/doctor-1"
+          "/admin/login"
         ],
         "src/app/admin/layout.tsx": [
           "/"
         ],
         "src/app/admin/overview/page.tsx": [
-          "/admin/overview"
+          "/admin/login"
+        ],
+        "src/app/admin/accounts/[id]/page.tsx": [
+          "/admin/login"
         ],
         "src/app/admin/accounts/page.tsx": [
-          "/admin/accounts"
+          "/admin/login"
         ],
         "src/app/admin/accounts/new/page.tsx": [
-          "/admin/accounts/new"
+          "/admin/login"
         ],
         "src/app/admin/services/new/page.tsx": [
-          "/admin/services/new"
+          "/admin/login"
         ],
         "src/app/admin/services/page.tsx": [
-          "/admin/services"
+          "/admin/login"
         ],
         "src/app/admin/services/[id]/page.tsx": [
-          "/admin/services/service-1"
+          "/admin/login"
         ],
         "src/app/admin/settings/page.tsx": [
-          "/admin/settings"
+          "/admin/login"
         ],
         "src/app/book/page.tsx": [
           "/book"
@@ -96,7 +99,7 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/app/icon.svg": [
           "/"
@@ -105,7 +108,7 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/app/loading.tsx": [
           "/"
@@ -126,47 +129,50 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/app/visit/page.tsx": [
           "/visit"
         ],
         "src/features/admin/admin-appointments.tsx": [
-          "/admin/appointments",
-          "/admin/appointments/demo-preview"
+          "/admin/login",
+          "/admin/login"
         ],
         "src/features/admin/admin-demo-gate.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-calendar.tsx": [
-          "/admin/calendar"
+          "/admin/login"
         ],
         "src/shared/components/ui/combobox.tsx": [
-          "/admin/calendar",
-          "/admin/appointments",
-          "/admin/appointments/demo-preview"
+          "/admin/login",
+          "/admin/login",
+          "/admin/login"
         ],
         "src/features/admin/admin-catalog.tsx": [
-          "/admin/services",
-          "/admin/doctors/doctor-1"
+          "/admin/login",
+          "/admin/login"
+        ],
+        "src/features/admin/admin-layout-shell.tsx": [
+          "/admin/login"
         ],
         "src/features/admin/admin-navigation.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-overview.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-patients.tsx": [
-          "/admin/patients"
+          "/admin/login"
         ],
         "src/features/admin/admin-settings.tsx": [
-          "/admin/settings"
+          "/admin/login"
         ],
         "src/features/admin/admin-ui.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-view.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/booking/advanced-care-banner.tsx": [
           "/"
@@ -238,7 +244,7 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/components/service-card.tsx": [
           "/services"
@@ -250,43 +256,43 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/components/site-footer.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/components/site-nav.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/components/theme-provider.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/components/theme-toggle.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/components/ui/button.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/shared/i18n/locale-provider.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "public/file.svg": [
           "/"

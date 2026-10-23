@@ -42,7 +42,7 @@ function StatusBadge({ status }: { status: AccountStatus }) {
   const isActive = status === "active";
   return (
     <Badge variant={isActive ? "outline" : "secondary"} className="gap-1.5 font-medium">
-      <span className={`size-1.5 rounded-full ${isActive ? "bg-emerald-500" : "bg-muted-foreground/50"}`} aria-hidden="true" />
+      <span className={`size-1.5 rounded-full ${isActive ? "bg-primary" : "bg-muted-foreground/50"}`} aria-hidden="true" />
       <span className={isActive ? "text-foreground" : "text-muted-foreground"}>
         {isActive ? t.admin.accounts.statusActive : t.admin.accounts.statusInactive}
       </span>

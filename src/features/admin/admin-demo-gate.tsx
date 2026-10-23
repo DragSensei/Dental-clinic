@@ -356,7 +356,7 @@ export function AdminDemoGate({
               />
 
               {/* Global Theme Gradient Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#19476b]/95 via-[#19476b]/85 to-[#123b5c]/95 backdrop-blur-[2px]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/95 via-brand-primary/85 to-brand-hover/95 backdrop-blur-[2px]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(85,169,220,0.35),_transparent_75%)]" />
 
               {/* Content Panel 1: Shown when covering Signup (mode === 'login') */}
@@ -368,7 +368,7 @@ export function AdminDemoGate({
                 }`}
               >
                 <div className="mb-4 grid size-12 place-items-center rounded-2xl border border-white/25 bg-white/10 text-white shadow-inner backdrop-blur-md">
-                  <Sparkles className="size-6 text-[#55a9dc]" />
+                  <Sparkles className="size-6 text-brand-primary" />
                 </div>
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
                   {copy.overlaySignupTitle}
@@ -398,7 +398,7 @@ export function AdminDemoGate({
                 }`}
               >
                 <div className="mb-4 grid size-12 place-items-center rounded-2xl border border-white/25 bg-white/10 text-white shadow-inner backdrop-blur-md">
-                  <ShieldCheck className="size-6 text-[#55a9dc]" />
+                  <ShieldCheck className="size-6 text-brand-primary" />
                 </div>
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
                   {copy.overlayLoginTitle}

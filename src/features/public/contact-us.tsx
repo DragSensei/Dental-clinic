@@ -131,15 +131,15 @@ export function ContactUs() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 shadow-xs dark:bg-red-500/10">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-red-500/15 text-red-600 dark:text-red-400">
+            <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 shadow-xs dark:bg-destructive/10">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-destructive/15 text-destructive">
                 <ShieldAlert className="size-5" />
               </div>
               <h3 className="mt-4 font-semibold text-foreground">Emergency Dental Care</h3>
               <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
                 For severe tooth pain, accidents, or knocked-out teeth, our on-call dental surgeon is available:
               </p>
-              <p className="mt-2 text-sm font-bold text-red-600 dark:text-red-400">
+              <p className="mt-2 text-sm font-bold text-destructive">
                 +20 122 000 9988 (24/7)
               </p>
             </div>
