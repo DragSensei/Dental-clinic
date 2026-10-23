@@ -11,6 +11,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Project rules
 
 - `src/app/globals.css` is the central theme source. Rebrand through its four `--brand-*` tokens.
-- Keep route composition in `src/app/`, business logic in isolated `src/features/<name>/` slices, and shared primitives in `src/shared/`.
+- Keep route composition in `src/app/`, business logic in isolated `src/features/<name>/` slices, and shared components, utilities, and data in `src/components/` (`ui/`, `shared/`, and global blocks), `src/lib/`, `src/data/`, and `src/i18n/`.
 - Public booking collects only patient name and contact details. Staff can manage schedules. Do not add further patient data, payments, or access rules without an explicit product decision.
 - Production database, appointment lifecycle, clinic hours, durations, and staff authentication remain undefined. The 2026-10-20 website evolution explicitly authorizes isolated in-memory booking and admin simulations with visible demo status. This does not authorize production writes or real staff operations. Collect only name and contact details; do not persist contacts in browser storage.

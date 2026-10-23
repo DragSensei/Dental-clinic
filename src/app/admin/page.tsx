@@ -1,3 +1,8 @@
-import { AdminView } from "@/features/admin/admin-view";
+import { notFound } from "next/navigation";
+
 export const instant = false;
-export default function Page() { return <AdminView view="overview"/>; }
+
+export default function Page() {
+  notFound();
+}
+

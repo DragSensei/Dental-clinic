@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     "dental-preview-1.synapsystech.com",
     "*.dental-preview-1.synapsystech.com",
   ],
-  devIndicators: false,
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

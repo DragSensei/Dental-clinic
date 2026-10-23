@@ -7,7 +7,7 @@ A web app foundation for public dental appointment booking and staff schedule ma
 Next.js App Router, React, TypeScript, Tailwind CSS 4, and shadcn/ui.
 
 ## Conventions
-App routes compose isolated features. Features may use shared code and their own slice; cross-feature imports are blocked by ESLint. Shared UI and utilities live under `src/shared/`. The theme source is `src/app/globals.css`.
+App routes compose isolated features. Features may use shared code and their own slice; cross-feature imports are blocked by ESLint. Shared UI and utilities live under `src/components/` (`ui/`, `shared/`, and global blocks), `src/lib/`, `src/data/`, and `src/i18n/`. The theme source is `src/app/globals.css`.
 
 See `architecture/` for decisions, data-model status, and domain questions that need resolution before backend work.
 

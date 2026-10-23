@@ -20,7 +20,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Change `--brand-primary`, `--brand-hover`, `--brand-subtle`, and `--brand-border` in `src/app/globals.css` to try another theme. ESLint enforces the app → feature/shared and feature → shared/same-feature boundaries.
 
-Current product scope is public patient booking, staff schedule management, patient name/contact details only, no payments, and English (`en-US`). The appointment model, staff authorization, clinic hours, service durations, and persistence provider remain undecided.
+Current product scope is public patient booking, staff schedule management, patient name/contact details only, no payments, English (`en-US`) by default, with Arabic (`ar`, right-to-left) selectable from the navbar language combobox. The appointment model, staff authorization, clinic hours, service durations, and persistence provider remain undecided.
 
 <details>
 <summary>What exists and what to test</summary>
@@ -28,11 +28,18 @@ Current product scope is public patient booking, staff schedule management, pati
 ### What exists
 
 - Public clinic landing page, service directory and details, clinician directory and profiles, and a first-visit guide.
+- Service cards on `/services` and the homepage care guide now feature an uncluttered presentation with plus buttons removed from collapsed cards. Clicking any card opens a detailed clinical procedure modal with an explicit close button and a direct "Book now" action.
+- Automatic service selection in the booking form: Clicking "Book now" from any service card links directly to `/book?serviceId=...` and automatically pre-selects the treatment with an accessible checkmark indicator and active state.
+- Standardized error handling with shadcn `alert-error-with-everything`: Any runtime or user error across the site (booking validation and submission failures, root error boundaries, admin authentication, service editing, and account creation) displays a unified, high-contrast error alert with icon, title, description, retry, and dismiss actions.
 - A staged `/book` demo: choose a service, clinician, date and time, enter contact details, review, then see a confirmation. Back navigation preserves selections and the steps animate between stages.
 - An `/admin` demo gate followed by overview, appointments and appointment details, calendar, clinicians, services, patients, and settings. Admin search, filters, scheduling edits, catalog edits, and reset are simulated.
 - Shared animated navigation, light/dark themes, responsive layouts, keyboard-accessible controls, and reduced-motion support.
 
 Booking and admin data live in browser memory. Refreshing resets the demo; there is no real reservation, staff authentication, message delivery, or server persistence. Use fictional contact details only. Theme preference may persist separately.
+
+### Backend foundation
+
+Use the [synapsys-tech/nextjs-template](https://github.com/synapsys-tech/nextjs-template) as the starting template for the future backend integration. Connect this demo to it only after defining the clinic's appointment, availability, persistence, and staff-access contracts; the current app does not yet use that backend.
 
 ### Manual test checklist
 

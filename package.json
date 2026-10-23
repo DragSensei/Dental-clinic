@@ -7,16 +7,19 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --loader ./src/shared/data/ts-path-loader.mjs --test ./src/shared/data/clinic-repository.test.mjs"
+    "test": "npx tsx --test ./src/data/clinic-repository.test.mjs ./src/i18n/i18n.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "cn": "^0.5.0",
     "lucide-react": "^1.59.0",
+    "motion": "^14.4.0",
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "tailwind-merge": "^3.7.0",
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
@@ -39,37 +42,46 @@
       "baseUrl": "http://127.0.0.1:3000",
       "routes": {
         "src/app/admin/appointments/page.tsx": [
-          "/admin/appointments"
+          "/admin/login"
         ],
         "src/app/admin/appointments/[id]/page.tsx": [
-          "/admin/appointments/demo-preview"
+          "/admin/login"
         ],
         "src/app/admin/calendar/page.tsx": [
-          "/admin/calendar"
+          "/admin/login"
         ],
         "src/app/admin/doctors/page.tsx": [
-          "/admin/doctors"
+          "/admin/login"
         ],
         "src/app/admin/doctors/[id]/page.tsx": [
-          "/admin/doctors/doctor-1"
+          "/admin/login"
         ],
         "src/app/admin/layout.tsx": [
           "/"
         ],
-        "src/app/admin/page.tsx": [
-          "/admin"
+        "src/app/admin/overview/page.tsx": [
+          "/admin/login"
         ],
-        "src/app/admin/patients/page.tsx": [
-          "/admin/patients"
+        "src/app/admin/accounts/[id]/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/admin/accounts/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/admin/accounts/new/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/admin/services/new/page.tsx": [
+          "/admin/login"
         ],
         "src/app/admin/services/page.tsx": [
-          "/admin/services"
+          "/admin/login"
         ],
         "src/app/admin/services/[id]/page.tsx": [
-          "/admin/services/service-1"
+          "/admin/login"
         ],
         "src/app/admin/settings/page.tsx": [
-          "/admin/settings"
+          "/admin/login"
         ],
         "src/app/book/page.tsx": [
           "/book"
@@ -87,7 +99,7 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/app/icon.svg": [
           "/"
@@ -96,7 +108,7 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/app/loading.tsx": [
           "/"
@@ -117,55 +129,52 @@
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
         "src/app/visit/page.tsx": [
           "/visit"
         ],
         "src/features/admin/admin-appointments.tsx": [
-          "/admin/appointments",
-          "/admin/appointments/demo-preview"
+          "/admin/login",
+          "/admin/login"
         ],
         "src/features/admin/admin-demo-gate.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-calendar.tsx": [
-          "/admin/calendar"
+          "/admin/login"
         ],
-        "src/shared/components/ui/combobox.tsx": [
-          "/admin/calendar",
-          "/admin/appointments",
-          "/admin/appointments/demo-preview"
+        "src/components/ui/combobox.tsx": [
+          "/admin/login",
+          "/admin/login",
+          "/admin/login"
         ],
         "src/features/admin/admin-catalog.tsx": [
-          "/admin/services",
-          "/admin/doctors/doctor-1"
+          "/admin/login",
+          "/admin/login"
+        ],
+        "src/features/admin/admin-layout-shell.tsx": [
+          "/admin/login"
         ],
         "src/features/admin/admin-navigation.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-overview.tsx": [
-          "/admin"
-        ],
-        "src/features/admin/admin-patients.tsx": [
-          "/admin/patients"
+          "/admin/login"
         ],
         "src/features/admin/admin-settings.tsx": [
-          "/admin/settings"
+          "/admin/login"
         ],
         "src/features/admin/admin-ui.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/admin/admin-view.tsx": [
-          "/admin"
+          "/admin/login"
         ],
         "src/features/booking/advanced-care-banner.tsx": [
           "/"
         ],
         "src/features/booking/appointment-cta.tsx": [
-          "/"
-        ],
-        "src/features/booking/appointment-section.tsx": [
           "/"
         ],
         "src/features/booking/before-after-comparison.tsx": [
@@ -189,13 +198,7 @@
         "src/features/booking/clinic-story.tsx": [
           "/"
         ],
-        "src/features/booking/landing-footer.tsx": [
-          "/"
-        ],
         "src/features/booking/landing-hero.tsx": [
-          "/"
-        ],
-        "src/features/booking/landing-nav.tsx": [
           "/"
         ],
         "src/features/booking/patient-metrics.tsx": [
@@ -210,9 +213,6 @@
         "src/features/booking-flow/booking-flow.tsx": [
           "/book"
         ],
-        "src/features/public/doctor-directory.tsx": [
-          "/doctors"
-        ],
         "src/features/public/doctor-profile.tsx": [
           "/doctors/doctor-1"
         ],
@@ -222,50 +222,59 @@
         "src/features/public/service-directory.tsx": [
           "/services"
         ],
-        "src/features/public/visit-information.tsx": [
-          "/visit"
+        "src/components/shared/language-combobox.tsx": [
+          "/",
+          "/services",
+          "/book",
+          "/admin/login"
         ],
-        "src/shared/components/service-card.tsx": [
+        "src/components/shared/service-card.tsx": [
           "/services"
         ],
-        "src/shared/components/service-icons.ts": [
+        "src/components/shared/service-icons.ts": [
           "/services"
         ],
-        "src/shared/components/site-brand.tsx": [
+        "src/components/shared/site-brand.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
-        "src/shared/components/site-footer.tsx": [
+        "src/components/site-footer.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
-        "src/shared/components/site-nav.tsx": [
+        "src/components/site-nav.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
-        "src/shared/components/theme-provider.tsx": [
+        "src/components/theme-provider.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
-        "src/shared/components/theme-toggle.tsx": [
+        "src/components/shared/theme-toggle.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
         ],
-        "src/shared/components/ui/button.tsx": [
+        "src/components/ui/button.tsx": [
           "/",
           "/services",
           "/book",
-          "/admin"
+          "/admin/login"
+        ],
+        "src/i18n/locale-provider.tsx": [
+          "/",
+          "/services",
+          "/book",
+          "/admin/login"
         ],
         "public/file.svg": [
           "/"

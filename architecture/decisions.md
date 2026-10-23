@@ -1,5 +1,12 @@
 # Architecture decisions
 
+## 2026-10-21 — Arabic localization with a client-side language preference
+Chose: a `LocaleProvider` in `src/i18n/` that stores the language in browser storage (like the theme), with English as the default and Arabic (`ar`, right-to-left) selectable from the navbar combobox. Copy lives in typed `en`/`ar` dictionaries (Arabic is checked against the English shape), seeded catalog copy is translated in `src/data/mock/localized-copy.ts`, and repository failures carry stable codes that the UI translates.
+Because: the user asked for Arabic across the project. A client-side preference keeps every existing URL, the static prerendering, and the appearance-only browser storage rule intact.
+Alternatives considered: `app/[lang]` sub-path routing (the framework's recommended pattern) changes every URL and route file, and cookie-based rendering would make every page dynamic under cache components.
+Trade-off: a returning Arabic visitor sees English for a moment until hydration applies the stored preference. Sub-path routing would remove that and add per-language URLs; revisit if SEO or first-paint language matters.
+Staff-edited catalog text is shown as entered; only seeded copy is translated. The Arabic clinical terms are drafted from common usage and need review by the clinic's dental team.
+
 ## 2026-10-20 — Multi-page simulated clinic experience
 Chose: preserve the existing Next.js/feature/shared architecture; dedicated service/provider pages, staged booking, and an admin section using one small typed in-memory repository. Root layout owns shared navigation; admin layout adds section navigation. No dependency or database migration is required.
 Because: the user requested a functional simulated journey and spacious dedicated workflows while preserving the current design. Contact data stays in memory and no production booking is claimed.
