@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { notFound, usePathname, useRouter } from "next/navigation";
 import { AdminDemoGate, type DemoAccount } from "@/features/admin/admin-demo-gate";
 import { useSession } from "@/data/use-session";
@@ -18,14 +18,19 @@ export function AdminLayoutShell({
   const pathname = usePathname();
   const router = useRouter();
   const { signedInEmail, signIn, signOut } = useSession();
+  const [collapsed, setCollapsed] = useState(false);
+  const [accounts, setAccounts] = useState<DemoAccount[]>([]);
+  const { t } = useI18n();
+
+  useEffect(() => {
+    if (signedInEmail && pathname === "/admin/login") {
+      router.replace("/admin/overview");
+    }
+  }, [pathname, router, signedInEmail]);
 
   if (pathname === "/admin") {
     notFound();
   }
-
-  const [collapsed, setCollapsed] = useState(false);
-  const [accounts, setAccounts] = useState<DemoAccount[]>([]);
-  const { t } = useI18n();
 
   const handleSignIn = (email: string, role?: AccountRole) => {
     signIn(email, role ?? "admin");
@@ -56,7 +61,6 @@ export function AdminLayoutShell({
   }
 
   if (pathname === "/admin/login") {
-    router.replace("/admin/overview");
     return null;
   }
 

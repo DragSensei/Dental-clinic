@@ -120,6 +120,15 @@ The records below describe earlier milestones. Their static-booking and old-them
 - Preview is running at `http://localhost:3000`. The confirmed project-owned development server was restarted to refresh a stale stylesheet. No changes were staged or committed.
 
 ## BUG TRIAGE LOG
+### BUG-2026-ADMIN-LOGIN-REDIRECT — Router state update during `AdminLayoutShell` render on `/admin/login`
+- STATUS: RESOLVED
+- ROOT CAUSE: `AdminLayoutShell` called `router.replace("/admin/overview")` directly inside its render body when `signedInEmail` was truthy and `pathname === "/admin/login"`, triggering React's `Cannot update a component (Router) while rendering a different component (AdminLayoutShell)` console error.
+- CANONICAL OWNER: `src/features/admin/admin-layout-shell.tsx`
+- PREVENTION CLASS: DETECTION_ONLY
+- VERIFICATION OWNER: `npx tsc --noEmit` and `eslint` check; redirect side-effect moved into `useEffect` while render returns `null`.
+- FIXED-BY REFERENCE: `src/features/admin/admin-layout-shell.tsx`
+- WHY NOT MECHANICALLY PREVENTABLE: Next.js `router.replace` is a normal method call without a built-in static lint rule for render-body invocation.
+
 ### BUG-2026-CTA-NAV — Rightmost dropdown exceeded the viewport
 - STATUS: RESOLVED
 - ROOT CAUSE: Each desktop dropdown was positioned from its individual trigger's left edge at a fixed wide panel size. At 1440px, “Plan your visit” extended about 120px beyond the right viewport edge.
