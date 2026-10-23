@@ -16,7 +16,10 @@ const eslintConfig = defineConfig([
           pattern: "src/features/*/**",
           capture: ["featureName"],
         },
-        { type: "shared", pattern: "src/shared/**" },
+        { type: "shared", pattern: "src/components/**" },
+        { type: "shared", pattern: "src/lib/**" },
+        { type: "shared", pattern: "src/data/**" },
+        { type: "shared", pattern: "src/i18n/**" },
       ],
     },
     rules: {

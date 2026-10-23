@@ -1,16 +1,16 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import type { Doctor, Service } from "@/shared/data/mock/catalog";
-import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-copy";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
+import type { Doctor, Service } from "@/data/mock/catalog";
+import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { errorKeyFrom } from "@/shared/i18n/errors";
-import { interpolate } from "@/shared/i18n/format";
-import type { ErrorKey } from "@/shared/i18n/dictionaries";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { errorKeyFrom } from "@/i18n/errors";
+import { interpolate } from "@/i18n/format";
+import type { ErrorKey } from "@/i18n/dictionaries";
+import { useI18n } from "@/i18n/locale-provider";
 import { PageTitle, Panel, field, labelClass } from "@/features/admin/admin-ui";
-import { AlertErrorWithEverything } from "@/shared/components/ui/alert-error";
+import { AlertErrorWithEverything } from "@/components/shared/alert-error";
 
 export function Doctors({ doctors }: { doctors: readonly Doctor[] }) {
   const { locale, t } = useI18n();

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useI18n } from "@/i18n/locale-provider";
 
 export function VisitGuide() {
   const { t } = useI18n();

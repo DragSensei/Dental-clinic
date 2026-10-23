@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useI18n } from "@/i18n/locale-provider";
 
 export default function NotFound() {
   const { t } = useI18n();

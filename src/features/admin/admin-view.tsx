@@ -1,8 +1,8 @@
 "use client";
 
-import { useClinic } from "@/shared/data/use-clinic";
-import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-copy";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useClinic } from "@/data/use-clinic";
+import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
+import { useI18n } from "@/i18n/locale-provider";
 import { Appointments as AdminAppointments, AppointmentDetail } from "@/features/admin/admin-appointments";
 import { Calendar as AdminCalendar } from "@/features/admin/admin-calendar";
 import { DoctorEditor, ServiceCreator, ServiceEditor, Services } from "@/features/admin/admin-catalog";

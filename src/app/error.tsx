@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { AlertErrorWithEverything } from "@/shared/components/ui/alert-error";
+import { useI18n } from "@/i18n/locale-provider";
+import { AlertErrorWithEverything } from "@/components/shared/alert-error";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const { t } = useI18n();

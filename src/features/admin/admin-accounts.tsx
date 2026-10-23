@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Plus, Search, ShieldCheck, Stethoscope, User } from "lucide-react";
-import type { Account, AccountRole, AccountStatus } from "@/shared/data/mock/catalog";
-import { useClinic } from "@/shared/data/use-clinic";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { Badge } from "@/shared/components/ui/badge";
-import { buttonVariants } from "@/shared/components/ui/button";
-import { AppCombobox } from "@/shared/components/ui/combobox";
+import type { Account, AccountRole, AccountStatus } from "@/data/mock/catalog";
+import { useClinic } from "@/data/use-clinic";
+import { useI18n } from "@/i18n/locale-provider";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { AppCombobox } from "@/components/ui/combobox";
 import { Empty, PageTitle, Panel, field, labelClass } from "@/features/admin/admin-ui";
 
 function RoleBadge({ role }: { role: AccountRole }) {

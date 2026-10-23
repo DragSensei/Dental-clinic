@@ -1,6 +1,6 @@
 "use client";
 
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useI18n } from "@/i18n/locale-provider";
 
 export default function Loading() {
   const { t } = useI18n();

@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { Appointment } from "@/shared/data/mock/catalog";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import type { Appointment } from "@/data/mock/catalog";
+import { useI18n } from "@/i18n/locale-provider";
 
 export const field = "min-h-11 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 export const labelClass = "grid gap-1.5 text-sm font-medium";

@@ -7,15 +7,15 @@ import {
   Users,
   ArrowRight,
 } from "lucide-react";
-import { useClinic } from "@/shared/data/use-clinic";
-import { localizedDoctor } from "@/shared/data/mock/localized-copy";
+import { useClinic } from "@/data/use-clinic";
+import { localizedDoctor } from "@/data/mock/localized-copy";
 import {
   aboutValues as values,
   aboutMilestones as milestones,
   aboutTechnologies as technologies,
-} from "@/shared/data/mock/about-data";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { buttonVariants } from "@/shared/components/ui/button";
+} from "@/data/mock/about-data";
+import { useI18n } from "@/i18n/locale-provider";
+import { buttonVariants } from "@/components/ui/button";
 
 export function AboutUs() {
   const { doctors } = useClinic();

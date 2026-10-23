@@ -1,5 +1,5 @@
 import { DoctorProfile, DoctorProfileFallback } from "@/features/public/doctor-profile";
-import { doctors } from "@/shared/data/mock/catalog";
+import { doctors } from "@/data/mock/catalog";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 

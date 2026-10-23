@@ -1,7 +1,7 @@
 # Architecture decisions
 
 ## 2026-10-21 — Arabic localization with a client-side language preference
-Chose: a `LocaleProvider` in `src/shared/i18n/` that stores the language in browser storage (like the theme), with English as the default and Arabic (`ar`, right-to-left) selectable from the navbar combobox. Copy lives in typed `en`/`ar` dictionaries (Arabic is checked against the English shape), seeded catalog copy is translated in `src/shared/data/mock/localized-copy.ts`, and repository failures carry stable codes that the UI translates.
+Chose: a `LocaleProvider` in `src/i18n/` that stores the language in browser storage (like the theme), with English as the default and Arabic (`ar`, right-to-left) selectable from the navbar combobox. Copy lives in typed `en`/`ar` dictionaries (Arabic is checked against the English shape), seeded catalog copy is translated in `src/data/mock/localized-copy.ts`, and repository failures carry stable codes that the UI translates.
 Because: the user asked for Arabic across the project. A client-side preference keeps every existing URL, the static prerendering, and the appearance-only browser storage rule intact.
 Alternatives considered: `app/[lang]` sub-path routing (the framework's recommended pattern) changes every URL and route file, and cookie-based rendering would make every page dynamic under cache components.
 Trade-off: a returning Arabic visitor sees English for a moment until hydration applies the stored preference. Sub-path routing would remove that and add per-language URLs; revisit if SEO or first-paint language matters.

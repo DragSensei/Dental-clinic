@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npx tsx --test ./src/shared/data/clinic-repository.test.mjs ./src/shared/i18n/i18n.test.mjs"
+    "test": "npx tsx --test ./src/data/clinic-repository.test.mjs ./src/i18n/i18n.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -144,7 +144,7 @@
         "src/features/admin/admin-calendar.tsx": [
           "/admin/login"
         ],
-        "src/shared/components/ui/combobox.tsx": [
+        "src/components/ui/combobox.tsx": [
           "/admin/login",
           "/admin/login",
           "/admin/login"
@@ -162,9 +162,6 @@
         "src/features/admin/admin-overview.tsx": [
           "/admin/login"
         ],
-        "src/features/admin/admin-patients.tsx": [
-          "/admin/login"
-        ],
         "src/features/admin/admin-settings.tsx": [
           "/admin/login"
         ],
@@ -178,9 +175,6 @@
           "/"
         ],
         "src/features/booking/appointment-cta.tsx": [
-          "/"
-        ],
-        "src/features/booking/appointment-section.tsx": [
           "/"
         ],
         "src/features/booking/before-after-comparison.tsx": [
@@ -204,13 +198,7 @@
         "src/features/booking/clinic-story.tsx": [
           "/"
         ],
-        "src/features/booking/landing-footer.tsx": [
-          "/"
-        ],
         "src/features/booking/landing-hero.tsx": [
-          "/"
-        ],
-        "src/features/booking/landing-nav.tsx": [
           "/"
         ],
         "src/features/booking/patient-metrics.tsx": [
@@ -225,9 +213,6 @@
         "src/features/booking-flow/booking-flow.tsx": [
           "/book"
         ],
-        "src/features/public/doctor-directory.tsx": [
-          "/doctors"
-        ],
         "src/features/public/doctor-profile.tsx": [
           "/doctors/doctor-1"
         ],
@@ -237,58 +222,55 @@
         "src/features/public/service-directory.tsx": [
           "/services"
         ],
-        "src/features/public/visit-information.tsx": [
-          "/visit"
-        ],
-        "src/shared/components/language-combobox.tsx": [
+        "src/components/shared/language-combobox.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/components/service-card.tsx": [
+        "src/components/shared/service-card.tsx": [
           "/services"
         ],
-        "src/shared/components/service-icons.ts": [
+        "src/components/shared/service-icons.ts": [
           "/services"
         ],
-        "src/shared/components/site-brand.tsx": [
+        "src/components/shared/site-brand.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/components/site-footer.tsx": [
+        "src/components/site-footer.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/components/site-nav.tsx": [
+        "src/components/site-nav.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/components/theme-provider.tsx": [
+        "src/components/theme-provider.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/components/theme-toggle.tsx": [
+        "src/components/shared/theme-toggle.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/components/ui/button.tsx": [
+        "src/components/ui/button.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/shared/i18n/locale-provider.tsx": [
+        "src/i18n/locale-provider.tsx": [
           "/",
           "/services",
           "/book",

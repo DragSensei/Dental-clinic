@@ -1,5 +1,5 @@
 import { ServiceDetail, ServiceDetailFallback } from "@/features/public/service-detail";
-import { services } from "@/shared/data/mock/catalog";
+import { services } from "@/data/mock/catalog";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 

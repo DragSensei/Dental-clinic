@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { getAvailableDates, getAvailableSlots } from "@/shared/data/clinic-repository";
-import type { Appointment } from "@/shared/data/mock/catalog";
-import { useClinic } from "@/shared/data/use-clinic";
-import { errorKeyFrom } from "@/shared/i18n/errors";
-import { interpolate } from "@/shared/i18n/format";
-import type { ErrorKey } from "@/shared/i18n/dictionaries";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
-import { AppCombobox } from "@/shared/components/ui/combobox";
+import { getAvailableDates, getAvailableSlots } from "@/data/clinic-repository";
+import type { Appointment } from "@/data/mock/catalog";
+import { useClinic } from "@/data/use-clinic";
+import { errorKeyFrom } from "@/i18n/errors";
+import { interpolate } from "@/i18n/format";
+import type { ErrorKey } from "@/i18n/dictionaries";
+import { useI18n } from "@/i18n/locale-provider";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { AppCombobox } from "@/components/ui/combobox";
 import { Empty, PageTitle, Panel, Status, field, labelClass, useDateLabel } from "@/features/admin/admin-ui";
 
 export function AppointmentRows({ appointments, serviceFor, doctorFor }: { appointments: readonly Appointment[]; serviceFor: (id: string) => string; doctorFor: (id: string) => string }) {

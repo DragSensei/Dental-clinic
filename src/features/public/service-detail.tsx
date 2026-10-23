@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Clock3 } from "lucide-react";
-import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-copy";
-import { useClinic } from "@/shared/data/use-clinic";
-import { interpolate } from "@/shared/i18n/format";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
+import { useClinic } from "@/data/use-clinic";
+import { interpolate } from "@/i18n/format";
+import { useI18n } from "@/i18n/locale-provider";
 
 export function ServiceDetail({ id }: { id: string }) {
   const { services, doctors } = useClinic();

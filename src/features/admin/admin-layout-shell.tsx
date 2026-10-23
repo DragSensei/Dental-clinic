@@ -3,9 +3,9 @@
 import { Suspense, useState, type ReactNode } from "react";
 import { notFound, usePathname, useRouter } from "next/navigation";
 import { AdminDemoGate, type DemoAccount } from "@/features/admin/admin-demo-gate";
-import { useSession } from "@/shared/data/use-session";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import type { AccountRole } from "@/shared/data/mock/catalog";
+import { useSession } from "@/data/use-session";
+import { useI18n } from "@/i18n/locale-provider";
+import type { AccountRole } from "@/data/mock/catalog";
 import { AdminSidebarContext } from "./admin-sidebar-context";
 
 export function AdminLayoutShell({

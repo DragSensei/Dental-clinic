@@ -14,7 +14,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useI18n } from "@/i18n/locale-provider";
 import { useAdminSidebar } from "./admin-sidebar-context";
 
 const items = [

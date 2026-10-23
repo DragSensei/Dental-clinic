@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { CalendarCheck2, CalendarX2, ClipboardList, Stethoscope } from "lucide-react";
-import { getAvailableDates } from "@/shared/data/clinic-repository";
-import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-copy";
-import type { Appointment, Doctor, Service } from "@/shared/data/mock/catalog";
-import { interpolate } from "@/shared/i18n/format";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { getAvailableDates } from "@/data/clinic-repository";
+import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
+import type { Appointment, Doctor, Service } from "@/data/mock/catalog";
+import { interpolate } from "@/i18n/format";
+import { useI18n } from "@/i18n/locale-provider";
 import { AppointmentRows } from "@/features/admin/admin-appointments";
 import { PageTitle, Panel, useDateLabel } from "@/features/admin/admin-ui";
 

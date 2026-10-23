@@ -2,8 +2,8 @@
 
 import { CalendarDays, MapPin, ArrowRight, Smile } from "lucide-react";
 import Link from "next/link";
-import { localizedClinic } from "@/shared/data/mock/localized-copy";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { localizedClinic } from "@/data/mock/localized-copy";
+import { useI18n } from "@/i18n/locale-provider";
 
 export function BookingSearchPreview() {
   const { locale, t } = useI18n();

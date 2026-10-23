@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@/shared/components/ui/button";
-import { useClinic } from "@/shared/data/use-clinic";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { Button } from "@/components/ui/button";
+import { useClinic } from "@/data/use-clinic";
+import { useI18n } from "@/i18n/locale-provider";
 import { PageTitle, Panel } from "@/features/admin/admin-ui";
 export function AdminSettings({ clinic }: { clinic: ReturnType<typeof useClinic> }) {
   const { t } = useI18n();

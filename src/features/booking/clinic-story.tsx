@@ -2,7 +2,7 @@
 
 import { HeartHandshake, MessageCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useI18n } from "@/i18n/locale-provider";
 
 const approachIcons = [MessageCircle, ShieldCheck, HeartHandshake];
 

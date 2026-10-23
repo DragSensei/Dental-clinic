@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
-import { SiteNav } from "@/shared/components/site-nav";
-import { SiteFooter } from "@/shared/components/site-footer";
-import { ThemeProvider } from "@/shared/components/theme-provider";
-import { LocaleProvider } from "@/shared/i18n/locale-provider";
+import { SiteNav } from "@/components/site-nav";
+import { SiteFooter } from "@/components/site-footer";
+import { ThemeProvider } from "@/components/theme-provider";
+import { LocaleProvider } from "@/i18n/locale-provider";
 import "./globals.css";
 
 const themeInitScript = `try{const s=localStorage.getItem("dental-demo-theme");const t=s==="dark"||s==="light"?s:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.classList.toggle("dark",t==="dark");document.documentElement.dataset.theme=t}catch{const t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.classList.toggle("dark",t==="dark");document.documentElement.dataset.theme=t}`;

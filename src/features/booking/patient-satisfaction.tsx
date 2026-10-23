@@ -1,9 +1,9 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
-import { localizedClinic } from "@/shared/data/mock/localized-copy";
-import { interpolate } from "@/shared/i18n/format";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { localizedClinic } from "@/data/mock/localized-copy";
+import { interpolate } from "@/i18n/format";
+import { useI18n } from "@/i18n/locale-provider";
 
 export function PatientSatisfaction() {
   const { locale, t } = useI18n();

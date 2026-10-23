@@ -1,9 +1,9 @@
 "use client";
 
 import { Clock3, MapPin, Users } from "lucide-react";
-import { localizedClinic } from "@/shared/data/mock/localized-copy";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { Badge } from "@/shared/components/ui/badge";
+import { localizedClinic } from "@/data/mock/localized-copy";
+import { useI18n } from "@/i18n/locale-provider";
+import { Badge } from "@/components/ui/badge";
 
 export function ClinicInformation() {
   const { locale, t } = useI18n();

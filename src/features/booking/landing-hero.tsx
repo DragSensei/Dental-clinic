@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
-import { buttonVariants } from "@/shared/components/ui/button";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { buttonVariants } from "@/components/ui/button";
+import { useI18n } from "@/i18n/locale-provider";
 
 export function LandingHero() {
   const { t } = useI18n();

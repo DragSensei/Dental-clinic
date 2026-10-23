@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ArrowLeftRight, MoveHorizontal } from "lucide-react";
-import { interpolate } from "@/shared/i18n/format";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { interpolate } from "@/i18n/format";
+import { useI18n } from "@/i18n/locale-provider";
 
 const comparisonImages = [
   { id: "smile-comparison-one", before: "/smile-before.png", after: "/smile-after.png" },

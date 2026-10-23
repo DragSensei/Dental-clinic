@@ -3,10 +3,10 @@
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useClinic } from "@/shared/data/use-clinic";
-import { localizedService } from "@/shared/data/mock/localized-copy";
-import { ExpandableCard } from "@/shared/components/ui/expandable-card";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { useClinic } from "@/data/use-clinic";
+import { localizedService } from "@/data/mock/localized-copy";
+import { ExpandableCard } from "@/components/shared/expandable-card";
+import { useI18n } from "@/i18n/locale-provider";
 import { Sparkles, CalendarCheck } from "lucide-react";
 
 function ServiceDirectoryContent() {

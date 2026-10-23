@@ -1,9 +1,9 @@
 # Demo data and backend replacement
 
 ## Current boundary
-- `src/shared/data/mock/catalog.ts` owns fictional clinic, service, and clinician records and shared types. Existing landing imports use a compatibility re-export, not a second dataset.
-- `src/shared/data/clinic-repository.ts` owns one in-memory snapshot, subscriptions, availability, booking, cancellation, rescheduling, catalog edits, and reset.
-- `src/shared/data/use-clinic.ts` exposes this owner to React with a stable server snapshot. Next.js client links preserve the browser module between pages. Reload, a full document navigation, or demo reset clears the session.
+- `src/data/mock/catalog.ts` owns fictional clinic, service, and clinician records and shared types. Existing landing imports use a compatibility re-export, not a second dataset.
+- `src/data/clinic-repository.ts` owns one in-memory snapshot, subscriptions, availability, booking, cancellation, rescheduling, catalog edits, and reset.
+- `src/data/use-clinic.ts` exposes this owner to React with a stable server snapshot. Next.js client links preserve the browser module between pages. Reload, a full document navigation, or demo reset clears the session.
 - The admin routes show an open signup/login demo gate. Its account and access state live only in the mounted layout's memory and reset on refresh or sign-out. It is not real authentication or a security boundary; no API, server action, database, message sending, or payment is implemented.
 - Patient information is limited to name/email/phone and held in memory. Do not enter real patient details. No contact data is written to localStorage, sessionStorage, cookies, or a server.
 - Dashboard totals and patient lists derive from session appointments. They begin empty; make a demo booking to exercise the populated states. Landing statistics/testimonials are separately labeled fictional design fixtures, never dashboard operational statistics.

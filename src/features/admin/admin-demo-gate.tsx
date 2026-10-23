@@ -3,9 +3,9 @@
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
-import type { ErrorKey } from "@/shared/i18n/dictionaries";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { Button } from "@/shared/components/ui/button";
+import type { ErrorKey } from "@/i18n/dictionaries";
+import { useI18n } from "@/i18n/locale-provider";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,13 +13,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/shared/components/ui/card";
-import { Checkbox } from "@/shared/components/ui/checkbox";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { AlertErrorWithEverything } from "@/shared/components/ui/alert-error";
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AlertErrorWithEverything } from "@/components/shared/alert-error";
 
-import type { AccountRole } from "@/shared/data/mock/catalog";
+import type { AccountRole } from "@/data/mock/catalog";
 
 export type DemoAccount = {
   email: string;

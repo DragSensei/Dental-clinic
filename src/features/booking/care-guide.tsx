@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ExpandableCard } from "@/shared/components/ui/expandable-card";
-import { localizedService } from "@/shared/data/mock/localized-copy";
-import { useClinic } from "@/shared/data/use-clinic";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { ExpandableCard } from "@/components/shared/expandable-card";
+import { localizedService } from "@/data/mock/localized-copy";
+import { useClinic } from "@/data/use-clinic";
+import { useI18n } from "@/i18n/locale-provider";
 import { ArrowRight, CalendarCheck } from "lucide-react";
 
 export function CareGuide() {

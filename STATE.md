@@ -1,5 +1,15 @@
 # Project state
 
+## Folder structure consolidation (`src/components/{ui,shared,*.tsx}`, `src/lib`, `src/data`, `src/i18n`) — 2026-10-23
+- Consolidated all UI and shared components under `src/components/` into three tiers:
+  - `src/components/ui/`: basic `shadcn/ui` (Base UI) primitives (`alert.tsx`, `badge.tsx`, `button.tsx`, `card.tsx`, `checkbox.tsx`, `combobox.tsx`, `input.tsx`, `label.tsx`).
+  - `src/components/shared/`: larger shared components reused across pages and features (`alert-error.tsx`, `expandable-card.tsx`, `language-combobox.tsx`, `service-card.tsx`, `service-icons.ts`, `site-brand.tsx`, `theme-toggle.tsx`).
+  - `src/components/*.tsx`: global site blocks/shells (`site-nav.tsx`, `site-nav-interactive.tsx`, `site-footer.tsx`, `site-footer-client.tsx`, `theme-provider.tsx`).
+- Removed top-level `src/shared/` completely by migrating `src/shared/lib/utils.ts` → `src/lib/utils.ts`, `src/shared/data/**` → `src/data/**`, and `src/shared/i18n/**` → `src/i18n/**`.
+- Removed unreferenced legacy feature files (`admin-patients.tsx`, `appointment-section.tsx`, `landing-demo-data.ts`, `landing-footer.tsx`, `landing-nav.tsx`, `doctor-directory.tsx`, `visit-information.tsx`), `src/components/examples/`, and empty `_components/` directories under `src/app/`.
+- Updated `components.json`, `eslint.config.mjs` boundary rules, `package.json` test scripts and visual route map, and architecture docs.
+- Verification: 14/14 automated repository and i18n tests pass, `tsc --noEmit` passed with 0 errors, `eslint` passed with 0 errors, and `lint-ui-architecture.mjs` passed all 4 boundary gates.
+
 ## Clean service cards, booking auto-selection, and shadcn alert-error-with-everything integration — 2026-10-21
 - Clean service cards without plus icon: Removed the circular plus button from collapsed `ExpandableCard` instances on `/services` and the homepage care guide. Retained full-card interactivity, accessible keyboard navigation, and added an explicit close button (`X`) on the expanded modal dialog.
 - Automated service pre-selection in booking form: Enhanced `/book` query handling to accept both `serviceId` and `service` parameters. Clicking "Book now" (`احجز الآن` in Arabic) on any treatment card navigates to `/book?serviceId=...`, immediately pre-selecting the service in component state. Updated `Choice` tiles with a high-contrast checkmark badge when selected and active border/ring tokens for instant visual clarity.

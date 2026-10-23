@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Stethoscope } from "lucide-react";
-import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-copy";
-import { useClinic } from "@/shared/data/use-clinic";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
+import { useClinic } from "@/data/use-clinic";
+import { useI18n } from "@/i18n/locale-provider";
 
 export function DoctorProfile({ id }: { id: string }) {
   const { doctors, services } = useClinic();

@@ -4,16 +4,16 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, Stethoscope } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { useClinic } from "@/shared/data/use-clinic";
-import { getAvailableDates, getAvailableSlots } from "@/shared/data/clinic-repository";
-import { localizedDoctor, localizedService } from "@/shared/data/mock/localized-copy";
-import type { Appointment, BookingDetails } from "@/shared/data/mock/catalog";
-import { errorKeyFrom } from "@/shared/i18n/errors";
-import { interpolate } from "@/shared/i18n/format";
-import type { ErrorKey } from "@/shared/i18n/dictionaries";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { AlertErrorWithEverything } from "@/shared/components/ui/alert-error";
+import { Button } from "@/components/ui/button";
+import { useClinic } from "@/data/use-clinic";
+import { getAvailableDates, getAvailableSlots } from "@/data/clinic-repository";
+import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
+import type { Appointment, BookingDetails } from "@/data/mock/catalog";
+import { errorKeyFrom } from "@/i18n/errors";
+import { interpolate } from "@/i18n/format";
+import type { ErrorKey } from "@/i18n/dictionaries";
+import { useI18n } from "@/i18n/locale-provider";
+import { AlertErrorWithEverything } from "@/components/shared/alert-error";
 
 function focusBelowStickyHeader(element: HTMLElement | null) {
   if (!element) return;

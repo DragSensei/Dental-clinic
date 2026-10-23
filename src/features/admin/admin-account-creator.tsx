@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { ArrowLeft, CheckCircle2, ShieldCheck, Stethoscope, User } from "lucide-react";
-import type { AccountRole, AccountStatus } from "@/shared/data/mock/catalog";
-import { localizedService } from "@/shared/data/mock/localized-copy";
-import { useClinic } from "@/shared/data/use-clinic";
-import { useI18n } from "@/shared/i18n/locale-provider";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
-import { AppCombobox } from "@/shared/components/ui/combobox";
+import type { AccountRole, AccountStatus } from "@/data/mock/catalog";
+import { localizedService } from "@/data/mock/localized-copy";
+import { useClinic } from "@/data/use-clinic";
+import { useI18n } from "@/i18n/locale-provider";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { AppCombobox } from "@/components/ui/combobox";
 import { PageTitle, Panel, field, labelClass } from "@/features/admin/admin-ui";
-import { AlertErrorWithEverything } from "@/shared/components/ui/alert-error";
+import { AlertErrorWithEverything } from "@/components/shared/alert-error";
 
 export function AccountCreator() {
   const { locale, t } = useI18n();

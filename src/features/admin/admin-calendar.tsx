@@ -1,13 +1,13 @@
 "use client";
 import { useMemo, useState } from "react";
-import type { Appointment } from "@/shared/data/mock/catalog";
-import { getAvailableDates } from "@/shared/data/clinic-repository";
-import { useClinic } from "@/shared/data/use-clinic";
-import { interpolate } from "@/shared/i18n/format";
-import { useI18n } from "@/shared/i18n/locale-provider";
+import type { Appointment } from "@/data/mock/catalog";
+import { getAvailableDates } from "@/data/clinic-repository";
+import { useClinic } from "@/data/use-clinic";
+import { interpolate } from "@/i18n/format";
+import { useI18n } from "@/i18n/locale-provider";
 import { AppointmentRows } from "@/features/admin/admin-appointments";
 import { PageTitle, Panel, useDateLabel } from "@/features/admin/admin-ui";
-import { AppCombobox } from "@/shared/components/ui/combobox";
+import { AppCombobox } from "@/components/ui/combobox";
 export function Calendar({ appointments, serviceFor, doctorFor }: { appointments: readonly Appointment[]; serviceFor: (id: string) => string; doctorFor: (id: string) => string }) {
   const { services, doctors } = useClinic();
   const { t } = useI18n();
