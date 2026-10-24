@@ -14,6 +14,15 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AppCombobox } from "@/components/ui/combobox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { HoldButton } from "@/components/ui/hold-button";
 import { Empty, PageTitle, Panel, Status, field, labelClass, useDateLabel } from "@/features/admin/admin-ui";
 
 export function AppointmentRows({
@@ -248,6 +257,7 @@ export function AppointmentDetail({
   const slots = item && date ? getAvailableSlots(item.serviceId, item.doctorId, date) : [];
   const [error, setError] = useState<ErrorKey | "">("");
   const [notice, setNotice] = useState<"cancelled" | "rescheduled" | "">("");
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   if (!item) {
     return (
@@ -347,23 +357,77 @@ export function AppointmentDetail({
               className="mt-6 min-h-11"
               variant="destructive"
               disabled={pending}
-              onClick={async () => {
-                setError("");
-                setNotice("");
-                setPending(true);
-                try {
-                  await clinic.cancelAppointment(item.id);
-                  setNotice("cancelled");
-                } catch (cause) {
-                  setError(errorKeyFrom(cause, "cancel_failed"));
-                } finally {
-                  setPending(false);
-                }
-              }}
+              onClick={() => setCancelDialogOpen(true)}
             >
               {t.admin.detail.cancel}
             </Button>
           )}
+
+          <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+            <DialogContent className="rounded-3xl sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-lg font-bold text-destructive">
+                  <AlertTriangle className="size-5 text-destructive" />
+                  {locale === "ar" ? "تأكيد إلغاء الموعد" : "Confirm Appointment Cancellation"}
+                </DialogTitle>
+                <DialogDescription className="text-xs pt-1 leading-relaxed">
+                  {locale === "ar"
+                    ? `هل أنت متأكد من إلغاء موعد المريض (${item.patientName}) في ${dateLabel(item.date)} الساعة ${item.time}؟`
+                    : `Are you sure you want to cancel the appointment for ${item.patientName} on ${dateLabel(item.date)} at ${item.time}?`}
+                </DialogDescription>
+              </DialogHeader>
+
+              <Alert variant="destructive" className="border-destructive/30 bg-destructive/10 text-destructive my-1">
+                <AlertTriangle className="size-4 text-destructive" />
+                <AlertTitle className="text-xs font-semibold">
+                  {locale === "ar" ? "تحذير: إجراء إداري نهائي" : "Warning: Irreversible Admin Action"}
+                </AlertTitle>
+                <AlertDescription className="text-xs text-destructive/90 mt-1 leading-relaxed">
+                  {locale === "ar"
+                    ? "سيتم تحرير خانة الطبيب والعيادة فور تأكيد الإلغاء. لمنع الإلغاء العرضي، اضغط مطولاً على الزر لتأكيد العملية."
+                    : "This action will permanently cancel the booking and release the clinician's chair and calendar slot. To prevent accidental cancellation, press and hold the button below."}
+                </AlertDescription>
+              </Alert>
+
+              <DialogFooter className="gap-2 sm:gap-0 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => setCancelDialogOpen(false)}
+                  className="min-h-11 rounded-xl text-xs"
+                >
+                  {locale === "ar" ? "الاحتفاظ بالموعد" : "Keep Appointment"}
+                </Button>
+                <HoldButton
+                  variant="destructive"
+                  holdDuration={1500}
+                  disabled={pending}
+                  holdingLabel={locale === "ar" ? "استمر بالضغط للإلغاء..." : "Keep holding to cancel..."}
+                  completeLabel={locale === "ar" ? "تم إلغاء الموعد" : "Appointment Cancelled"}
+                  onHoldComplete={async () => {
+                    setError("");
+                    setNotice("");
+                    setPending(true);
+                    try {
+                      await clinic.cancelAppointment(item.id);
+                      setNotice("cancelled");
+                      setTimeout(() => {
+                        setCancelDialogOpen(false);
+                      }, 400);
+                    } catch (cause) {
+                      setError(errorKeyFrom(cause, "cancel_failed"));
+                    } finally {
+                      setPending(false);
+                    }
+                  }}
+                  className="min-h-11 rounded-xl text-xs font-semibold"
+                >
+                  {locale === "ar" ? "اضغط مطولاً لتأكيد الإلغاء" : "Hold to Cancel Appointment"}
+                </HoldButton>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </Panel>
 
         <Panel className="min-w-0">

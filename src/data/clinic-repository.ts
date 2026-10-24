@@ -440,7 +440,7 @@ export async function payPatientInvoice(
 export async function ensurePatientDemoAppointment(email: string, patientName: string, phone: string): Promise<void> {
   const cleanEmail = email.trim().toLowerCase();
   if (!cleanEmail) return;
-  const hasAppt = snapshot.appointments.some((item) => item.email.toLowerCase() === cleanEmail && item.status === "confirmed");
+  const hasAppt = snapshot.appointments.some((item) => item.email.toLowerCase() === cleanEmail);
   if (hasAppt) return;
 
   const targetDate = new Date();

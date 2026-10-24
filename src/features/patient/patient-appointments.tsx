@@ -27,6 +27,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { HoldButton } from "@/components/ui/hold-button";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +87,10 @@ function PatientAppointmentsContent() {
 
   const email = signedInEmail || "mariam.a@example.com";
   const userAccount = clinic.accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
+
+  useEffect(() => {
+    clinic.ensurePatientDemoAppointment(email, name || "Mariam Ahmed", "+20 10 1234 5678");
+  }, [clinic, email, name]);
   const patientPhone = userAccount?.phone || "+20 10 1234 5678";
 
   // Tab State: "manage" vs "book"
@@ -274,10 +280,12 @@ function PatientAppointmentsContent() {
     setCancelPending(true);
     try {
       await clinic.cancelAppointment(cancelTarget.id);
-      setCancelTarget(null);
+      setTimeout(() => {
+        setCancelTarget(null);
+        setCancelPending(false);
+      }, 400);
     } catch (err) {
       console.error("Cancellation error:", err);
-    } finally {
       setCancelPending(false);
     }
   };
@@ -947,25 +955,41 @@ function PatientAppointmentsContent() {
             </div>
           )}
 
-          <DialogFooter className="pt-3">
+          {cancelPolicyResult.allowed && (
+            <Alert variant="destructive" className="border-destructive/30 bg-destructive/10 text-destructive my-1">
+              <AlertTriangle className="size-4 text-destructive" />
+              <AlertTitle className="text-xs font-semibold">
+                {locale === "ar" ? "تحذير: إلغاء نهائي للموعد" : "Warning: Irreversible Cancellation"}
+              </AlertTitle>
+              <AlertDescription className="text-xs text-destructive/90 mt-1 leading-relaxed">
+                {locale === "ar"
+                  ? "سيتم تحرير الخانة والكرسي المخصصين لك فور تأكيد الإلغاء. لمنع الإلغاء العرضي، اضغط مطولاً على الزر لتأكيد العملية."
+                  : "Your reserved chair and specialist slot will be immediately freed upon confirmation. To prevent accidental cancellation, press and hold the button below."}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => setCancelTarget(null)}
               className="min-h-11 rounded-xl text-xs"
             >
-              {locale === "ar" ? "تراجع" : "Close"}
+              {locale === "ar" ? "الاحتفاظ بالموعد" : "Keep Appointment"}
             </Button>
             {cancelPolicyResult.allowed && (
-              <Button
-                type="button"
+              <HoldButton
                 variant="destructive"
+                holdDuration={1500}
                 disabled={cancelPending}
-                onClick={handleCancelSubmit}
+                holdingLabel={locale === "ar" ? "استمر بالضغط للإلغاء..." : "Keep holding to cancel..."}
+                completeLabel={locale === "ar" ? "تم إلغاء الموعد" : "Appointment Cancelled"}
+                onHoldComplete={handleCancelSubmit}
                 className="min-h-11 rounded-xl text-xs font-semibold"
               >
-                {cancelPending ? "Cancelling..." : "Confirm Cancellation"}
-              </Button>
+                {locale === "ar" ? "اضغط مطولاً لتأكيد الإلغاء" : "Hold to Cancel Appointment"}
+              </HoldButton>
             )}
           </DialogFooter>
         </DialogContent>

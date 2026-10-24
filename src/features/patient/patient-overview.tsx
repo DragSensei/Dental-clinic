@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   CalendarCheck2,
@@ -32,6 +32,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { HoldButton } from "@/components/ui/hold-button";
 import {
   Dialog,
   DialogContent,
@@ -91,6 +93,10 @@ export function PatientOverview() {
   const email = signedInEmail || "mariam.a@example.com";
   const dateOpts: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric", year: "numeric" };
   const shortDateOpts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
+
+  useEffect(() => {
+    clinic.ensurePatientDemoAppointment(email, name || "Mariam Ahmed", "+20 10 1234 5678");
+  }, [clinic, email, name]);
 
   // Patient appointments
   const patientAppointments = useMemo(() => {
@@ -178,7 +184,9 @@ export function PatientOverview() {
   const handleConfirmCancel = async () => {
     if (!nextAppointment) return;
     await clinic.cancelAppointment(nextAppointment.id);
-    setCancelDialogOpen(false);
+    setTimeout(() => {
+      setCancelDialogOpen(false);
+    }, 400);
   };
 
   // Treatment Plan Progress
@@ -671,6 +679,20 @@ export function PatientOverview() {
             </div>
           )}
 
+          {!cancelPolicyBlocked && (
+            <Alert variant="destructive" className="border-destructive/30 bg-destructive/10 text-destructive my-1">
+              <AlertTriangle className="size-4 text-destructive" />
+              <AlertTitle className="text-xs font-semibold">
+                {locale === "ar" ? "تحذير: إلغاء نهائي للموعد" : "Warning: Irreversible Cancellation"}
+              </AlertTitle>
+              <AlertDescription className="text-xs text-destructive/90 mt-1 leading-relaxed">
+                {locale === "ar"
+                  ? "سيتم تحرير مقعد الطبيب والوقت المحجوز فور تأكيد الإلغاء. لمنع الإلغاء العرضي، اضغط مطولاً على الزر لتأكيد العملية."
+                  : "Your reserved chair and specialist slot will be immediately released. To prevent accidental cancellation, press and hold the button below."}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <DialogFooter className="gap-2 sm:gap-0 pt-4">
             <Button
               type="button"
@@ -678,17 +700,19 @@ export function PatientOverview() {
               onClick={() => setCancelDialogOpen(false)}
               className="min-h-11 rounded-xl text-xs"
             >
-              {locale === "ar" ? "إغلاق" : "Close"}
+              {locale === "ar" ? "الاحتفاظ بالموعد" : "Keep Appointment"}
             </Button>
             {!cancelPolicyBlocked && (
-              <Button
-                type="button"
+              <HoldButton
                 variant="destructive"
-                onClick={handleConfirmCancel}
+                holdDuration={1500}
+                holdingLabel={locale === "ar" ? "استمر بالضغط للإلغاء..." : "Keep holding to cancel..."}
+                completeLabel={locale === "ar" ? "تم إلغاء الموعد" : "Appointment Cancelled"}
+                onHoldComplete={handleConfirmCancel}
                 className="min-h-11 rounded-xl text-xs font-semibold"
               >
-                {locale === "ar" ? "تأكيد الإلغاء" : "Yes, Cancel Visit"}
-              </Button>
+                {locale === "ar" ? "اضغط مطولاً لتأكيد الإلغاء" : "Hold to Cancel Appointment"}
+              </HoldButton>
             )}
           </DialogFooter>
         </DialogContent>
