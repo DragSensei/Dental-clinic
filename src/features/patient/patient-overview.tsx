@@ -206,7 +206,7 @@ export function PatientOverview() {
           <Link
             href="/patient/appointments?book=1"
             className={buttonVariants({
-              variant: needsConfirmation ? "outline" : "accent",
+              variant: "accent",
               className: "min-h-11 shadow-sm rounded-xl px-4 font-semibold",
             })}
           >
@@ -337,16 +337,15 @@ export function PatientOverview() {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/patient/appointments?reschedule=${nextAppointment.id}`}
-                    className={buttonVariants({ variant: "outline", size: "sm", className: "min-h-11 flex-1 rounded-xl text-xs font-medium justify-center" })}
+                    className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 flex-1 rounded-xl text-xs font-semibold justify-center" })}
                   >
                     {locale === "ar" ? "تعديل الموعد" : "Reschedule"}
                   </Link>
                   <Button
                     type="button"
-                    variant="outline"
                     size="sm"
                     onClick={handleCancelClick}
-                    className="min-h-11 flex-1 rounded-xl text-xs font-medium text-destructive hover:bg-destructive/10"
+                    className="min-h-11 flex-1 rounded-xl text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 shadow-xs"
                   >
                     {locale === "ar" ? "إلغاء الموعد" : "Cancel"}
                   </Button>
@@ -402,7 +401,7 @@ export function PatientOverview() {
               </div>
               <Link
                 href="/patient/appointments?reason=cleaning&book=1"
-                className={buttonVariants({ variant: "outline", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold" })}
+                className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold" })}
               >
                 {locale === "ar" ? "حجز جلسة التنظيف" : "Book My Cleaning"}
                 <ArrowRight className="size-3.5 ms-1.5 rtl:rotate-180" />
@@ -427,7 +426,7 @@ export function PatientOverview() {
                 </div>
                 <Link
                   href="/patient/forms"
-                  className={buttonVariants({ variant: "outline", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold" })}
+                  className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold" })}
                 >
                   <FileCheck2 className="size-4 me-1.5" />
                   {locale === "ar" ? "تعبئة النماذج الآن" : "Fill Out Forms"}
@@ -498,16 +497,8 @@ export function PatientOverview() {
                       }`} />
                       <span className="font-semibold text-foreground">Phase {phase.order}: {phase.title}</span>
                     </div>
-                    <span className="font-mono text-muted-foreground">{phase.totalFeeEgp} EGP</span>
                   </div>
                 ))}
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl bg-primary/5 px-3 py-2 text-xs">
-                <span className="text-muted-foreground">{locale === "ar" ? "المبلغ المتوقع من المريض:" : "Est. Out-of-Pocket:"}</span>
-                <span className="font-bold text-foreground">
-                  {treatmentPlan.phases.reduce((sum, p) => sum + p.outOfPocketEgp, 0).toLocaleString()} EGP
-                </span>
               </div>
             </CardContent>
           </div>
@@ -515,7 +506,7 @@ export function PatientOverview() {
           <CardFooter className="pt-2 pb-5 px-6">
             <Link
               href="/patient/treatment-plan"
-              className={buttonVariants({ variant: "outline", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center" })}
+              className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center" })}
             >
               <Stethoscope className="size-4 me-2" />
               {locale === "ar" ? "مراجعة الخطة واعتمادها ←" : "Review & Approve Plan →"}
@@ -570,7 +561,7 @@ export function PatientOverview() {
           <CardFooter className="pt-2 pb-5 px-6">
             <Link
               href="/patient/care"
-              className={buttonVariants({ variant: "outline", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center" })}
+              className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center" })}
             >
               {locale === "ar" ? "عرض التعليمات وطباعة الروشتة ←" : "View Care & Print Rx →"}
             </Link>
@@ -597,7 +588,7 @@ export function PatientOverview() {
             {totalBalanceDue > 0 && (
               <Link
                 href="/patient/billing?pay=1"
-                className={buttonVariants({ variant: "outline", className: "min-h-11 rounded-xl px-4 text-xs font-semibold" })}
+                className="min-h-11 rounded-xl px-4 text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 shadow-xs inline-flex items-center justify-center"
               >
                 <CreditCard className="size-4 me-1.5" />
                 {locale === "ar" ? "دفع الآن" : "Pay Now"}

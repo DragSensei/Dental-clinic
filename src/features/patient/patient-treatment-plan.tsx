@@ -26,15 +26,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -692,79 +683,6 @@ export function PatientTreatmentPlan() {
               );
             })}
           </Accordion>
-
-          {/* Transparent Pricing Summary Table */}
-          <div className="space-y-3 pt-4">
-            <h3 className="text-sm font-semibold text-foreground">
-              Transparent Financial Summary
-            </h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Phase</TableHead>
-                  <TableHead>Clinical Procedure</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead className="text-right">Clinic Fee</TableHead>
-                  <TableHead className="text-right">Insurance</TableHead>
-                  <TableHead className="text-right font-bold">Out-of-Pocket</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {plan.phases.map((phase) => (
-                  <TableRow key={phase.id}>
-                    <TableCell className="font-medium">#{phase.order}</TableCell>
-                    <TableCell>
-                      <div>
-                        <span className="font-medium text-foreground">{phase.title}</span>
-                        {phase.toothNumber && (
-                          <span className="text-xs text-muted-foreground block">
-                            Tooth #{phase.toothNumber}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{phase.durationMinutes} mins</TableCell>
-                    <TableCell className="text-right">{phase.totalFeeEgp} EGP</TableCell>
-                    <TableCell className="text-right text-xs text-brand-primary">
-                      Scaffold (0 EGP)
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-foreground">
-                      {phase.outOfPocketEgp} EGP
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {phase.scheduledAppointmentId ? (
-                        <Badge variant="success" className="text-xs">
-                          Booked
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
-                          Pending
-                        </Badge>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={3} className="font-bold text-foreground">
-                    Grand Total
-                  </TableCell>
-                  <TableCell className="text-right font-bold">
-                    {pricingTotals.totalFee} EGP
-                  </TableCell>
-                  <TableCell className="text-right text-xs text-brand-primary">
-                    0 EGP (Scaffold)
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-brand-primary text-base">
-                    {pricingTotals.totalOutOfPocket} EGP
-                  </TableCell>
-                  <TableCell className="text-right" />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </div>
         </CardContent>
       </Card>
 

@@ -33,7 +33,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { SignaturePad } from "@/components/shared/signature-pad";
 
 const MEDICAL_CONDITIONS = [
   "Diabetes",
@@ -61,7 +60,7 @@ type IntakeStep = 1 | 2 | 3;
 const STEP_LABELS: { step: IntakeStep; label: string }[] = [
   { step: 1, label: "1. Personal & Insurance" },
   { step: 2, label: "2. Medical History" },
-  { step: 3, label: "3. Signed Consent" },
+  { step: 3, label: "3. Consent & Agreement" },
 ];
 
 export function PatientIntakeForms() {
@@ -96,9 +95,6 @@ export function PatientIntakeForms() {
   const [medications, setMedications] = useState(() => initialForm?.medications || "");
   const [signedByName, setSignedByName] = useState(
     () => initialForm?.signedByName || patientDisplayName
-  );
-  const [signatureDataUrl, setSignatureDataUrl] = useState(
-    () => initialForm?.signatureDataUrl || ""
   );
   const [consentSigned, setConsentSigned] = useState(
     () => Boolean(initialForm?.consentSigned)
@@ -149,12 +145,12 @@ export function PatientIntakeForms() {
     if (noChangesVerified || selectedConditions.length > 0 || selectedAllergies.length > 0 || medications.trim()) {
       score += 33;
     }
-    // Section 3: Consent name and signature
-    if (consentSigned || (signedByName.trim() && signatureDataUrl)) {
+    // Section 3: Consent confirmation
+    if (consentSigned || signedByName.trim()) {
       score += 34;
     }
     return Math.min(100, score);
-  }, [phone, emergencyContact, noChangesVerified, selectedConditions, selectedAllergies, medications, consentSigned, signedByName, signatureDataUrl]);
+  }, [phone, emergencyContact, noChangesVerified, selectedConditions, selectedAllergies, medications, consentSigned, signedByName]);
 
   const goToStep = (target: IntakeStep) => {
     setValidationError(null);
@@ -227,12 +223,7 @@ export function PatientIntakeForms() {
     setValidationError(null);
 
     if (!signedByName.trim()) {
-      setValidationError("Please enter your legal name to sign the intake form.");
-      return;
-    }
-
-    if (!signatureDataUrl) {
-      setValidationError("Please provide your digital signature using the signature pad before saving.");
+      setValidationError("Please enter your legal name to confirm the intake form.");
       return;
     }
 
@@ -254,7 +245,6 @@ export function PatientIntakeForms() {
         medications: medications.trim() || NONE_REPORTED,
         consentSigned: true,
         signedByName: signedByName.trim(),
-        signatureDataUrl,
         updatedAt: now,
       };
 
@@ -747,7 +737,7 @@ export function PatientIntakeForms() {
                   Step 3: {t.patient.intake.consentTitle}
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Review the informed clinical agreement and provide your legally binding digital signature.
+                  Review the informed clinical agreement and provide your legal confirmation.
                 </CardDescription>
               </div>
             </div>
@@ -757,11 +747,11 @@ export function PatientIntakeForms() {
             <div className="space-y-2 rounded-xl bg-muted/40 p-4 text-xs sm:text-sm leading-relaxed text-muted-foreground">
               <div className="flex items-center gap-2 font-semibold text-foreground">
                 <FileCheck2 className="size-4 text-brand-primary" />
-                <span>Informed Dental Procedure & Diagnostic Privacy Agreement</span>
+                <span>Informed Dental Procedure &amp; Diagnostic Privacy Agreement</span>
               </div>
               <p>{t.patient.intake.consentBody}</p>
               <p className="text-[11px] text-muted-foreground">
-                By typing your legal name and signing below, you acknowledge having reviewed this consent and confirm that the medical history provided above is accurate and complete to the best of your knowledge.
+                By typing your legal name below and saving, you acknowledge having reviewed this consent and confirm that the medical history provided above is accurate and complete to the best of your knowledge.
               </p>
             </div>
 
@@ -780,34 +770,6 @@ export function PatientIntakeForms() {
                 placeholder="e.g. Mariam Ahmed"
                 className="max-w-md bg-background"
               />
-            </div>
-
-            {/* Signature Pad */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs sm:text-sm font-medium">
-                  {t.patient.intake.signature} *
-                </Label>
-                {signatureDataUrl && (
-                  <Badge variant="outline" className="text-xs text-brand-primary">
-                    Signature Captured ✓
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t.patient.intake.signatureInstructions}
-              </p>
-              <div className="rounded-xl bg-muted/40 p-3">
-                <SignaturePad
-                  value={signatureDataUrl}
-                  onChange={(dataUrl) => {
-                    setSignatureDataUrl(dataUrl);
-                    setSaveSuccess(false);
-                  }}
-                  clearLabel={t.patient.intake.clearSignature}
-                  instructions={t.patient.intake.signatureInstructions}
-                />
-              </div>
             </div>
 
             {validationAlert}

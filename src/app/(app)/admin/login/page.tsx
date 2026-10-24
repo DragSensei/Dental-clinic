@@ -1,4 +1,6 @@
+export const instant = false;
+
 export default function AdminLoginPage() {
   const session = null;
-  return session;
+  return <div className="sr-only" aria-hidden="true">{session}</div>;
 }

@@ -21,6 +21,7 @@ import { useClinic } from "@/data/use-clinic";
 import { useI18n } from "@/i18n/locale-provider";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import { visitReasonCategories, type Appointment, type VisitReasonCategory } from "@/data/mock/catalog";
+import { cn } from "@/lib/utils";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -709,24 +710,26 @@ function PatientAppointmentsContent() {
                       {locale === "ar" ? "لا توجد خانات شاغرة في هذا اليوم" : "No open slots on this date. Please choose another date."}
                     </p>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
                       {availableSlotsForDate.map((slot) => {
                         const isSelected = selectedTime === slot.time;
+                        const docObj = clinic.doctors.find((d) => d.id === slot.doctorId);
+                        const docDisplay = docObj ? localizedDoctor(docObj, locale).name : slot.doctorName;
                         return (
                           <Button
                             key={slot.time}
                             type="button"
                             variant={isSelected ? "default" : "outline"}
-                            size="sm"
                             onClick={() => setSelectedTime(slot.time)}
-                            className={`min-h-11 flex-col items-center justify-center rounded-xl p-2 text-xs font-semibold ${
+                            className={cn(
+                              "min-h-14 h-auto flex-col items-center justify-center rounded-xl py-2 px-2 text-xs font-semibold whitespace-normal text-center gap-1",
                               isSelected ? "shadow-sm" : ""
-                            }`}
+                            )}
                           >
-                            <span>{formatTime(slot.time)}</span>
+                            <span className="tabular-nums font-bold leading-none">{formatTime(slot.time)}</span>
                             {anyAvailableDoctor && (
-                              <span className="text-[10px] font-normal opacity-80 truncate max-w-full">
-                                {slot.doctorName.replace("Dr. ", "")}
+                              <span className="text-[11px] font-normal leading-tight opacity-90 text-center break-words max-w-full">
+                                {docDisplay}
                               </span>
                             )}
                           </Button>

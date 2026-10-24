@@ -12,7 +12,6 @@ import {
   Printer,
   Receipt,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   Stethoscope,
   Wallet,
@@ -303,7 +302,7 @@ export function PatientCareView() {
         open={Boolean(activePrescriptionVisit)}
         onOpenChange={(open) => !open && setActivePrescriptionVisit(null)}
       >
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto overflow-x-hidden min-w-0 w-full">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Printer className="size-5 text-brand-primary" />
@@ -315,9 +314,9 @@ export function PatientCareView() {
           </DialogHeader>
 
           {activePrescriptionVisit && (
-            <div className="space-y-5 py-2">
+            <div className="space-y-5 py-2 min-w-0">
               {/* Clinic Letterhead */}
-              <div className="border-b border-border pb-4 flex justify-between items-start">
+              <div className="border-b border-border pb-4 flex flex-col sm:flex-row justify-between items-start gap-2 min-w-0">
                 <div>
                   <h3 className="font-bold text-base text-foreground tracking-tight">
                     BlueHaven Dental Clinic
@@ -325,17 +324,17 @@ export function PatientCareView() {
                   <p className="text-xs text-muted-foreground">
                     Oral Health &amp; Specialized Dental Surgery
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground break-words">
                     Synapsys Office, Makram Ebeid, Nasr City, Cairo • Tel: +20 2 2270 9988
                   </p>
                 </div>
-                <Badge variant="outline" className="text-xs font-mono">
+                <Badge variant="outline" className="text-xs font-mono shrink-0">
                   RX-{activePrescriptionVisit.id.slice(-6).toUpperCase()}
                 </Badge>
               </div>
 
               {/* Patient & Doctor metadata */}
-              <div className="grid grid-cols-2 gap-3 text-xs bg-muted/30 p-3 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-muted/30 p-3 rounded-lg">
                 <div>
                   <span className="text-muted-foreground block">Patient Name:</span>
                   <span className="font-semibold text-foreground">{patientDisplayName}</span>
@@ -353,34 +352,34 @@ export function PatientCareView() {
               </div>
 
               {/* Rx Items Table */}
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
                   <span className="text-brand-primary font-serif italic text-base">℞</span>
                   Prescribed Formulations:
                 </span>
-                <Table>
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Medication</TableHead>
-                      <TableHead>Dosage</TableHead>
-                      <TableHead>Frequency</TableHead>
-                      <TableHead>Duration</TableHead>
+                      <TableHead className="whitespace-normal">Medication</TableHead>
+                      <TableHead className="whitespace-normal">Dosage</TableHead>
+                      <TableHead className="whitespace-normal">Frequency</TableHead>
+                      <TableHead className="whitespace-nowrap">Duration</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {activePrescriptionVisit.prescriptions.map((rx) => (
                       <TableRow key={rx.id}>
-                        <TableCell className="font-medium text-foreground">
+                        <TableCell className="font-medium text-foreground whitespace-normal break-words align-top min-w-[130px]">
                           <div>
-                            <span>{rx.medication}</span>
-                            <span className="block text-[11px] text-muted-foreground italic">
+                            <span className="font-semibold">{rx.medication}</span>
+                            <span className="block text-[11px] text-muted-foreground italic break-words">
                               {rx.instructions}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>{rx.dosage}</TableCell>
-                        <TableCell>{rx.frequency}</TableCell>
-                        <TableCell>{rx.durationDays} days</TableCell>
+                        <TableCell className="whitespace-normal break-words align-top">{rx.dosage}</TableCell>
+                        <TableCell className="whitespace-normal break-words align-top">{rx.frequency}</TableCell>
+                        <TableCell className="whitespace-nowrap align-top">{rx.durationDays} days</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -388,13 +387,13 @@ export function PatientCareView() {
               </div>
 
               {/* Digital Signature & Seal */}
-              <div className="flex justify-between items-center pt-2 border-t border-border text-xs">
-                <div className="text-muted-foreground space-y-0.5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2 border-t border-border text-xs min-w-0">
+                <div className="text-muted-foreground space-y-0.5 break-words">
                   <span className="font-semibold text-foreground block">Clinician Verification:</span>
-                  <span>Licensed by Ministry of Health &amp; Dental Syndicate</span>
-                  <span className="block text-[10px]">Verification Hash: 8F2A-09C3-DENTAL-VALID</span>
+                  <span className="break-words">Licensed by Ministry of Health &amp; Dental Syndicate</span>
+                  <span className="block text-[10px] font-mono break-all">Verification Hash: 8F2A-09C3-DENTAL-VALID</span>
                 </div>
-                <div className="text-right">
+                <div className="shrink-0 sm:text-right">
                   <Badge variant="success" className="text-xs">
                     Digital Seal Valid ✓
                   </Badge>
@@ -469,7 +468,7 @@ function PatientBillingViewContent() {
     }
     return null;
   });
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "apple_pay" | "google_pay" | "mobile_wallet">("card");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "mobile_wallet">("card");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Mock checkout input state
@@ -807,36 +806,6 @@ function PatientBillingViewContent() {
                     <Wallet className="size-4 shrink-0 text-brand-primary" />
                     <span>InstaPay / Vodafone</span>
                   </label>
-
-                  {/* Apple Pay */}
-                  <label
-                    htmlFor="pay-apple"
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg p-3 text-xs sm:text-sm cursor-pointer transition-colors",
-                      paymentMethod === "apple_pay"
-                        ? "bg-primary/5 ring-2 ring-primary font-semibold text-foreground"
-                        : "bg-muted/40 text-muted-foreground hover:bg-muted/70"
-                    )}
-                  >
-                    <RadioGroupItem value="apple_pay" id="pay-apple" />
-                    <Smartphone className="size-4 shrink-0 text-brand-primary" />
-                    <span>Apple Pay</span>
-                  </label>
-
-                  {/* Google Pay */}
-                  <label
-                    htmlFor="pay-google"
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg p-3 text-xs sm:text-sm cursor-pointer transition-colors",
-                      paymentMethod === "google_pay"
-                        ? "bg-primary/5 ring-2 ring-primary font-semibold text-foreground"
-                        : "bg-muted/40 text-muted-foreground hover:bg-muted/70"
-                    )}
-                  >
-                    <RadioGroupItem value="google_pay" id="pay-google" />
-                    <Smartphone className="size-4 shrink-0 text-brand-primary" />
-                    <span>Google Pay</span>
-                  </label>
                 </RadioGroup>
               </div>
 
@@ -893,18 +862,6 @@ function PatientBillingViewContent() {
                   />
                   <p className="text-[11px] text-muted-foreground">
                     A secure payment prompt request will be transmitted directly to your mobile wallet app.
-                  </p>
-                </div>
-              )}
-
-              {(paymentMethod === "apple_pay" || paymentMethod === "google_pay") && (
-                <div className="rounded-xl bg-muted/20 p-4 text-center text-xs text-muted-foreground space-y-1">
-                  <Sparkles className="size-5 text-brand-primary mx-auto mb-1" />
-                  <p className="font-semibold text-foreground">
-                    1-Click Biometric Payment
-                  </p>
-                  <p>
-                    Verify via Face ID / Fingerprint sensor on your device to authorize {checkoutInvoice.balanceEgp} EGP.
                   </p>
                 </div>
               )}
