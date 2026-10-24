@@ -9,7 +9,7 @@ export function SiteFooterClient() {
   const pathname = usePathname();
   const { t } = useI18n();
 
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/patient")) return null;
 
   const groups = [
     {

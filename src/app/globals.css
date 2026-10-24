@@ -287,3 +287,12 @@ html[dir="rtl"] .booking-step-enter {
 html[dir="rtl"] .site-nav-link::after {
   transform-origin: right;
 }
+
+nextjs-portal {
+  display: none !important;
+}
+
+input[id*="hidden-input"] {
+  display: none !important;
+}
+

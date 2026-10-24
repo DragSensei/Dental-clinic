@@ -5,15 +5,21 @@ import type { AccountRole } from "@/data/mock/catalog";
 
 const SESSION_KEY = "dental-demo-admin-email";
 const SESSION_ROLE_KEY = "dental-demo-user-role";
+const SESSION_NAME_KEY = "dental-demo-user-name";
+const SESSION_GOOGLE_KEY = "dental-demo-google-connected";
 
 export type SessionState = {
   email: string | null;
   role: AccountRole | null;
+  name?: string | null;
+  googleConnected?: boolean;
 };
 
 let memorySession: SessionState = {
   email: null,
   role: null,
+  name: null,
+  googleConnected: false,
 };
 
 const listeners = new Set<() => void>();
@@ -23,8 +29,17 @@ function getSessionSnapshot(): SessionState {
   try {
     const email = memorySession.email ?? window.sessionStorage.getItem(SESSION_KEY);
     const role = (memorySession.role ?? window.sessionStorage.getItem(SESSION_ROLE_KEY)) as AccountRole | null;
-    if (memorySession.email !== email || memorySession.role !== role) {
-      memorySession = { email, role };
+    const name = memorySession.name ?? window.sessionStorage.getItem(SESSION_NAME_KEY);
+    const googleStored = window.sessionStorage.getItem(SESSION_GOOGLE_KEY);
+    const googleConnected = memorySession.googleConnected ?? (googleStored ? googleStored === "true" : false);
+
+    if (
+      memorySession.email !== email ||
+      memorySession.role !== role ||
+      memorySession.name !== name ||
+      memorySession.googleConnected !== googleConnected
+    ) {
+      memorySession = { email, role, name, googleConnected };
     }
     return memorySession;
   } catch {
@@ -32,7 +47,7 @@ function getSessionSnapshot(): SessionState {
   }
 }
 
-const serverSnapshot: SessionState = { email: null, role: null };
+const serverSnapshot: SessionState = { email: null, role: null, name: null, googleConnected: false };
 
 function getServerSnapshot(): SessionState {
   return serverSnapshot;
@@ -45,19 +60,38 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function updateSession(email: string | null, role: AccountRole = "admin") {
+export function updateSession(
+  email: string | null,
+  role: AccountRole = "admin",
+  name?: string | null,
+  googleConnected?: boolean
+) {
   memorySession = {
     email,
     role: email ? role : null,
+    name: email ? (name ?? null) : null,
+    googleConnected: email ? Boolean(googleConnected) : false,
   };
   try {
     if (typeof window !== "undefined") {
       if (email) {
         window.sessionStorage.setItem(SESSION_KEY, email);
         window.sessionStorage.setItem(SESSION_ROLE_KEY, role);
+        if (name) {
+          window.sessionStorage.setItem(SESSION_NAME_KEY, name);
+        } else {
+          window.sessionStorage.removeItem(SESSION_NAME_KEY);
+        }
+        if (googleConnected) {
+          window.sessionStorage.setItem(SESSION_GOOGLE_KEY, "true");
+        } else {
+          window.sessionStorage.removeItem(SESSION_GOOGLE_KEY);
+        }
       } else {
         window.sessionStorage.removeItem(SESSION_KEY);
         window.sessionStorage.removeItem(SESSION_ROLE_KEY);
+        window.sessionStorage.removeItem(SESSION_NAME_KEY);
+        window.sessionStorage.removeItem(SESSION_GOOGLE_KEY);
       }
     }
   } catch {}
@@ -66,7 +100,7 @@ export function updateSession(email: string | null, role: AccountRole = "admin")
 
 /**
  * Resolves the appropriate dashboard route depending on the user's role.
- * Extensible for future role-specific dashboards (e.g. Doctor dashboard, Patient portal).
+ * Routes patient to /patient/overview.
  */
 export function getDashboardRoute(role?: AccountRole | string | null): string {
   switch (role) {
@@ -76,8 +110,7 @@ export function getDashboardRoute(role?: AccountRole | string | null): string {
       // Currently directs to clinic overview; ready for future /doctor/dashboard
       return "/admin/overview";
     case "patient":
-      // Currently directs to clinic overview; ready for future /patient/dashboard
-      return "/admin/overview";
+      return "/patient/overview";
     default:
       return "/admin/overview";
   }
@@ -90,9 +123,16 @@ export function useSession() {
   return {
     signedInEmail: session.email,
     role: session.role,
+    name: session.name ?? null,
+    googleConnected: Boolean(session.googleConnected),
     isLoggedIn: Boolean(session.email),
     dashboardRoute,
-    signIn: (email: string, role: AccountRole = "admin") => updateSession(email, role),
+    signIn: (
+      email: string,
+      role: AccountRole = "admin",
+      name?: string | null,
+      googleConnected?: boolean
+    ) => updateSession(email, role, name, googleConnected),
     signOut: () => updateSession(null),
   };
 }

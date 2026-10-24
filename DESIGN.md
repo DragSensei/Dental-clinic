@@ -25,7 +25,10 @@
 - Sample durations, dates, time slots, and appointment statuses illustrate interaction only. Production scheduling, timezone, concurrency, retention, and staff access policy require explicit contracts.
 
 ## Shared application grammar
-- Persistent global navbar across all routes, with Next.js client navigation. The admin layout adds section navigation exactly once.
+- Public marketing routes (`src/app/(site)/`) keep the persistent global navbar and footer, with Next.js client navigation. Authenticated dashboards (`src/app/(app)/`: admin, doctor, patient) never show the marketing navbar, its "Open dashboard" action, or the footer; they use a slim 56px app toolbar (brand link to the public site, "View website", language, theme) plus the dashboard sidebar exactly once. Approved 2026-10-24 for all dashboards.
+- Dashboard content starts beside the sidebar (no centered gutter). Overview/plan/list pages may use up to `max-w-7xl`; long forms stay left-aligned at about `max-w-3xl` for readable line length.
+- Dashboard screens show at most one solid primary action at a time; secondary actions use outline/ghost variants. Never present the same record twice on one screen (e.g. a confirmation banner duplicating the next-visit card). Show appointment times in the clinic's local time, not UTC labels.
+- Borders define top-level surfaces only. Inside a card, group content with spacing, a subtle `bg-muted` tint, or a divider instead of nested bordered boxes; selected states may use a ring.
 - User-approved admin references (2026-10-20): Image #1 (`72c801b1a27aef0e177c4bef1082eb7b.jpg`) supplies overview hierarchy: four summary cards, rounded panels, clear sidebar and a larger schedule region. Image #2 (`798c70d3fa3c5c57f3627575cb780782.jpg`) supplies the collapsed capsule rail, evenly spaced icons, and circular active selection; the expanded sidebar adds matching labels and spacing. Translate both into the clinic's blue/navy tokens in **light and dark modes**. Use actual appointment/catalog data, not reference revenue/orders or invented growth charts. Do not reproduce the reference's presentation backdrop gradients.
 - Sidebar width and label/active feedback animate briefly and respect reduced motion. Provide named icon buttons, current-page indication, and a 44px expand/collapse control. The global navbar remains persistent and uses the same identity in both modes. Store only theme/navigation preferences, never contact data, in browser storage.
 - Keep the desktop admin rail sticky below the global navbar with balanced top/bottom whitespace; allow its link list to scroll on short viewports. Use a softer pale-blue footer surface so the closing site links remain clear without overpowering the page.
@@ -51,7 +54,7 @@ The selected workflow explicitly requires consistency, four operational states, 
 | Hick's Law / Progressive Disclosure | One logical booking stage at a time; service selection narrows eligible clinicians and times. |
 | Fitts's Law / Accessibility | Minimum 44px controls, visible keyboard focus, semantic labels and reduced-motion support. |
 | Recognition Rather Than Recall / Miller's Law | Visible booking progress and review summary preserve service, clinician, date, time, and entered details. |
-| Gestalt Proximity, Similarity, Common Region | Spaced service cards, bordered panels, consistent admin tables and grouped form fields. |
+| Gestalt Proximity, Similarity, Common Region | Spaced service cards, bordered top-level panels with borderless internal grouping, consistent admin tables and grouped form fields. |
 | Visual Hierarchy / Aesthetic-Usability Effect | Existing photo-led clinic identity, clear heading scale, calm spacing and one main action per stage. |
 | Visibility of System Status / Error Prevention | Demo labels, pending/empty/error states, disabled unavailable choices, validated repository mutations and conflict checks. |
 | User Control and Freedom | Back navigation, editable selections, recoverable route errors, explicit demo reset. |

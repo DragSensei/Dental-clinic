@@ -1,3 +1,4 @@
 export default function AdminLoginPage() {
-  return null;
+  const session = null;
+  return session;
 }
