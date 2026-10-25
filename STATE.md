@@ -1,5 +1,33 @@
 # Project state
 
+## Backend Architecture & Next.js Template Integration (Prisma 7, PostgreSQL, Better Auth, REST Endpoints, Live Wiring) — 2026-10-25
+- Integrated backend stack from `https://github.com/synapsys-tech/nextjs-template`:
+  - **Prisma 7 ORM & PostgreSQL**: Configured with `@prisma/adapter-pg` driver adapter, `prisma.config.ts`, and singleton in `src/lib/prisma.ts`. Schema defined with full relations for Better Auth (`User`, `Session`, `Account`, `Verification`), Clinic Catalog (`Service`, `Doctor`, `DoctorService`), Working Hours (`ClinicWorkingHours`, `DoctorWorkingHours`), `Appointment` (with attendance confirmation, 24h cancellation, and Google Calendar sync markers), and Patient Workflows (`PatientIntakeForm`, `TreatmentPlan`, `ToothRecord`, `TreatmentPhase`, `VisitCareSummary`, `PrescriptionItem`, `PatientInvoice`, `InvoiceLineItem`).
+  - **Local PostgreSQL 18 Provisioning**: Initialized and synchronized databases `dental_reservation_db` (primary) and `dental_reservation_test` (isolated integration target) on `localhost:5432`.
+  - **Database Seeding (`prisma/seed.ts`)**: Populated clinic working hours, 12 clinical dental treatments, 4 clinician profiles, demo accounts (`admin@bluehaven.example`, doctors, `mariam.a@example.com`), Mariam's digital intake form, FDI 32-tooth plan, care summaries, and invoices.
+  - **Better Auth v1.6+ & React Email**: Configured in `src/lib/auth.ts` and `src/lib/auth-client.ts` with `admin()` and `nextCookies()` plugins, optional Resend email verification (`src/components/emails/verify-email.tsx`, `reset-password.tsx`), Google OAuth provider support, and route proxy protection in `src/proxy.ts`. Ported Server Actions in `src/server/user.ts` (`forgotPassword`, `resetPassword`, `isAuthenticated`).
+  - **Zero-Raw-Query Database Service Layer (`src/lib/clinic-db.ts`)**: Typed domain helpers for transactional appointment booking with overlap prevention, 24-hour hold-button cancellation policy (`canCancelAppointment`), attendance confirmations, intake form upsert, 32-tooth plan digital signature approval, and invoice checkout. Bounded query design with explicit `take` limits on all scans and batch queries preventing N+1 scans per OS scale sentinels.
+  - **REST API Route Handlers**:
+    - Better Auth & Health: `src/app/api/auth/[...all]/route.ts`, `src/app/api/health/route.ts`.
+    - Clinic & Appointments: `src/app/api/clinic/route.ts`, `src/app/api/availability/route.ts`, `src/app/api/appointments/route.ts`, `src/app/api/appointments/[id]/route.ts`.
+    - Admin Catalog & Operations: `src/app/api/admin/services/route.ts`, `src/app/api/admin/services/[id]/route.ts`, `src/app/api/admin/doctors/[id]/route.ts`, `src/app/api/admin/working-hours/route.ts`, `src/app/api/admin/accounts/route.ts`.
+    - Patient Portal & Sync: `src/app/api/patient/intake/route.ts`, `src/app/api/patient/treatment-plan/route.ts`, `src/app/api/patient/care/route.ts`, `src/app/api/patient/billing/route.ts`, `src/app/api/google/calendar/route.ts`.
+  - **Frontend Repository & Auth Wiring**:
+    - Wired `src/data/clinic-repository.ts` with `hydrateClinicData()` and `hydratePatientData(email)`. All repository mutations (`bookAppointment`, `cancelAppointment`, `confirmAppointmentAttendance`, `rescheduleAppointment`, `createService`, `updateService`, `updateDoctor`, `createAccount`, `savePatientIntakeForm`, `approveTreatmentPlan`, `payPatientInvoice`) persist via REST endpoints while maintaining optimistic snapshot updates and backward compatibility with in-memory testing.
+    - Wired Better Auth client (`authClient.signIn.email`, `authClient.signUp.email`, `authClient.signOut()`) into `src/features/admin/admin-demo-gate.tsx` and `src/features/admin/admin-layout-shell.tsx`.
+  - **Parallel Subagent Execution & Root Review**:
+    - Dispatched 2 `flash` subagents (Worker 1: Admin & Booking API; Worker 2: Patient Portal API & Sync).
+    - Root personally reviewed every line of code diff, adjusted route handlers, fixed type assertions, and resolved lint issues.
+  - **Verification**:
+    - `npm test`: 30/30 tests passing (14 legacy repository & i18n, 6 database domain tests, 5 admin & booking integration tests, 5 patient portal integration tests).
+    - `npx tsc --noEmit`: 0 errors.
+    - `npm run lint`: 0 errors.
+    - `node _os/_shared-skills/scripts/token-lint.mjs`: Passed with 0 violations.
+    - `node _os/_shared-skills/scripts/lint-ui-architecture.mjs`: All 4 boundary gates passed.
+    - `node _os/_shared-skills/scripts/schema-compatibility.mjs`: Local development schema verified compatible on `dental_reservation_db`.
+    - `node _os/_shared-skills/scripts/test-db-guard.mjs`: Preflight verified on `dental_reservation_test`.
+    - `node _os/_shared-skills/scripts/scale-gate.mjs`: 100% bounded queries across all database operations.
+
 ## Dashboard UX pass: (site)/(app) route split, Overview merge, intake wizard, border reduction — 2026-10-24
 - User-approved direction (recorded in `DESIGN.md`): dashboards never show the marketing navbar/footer. Routes now live in `src/app/(site)/` (public, with `SiteNav` + `SiteFooter`) and `src/app/(app)/` (admin/doctor/patient, with the new slim `src/components/app-top-bar.tsx`). The root layout keeps providers only; root `not-found.tsx` restores public chrome via `src/components/not-found-body.tsx`. Sticky sidebar offsets moved from 69px to `top-14`. `package.json` visual route map keys were updated to the grouped paths.
 - Patient pages start beside the sidebar (no `mx-auto`); overview/plan/billing use `max-w-7xl`, intake `max-w-3xl`, care summaries `max-w-4xl`.

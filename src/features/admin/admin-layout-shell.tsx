@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { notFound, usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { AdminDemoGate, type DemoAccount } from "@/features/admin/admin-demo-gate";
 import { useSession, getDashboardRoute } from "@/data/use-session";
 import { useI18n } from "@/i18n/locale-provider";
@@ -84,7 +85,10 @@ export function AdminLayoutShell({
     }
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+    } catch {}
     signOut();
     router.push("/");
   };

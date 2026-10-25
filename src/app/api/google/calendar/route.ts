@@ -4,28 +4,66 @@ function toGoogleCalendarDate(d: Date): string {
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request | NextRequest) {
   try {
     const body = await request.json();
     const {
-      title = "Dental Appointment - BlueHaven Clinic",
-      description = "BlueHaven Dental Care Consultation",
-      location = "BlueHaven Dental Clinic, Makram Ebeid, Nasr City, Cairo",
+      appointmentId,
+      title,
+      description,
+      startDateTime,
       date,
       time,
       durationMinutes = 45,
+      patientEmail,
+      doctorName,
+      location = "BlueHaven Dental Clinic, Makram Ebeid, Nasr City, Cairo",
     } = body;
 
-    const startDate = date && time ? new Date(`${date}T${time}:00Z`) : new Date(Date.now() + 48 * 3600 * 1000);
+    const eventTitle =
+      title || (doctorName ? `Dental Appointment - Dr. ${doctorName}` : "Dental Appointment - BlueHaven Clinic");
+
+    let eventDescription = description;
+    if (!eventDescription) {
+      const details = [
+        "BlueHaven Dental Care Consultation",
+        doctorName ? `Doctor: ${doctorName}` : null,
+        patientEmail ? `Patient: ${patientEmail}` : null,
+        appointmentId ? `Appointment Ref: ${appointmentId}` : null,
+      ].filter(Boolean);
+      eventDescription = details.join("\n");
+    }
+
+    let startDate: Date;
+    if (startDateTime) {
+      startDate = new Date(startDateTime);
+    } else if (date && time) {
+      startDate = new Date(`${date}T${time}:00Z`);
+    } else {
+      startDate = new Date(Date.now() + 48 * 3600 * 1000);
+    }
+
     const duration = Number(durationMinutes) || 45;
     const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 
     const datesParam = `${toGoogleCalendarDate(startDate)}/${toGoogleCalendarDate(endDate)}`;
     const templateUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      title
-    )}&dates=${datesParam}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
+      eventTitle
+    )}&dates=${datesParam}&details=${encodeURIComponent(eventDescription)}&location=${encodeURIComponent(location)}`;
 
-    const token = request.cookies.get("dental_google_token")?.value;
+    const cookieToken =
+      typeof (request as NextRequest).cookies?.get === "function"
+        ? (request as NextRequest).cookies.get("dental_google_token")?.value
+        : undefined;
+
+    const token =
+      process.env.GOOGLE_CALENDAR_ACCESS_TOKEN ||
+      process.env.GOOGLE_ACCESS_TOKEN ||
+      process.env.GOOGLE_CALENDAR_TOKEN ||
+      cookieToken;
+
+    let eventId: string | null = null;
+    let finalUrl = templateUrl;
 
     if (token) {
       try {
@@ -36,8 +74,8 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            summary: title,
-            description,
+            summary: eventTitle,
+            description: eventDescription,
             location,
             start: { dateTime: startDate.toISOString() },
             end: { dateTime: endDate.toISOString() },
@@ -53,27 +91,26 @@ export async function POST(request: NextRequest) {
 
         if (googleRes.ok) {
           const eventData = await googleRes.json();
-          return NextResponse.json({
-            synced: true,
-            mode: "google_api",
-            eventId: eventData.id,
-            htmlLink: eventData.htmlLink,
-            templateUrl,
-          });
+          eventId = eventData.id || null;
+          if (eventData.htmlLink) {
+            finalUrl = eventData.htmlLink;
+          }
         }
       } catch (err) {
         console.error("Failed to sync to Google Calendar API:", err);
       }
     }
 
-    // Default template URL sync mode
     return NextResponse.json({
+      success: true,
+      url: finalUrl,
+      eventId,
       synced: true,
-      mode: "template_url",
+      mode: eventId ? "google_api" : "template_url",
       templateUrl,
     });
   } catch (err) {
     console.error("Error processing calendar request:", err);
-    return NextResponse.json({ error: "Invalid calendar request payload" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid calendar request payload", success: false }, { status: 400 });
   }
 }

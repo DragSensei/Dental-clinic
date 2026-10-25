@@ -91,6 +91,119 @@ export function getServerSnapshot() {
   return initialSnapshot;
 }
 
+export async function hydrateClinicData(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const [clinicRes, appointmentsRes] = await Promise.allSettled([
+      fetch("/api/clinic"),
+      fetch("/api/appointments"),
+    ]);
+
+    let nextServices = snapshot.services;
+    let nextDoctors = snapshot.doctors;
+    let nextAppointments = snapshot.appointments;
+
+    if (clinicRes.status === "fulfilled" && clinicRes.value.ok) {
+      const data = await clinicRes.value.json();
+      if (Array.isArray(data.services) && data.services.length > 0) {
+        nextServices = data.services;
+      }
+      if (Array.isArray(data.doctors) && data.doctors.length > 0) {
+        nextDoctors = data.doctors;
+      }
+    }
+
+    if (appointmentsRes.status === "fulfilled" && appointmentsRes.value.ok) {
+      const data = await appointmentsRes.value.json();
+      if (Array.isArray(data.appointments)) {
+        nextAppointments = data.appointments;
+      }
+    }
+
+    publish({
+      ...snapshot,
+      services: nextServices,
+      doctors: nextDoctors,
+      appointments: nextAppointments,
+    });
+  } catch (err) {
+    console.warn("Could not hydrate clinic catalog from API:", err);
+  }
+}
+
+export async function hydratePatientData(email: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail || typeof window === "undefined") return;
+
+  try {
+    const [intakeRes, planRes, careRes, billingRes] = await Promise.allSettled([
+      fetch(`/api/patient/intake?email=${encodeURIComponent(cleanEmail)}`),
+      fetch(`/api/patient/treatment-plan?email=${encodeURIComponent(cleanEmail)}`),
+      fetch(`/api/patient/care?email=${encodeURIComponent(cleanEmail)}`),
+      fetch(`/api/patient/billing?email=${encodeURIComponent(cleanEmail)}`),
+    ]);
+
+    let nextForms = snapshot.intakeForms;
+    let nextPlans = snapshot.treatmentPlans;
+    let nextSummaries = snapshot.visitSummaries;
+    let nextInvoices = snapshot.invoices;
+
+    if (intakeRes.status === "fulfilled" && intakeRes.value.ok) {
+      const data = await intakeRes.value.json();
+      if (data.intakeForm) {
+        nextForms = [
+          ...nextForms.filter((f) => f.patientEmail.toLowerCase() !== cleanEmail),
+          Object.freeze(data.intakeForm),
+        ];
+      }
+    }
+
+    if (planRes.status === "fulfilled" && planRes.value.ok) {
+      const data = await planRes.value.json();
+      if (data.treatmentPlan) {
+        nextPlans = [
+          ...nextPlans.filter((p) => p.patientEmail.toLowerCase() !== cleanEmail),
+          Object.freeze(data.treatmentPlan),
+        ];
+      }
+    }
+
+    if (careRes.status === "fulfilled" && careRes.value.ok) {
+      const data = await careRes.value.json();
+      if (Array.isArray(data.careSummaries) && data.careSummaries.length > 0) {
+        nextSummaries = [
+          ...nextSummaries.filter((s) => s.patientEmail.toLowerCase() !== cleanEmail),
+          ...data.careSummaries.map((s: VisitCareSummary) => Object.freeze(s)),
+        ];
+      }
+    }
+
+    if (billingRes.status === "fulfilled" && billingRes.value.ok) {
+      const data = await billingRes.value.json();
+      if (Array.isArray(data.invoices) && data.invoices.length > 0) {
+        nextInvoices = [
+          ...nextInvoices.filter((i) => i.patientEmail.toLowerCase() !== cleanEmail),
+          ...data.invoices.map((i: PatientInvoice) => Object.freeze(i)),
+        ];
+      }
+    }
+
+    publish({
+      ...snapshot,
+      intakeForms: nextForms,
+      treatmentPlans: nextPlans,
+      visitSummaries: nextSummaries,
+      invoices: nextInvoices,
+    });
+  } catch (err) {
+    console.warn("Could not hydrate patient workflows:", err);
+  }
+}
+
+if (typeof window !== "undefined") {
+  hydrateClinicData().catch(() => {});
+}
+
 const toUtcDate = (date: Date) => date.toISOString().slice(0, 10);
 
 export function getAvailableDates(serviceId: string, doctorId: string): string[] {
@@ -174,8 +287,30 @@ export function bookAppointment(input: BookingDetails): Promise<Appointment> {
   const key = [input.serviceId, input.doctorId, input.date, input.time, input.patientName.trim(), input.email.trim().toLowerCase(), input.phone.trim()].join("|");
   const existing = pendingBookings.get(key);
   if (existing) return existing;
-  const operation = Promise.resolve().then(() => {
+  const operation = (async () => {
     validateBooking(input);
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch("/api/appointments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.error && typeof errData.error === "string") {
+            throw new ClinicError(errData.error as ClinicErrorCode);
+          }
+          throw new ClinicError("slot_unavailable");
+        }
+        const data = await res.json();
+        const appointment: Appointment = data.appointment;
+        publish({ ...snapshot, appointments: [...snapshot.appointments.filter((a) => a.id !== appointment.id), appointment] });
+        return appointment;
+      } catch (err) {
+        if (err instanceof ClinicError) throw err;
+      }
+    }
     const appointment: Appointment = {
       ...input,
       patientName: input.patientName.trim(),
@@ -186,7 +321,7 @@ export function bookAppointment(input: BookingDetails): Promise<Appointment> {
     };
     publish({ ...snapshot, appointments: [...snapshot.appointments, appointment] });
     return appointment;
-  }).finally(() => pendingBookings.delete(key));
+  })().finally(() => pendingBookings.delete(key));
   pendingBookings.set(key, operation);
   return operation;
 }
@@ -195,12 +330,34 @@ export async function cancelAppointment(id: string): Promise<void> {
   const appointment = snapshot.appointments.find((item) => item.id === id);
   if (!appointment) throw new ClinicError("appointment_not_found");
   if (appointment.status === "cancelled") return;
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/appointments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel", isStaff: true }),
+      });
+    } catch {}
+  }
+
   publish({ ...snapshot, appointments: snapshot.appointments.map((item) => (item.id === id ? { ...item, status: "cancelled" } : item)) });
 }
 
 export async function confirmAppointmentAttendance(id: string): Promise<Appointment> {
   const appointment = snapshot.appointments.find((item) => item.id === id);
   if (!appointment) throw new ClinicError("appointment_not_found");
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/appointments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "confirm_attendance" }),
+      });
+    } catch {}
+  }
+
   const updated: Appointment = { ...appointment, attendanceConfirmed: true };
   publish({
     ...snapshot,
@@ -237,6 +394,23 @@ export async function rescheduleAppointment(id: string, date: string, time: stri
   const appointment = snapshot.appointments.find((item) => item.id === id && item.status === "confirmed");
   if (!appointment) throw new ClinicError("confirmed_not_found");
   if (!availableSlots(appointment.serviceId, appointment.doctorId, date, id).includes(time)) throw new ClinicError("time_unavailable");
+
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch(`/api/appointments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reschedule", date, time }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        if (errData.error) throw new ClinicError(errData.error as ClinicErrorCode);
+      }
+    } catch (err) {
+      if (err instanceof ClinicError) throw err;
+    }
+  }
+
   const updated = { ...appointment, date, time };
   publish({ ...snapshot, appointments: snapshot.appointments.map((item) => (item.id === id ? updated : item)) });
   return updated;
@@ -264,6 +438,17 @@ export async function updateService(service: Service): Promise<Service> {
       if (conflict || externalConflict) throw new ClinicError("duration_overlap");
     }
   }
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/admin/services/${service.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(service),
+      });
+    } catch {}
+  }
+
   publish({
     ...snapshot,
     services: snapshot.services.map((item) =>
@@ -286,6 +471,17 @@ export async function updateDoctor(doctor: Doctor): Promise<Doctor> {
   if (!doctor.id || !doctor.name.trim() || !doctor.specialty.trim() || !doctor.bio.trim() || !doctor.serviceIds.length || doctor.serviceIds.some((id) => !snapshot.services.some((service) => service.id === id))) throw new ClinicError("invalid_doctor");
   if (!snapshot.doctors.some((item) => item.id === doctor.id)) throw new ClinicError("doctor_not_found");
   if (snapshot.appointments.some((item) => item.status === "confirmed" && item.doctorId === doctor.id && !doctor.serviceIds.includes(item.serviceId))) throw new ClinicError("doctor_service_blocked");
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/admin/doctors/${doctor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(doctor),
+      });
+    } catch {}
+  }
+
   publish({ ...snapshot, doctors: snapshot.doctors.map((item) => (item.id === doctor.id ? { ...doctor, name: doctor.name.trim(), specialty: doctor.specialty.trim(), bio: doctor.bio.trim() } : item)) });
   return doctor;
 }
@@ -314,6 +510,17 @@ export async function createService(serviceInput: Omit<Service, "id"> & { id?: s
       aftercare: "Follow routine hygiene and dentist recommendations.",
     },
   };
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/admin/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(service),
+      });
+    } catch {}
+  }
+
   publish({ ...snapshot, services: [...snapshot.services, Object.freeze(service)] });
   return service;
 }
@@ -337,6 +544,17 @@ export async function createAccount(accountInput: Omit<Account, "id" | "createdA
     serviceIds: accountInput.serviceIds,
     createdAt,
   };
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/admin/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(account),
+      });
+    } catch {}
+  }
+
   let nextDoctors = snapshot.doctors;
   if (account.role === "doctor") {
     const docId = `doctor-${Date.now()}`;
@@ -360,6 +578,17 @@ export async function savePatientIntakeForm(input: PatientIntakeForm): Promise<P
     patientEmail: targetEmail,
     updatedAt: input.updatedAt || new Date().toISOString(),
   };
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/patient/intake", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail, ...input }),
+      });
+    } catch {}
+  }
+
   const exists = snapshot.intakeForms.some((f) => f.patientEmail.toLowerCase() === targetEmail);
   const nextForms = exists
     ? snapshot.intakeForms.map((f) => (f.patientEmail.toLowerCase() === targetEmail ? updatedForm : f))
@@ -380,6 +609,23 @@ export async function approveTreatmentPlan(planId: string, signedByName: string,
     signatureDataUrl,
     approvedAt: new Date().toISOString(),
   };
+
+  const targetEmail = plan.patientEmail || fallbackEmail;
+  if (typeof window !== "undefined" && targetEmail) {
+    try {
+      await fetch("/api/patient/treatment-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: targetEmail,
+          action: "approve",
+          signatureDataUrl,
+          signedByName,
+        }),
+      });
+    } catch {}
+  }
+
   const nextPlans = existing
     ? snapshot.treatmentPlans.map((p) => (p.id === planId ? Object.freeze(updated) : p))
     : [...snapshot.treatmentPlans, Object.freeze(updated)];
@@ -418,6 +664,17 @@ export async function payPatientInvoice(
   const cleanEmail = patientEmail?.trim().toLowerCase() || "";
   const invoice = existing ?? (cleanEmail ? createDefaultInvoice(cleanEmail) : snapshot.invoices[0]);
   if (!invoice) throw new Error("invoice_not_found");
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/patient/billing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId, paymentMethod }),
+      });
+    } catch {}
+  }
+
   const updated: PatientInvoice = {
     ...invoice,
     paidAmountEgp: invoice.totalFeeEgp,
@@ -440,6 +697,11 @@ export async function payPatientInvoice(
 export async function ensurePatientDemoAppointment(email: string, patientName: string, phone: string): Promise<void> {
   const cleanEmail = email.trim().toLowerCase();
   if (!cleanEmail) return;
+
+  if (typeof window !== "undefined") {
+    hydratePatientData(cleanEmail).catch(() => {});
+  }
+
   const hasAppt = snapshot.appointments.some((item) => item.email.toLowerCase() === cleanEmail);
   if (hasAppt) return;
 

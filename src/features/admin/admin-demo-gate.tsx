@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import type { ErrorKey } from "@/i18n/dictionaries";
@@ -18,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertErrorWithEverything } from "@/components/shared/alert-error";
+import { authClient } from "@/lib/auth-client";
 
 import type { AccountRole } from "@/data/mock/catalog";
 
@@ -42,12 +44,25 @@ export function AdminDemoGate({
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState<ErrorKey | "">("");
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") ?? "").trim().toLowerCase();
     const password = String(data.get("password") ?? "");
+
+    try {
+      const res = await authClient.signIn.email({ email, password });
+      if (!res.error) {
+        const matched = accounts.find((account) => account.email === email);
+        const resolvedRole: AccountRole =
+          matched?.role ?? (email === "mariam.a@example.com" ? "patient" : "admin");
+        onSignIn(email, resolvedRole);
+        return;
+      }
+    } catch {
+      // Offline fallback
+    }
 
     const matched = accounts.find((account) => account.email === email && account.password === password);
     if (!matched) {
@@ -57,7 +72,7 @@ export function AdminDemoGate({
     onSignIn(email, matched.role ?? "admin");
   }
 
-  function handleSignUp(event: FormEvent<HTMLFormElement>) {
+  async function handleSignUp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     const data = new FormData(event.currentTarget);
@@ -66,12 +81,27 @@ export function AdminDemoGate({
     const confirmPassword = String(data.get("confirmPassword") ?? "");
     const name = String(data.get("name") ?? "").trim();
 
-    if (accounts.some((account) => account.email === email)) {
-      setError("signup_duplicate");
-      return;
-    }
     if (password !== confirmPassword) {
       setError("password_mismatch");
+      return;
+    }
+
+    try {
+      const res = await authClient.signUp.email({
+        email,
+        password,
+        name: name || "Clinic User",
+      });
+      if (!res.error) {
+        onSignUp({ email, password, role: "admin", ...(name ? { name } : {}) });
+        return;
+      }
+    } catch {
+      // Offline fallback
+    }
+
+    if (accounts.some((account) => account.email === email)) {
+      setError("signup_duplicate");
       return;
     }
     onSignUp({ email, password, role: "admin", ...(name ? { name } : {}) });
@@ -199,7 +229,7 @@ export function AdminDemoGate({
                         </span>
                       </div>
 
-                      <a
+                      <Link
                         href="/api/auth/google"
                         className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
                       >
@@ -222,7 +252,7 @@ export function AdminDemoGate({
                           />
                         </svg>
                         <span>{locale === "ar" ? "المتابعة باستخدام Google" : "Continue with Google"}</span>
-                      </a>
+                      </Link>
 
                       <div className="mt-2 grid grid-cols-2 gap-2">
                         <Button

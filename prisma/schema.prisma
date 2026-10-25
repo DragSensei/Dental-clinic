@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// 1. Better Auth Core Models
+// ==========================================
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("patient") // "admin" | "doctor" | "patient"
+  phone         String?
+  status        String    @default("active")  // "active" | "inactive"
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  doctorProfile Doctor?
+  intakeForm    PatientIntakeForm?
+  treatmentPlan TreatmentPlan?
+  invoices      PatientInvoice[]
+  careSummaries VisitCareSummary[]
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id @default(uuid())
+  expiresAt      DateTime
+  token          String   @unique
+  impersonatedBy String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ==========================================
+// 2. Clinic Catalog & Scheduling Models
+// ==========================================
+
+model Service {
+  id              String          @id @default(uuid())
+  title           String
+  description     String
+  durationMinutes Int             @default(45)
+  category        String          @default("Preventive Care")
+  image           String
+  overview        String?         @db.Text
+  procedure       String?         @db.Text
+  benefits        String?         @db.Text
+  aftercare       String?         @db.Text
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  doctors         DoctorService[]
+  appointments    Appointment[]
+  treatmentPhases TreatmentPhase[]
+  careSummaries   VisitCareSummary[]
+
+  @@map("service")
+}
+
+model Doctor {
+  id             String               @id @default(uuid())
+  userId         String?              @unique
+  user           User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name           String
+  specialty      String
+  bio            String               @db.Text
+  status         String               @default("active") // "active" | "inactive"
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  services       DoctorService[]
+  appointments   Appointment[]
+  workingHours   DoctorWorkingHours[]
+  treatmentPlans TreatmentPlan[]
+  careSummaries  VisitCareSummary[]
+  invoices       PatientInvoice[]
+
+  @@map("doctor")
+}
+
+model DoctorService {
+  doctorId  String
+  serviceId String
+  doctor    Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, serviceId])
+  @@map("doctor_service")
+}
+
+model ClinicWorkingHours {
+  id                  String   @id @default(uuid())
+  dayOfWeek           Int      @unique // 0 = Sunday, 1 = Monday, ..., 5 = Friday, 6 = Saturday
+  isClosed            Boolean  @default(false)
+  startTime           String   @default("09:00") // "HH:mm"
+  endTime             String   @default("16:45")
+  slotIntervalMinutes Int      @default(45)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("clinic_working_hours")
+}
+
+model DoctorWorkingHours {
+  id        String   @id @default(uuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  isOff     Boolean  @default(false)
+  startTime String?  // Optional override
+  endTime   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, dayOfWeek])
+  @@map("doctor_working_hours")
+}
+
+// ==========================================
+// 3. Appointments & Attendance
+// ==========================================
+
+model Appointment {
+  id                  String    @id @default(uuid())
+  serviceId           String
+  service             Service   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  doctorId            String
+  doctor              Doctor    @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  date                String    // "YYYY-MM-DD"
+  time                String    // "HH:mm"
+  durationMinutes     Int       @default(45)
+  patientName         String
+  email               String
+  phone               String
+  status              String    @default("confirmed") // "confirmed" | "cancelled"
+  note                String?   @db.Text
+  attendanceConfirmed Boolean   @default(false)
+  confirmedAt         DateTime?
+  calendarSynced      Boolean   @default(false)
+  googleEventId       String?
+  reasonCategory      String?   // "new-exam" | "emergency" | "cleaning" | "follow-up"
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  scheduledPhases     TreatmentPhase[]
+
+  @@index([doctorId, date, status])
+  @@index([email])
+  @@map("appointment")
+}
+
+// ==========================================
+// 4. Patient Intake & e-Consent
+// ==========================================
+
+model PatientIntakeForm {
+  id                String    @id @default(uuid())
+  patientEmail      String    @unique
+  user              User      @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  phone             String
+  emergencyContact  String
+  noChangesVerified Boolean   @default(false)
+  insuranceEnabled  Boolean   @default(false)
+  insuranceProvider String?
+  insuranceMemberId String?
+  conditions        String[]  // Postgres text[]
+  allergies         String[]  // Postgres text[]
+  medications       String?   @db.Text
+  consentSigned     Boolean   @default(false)
+  signatureDataUrl  String?   @db.Text
+  signedByName      String?
+  signedAt          DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("patient_intake_form")
+}
+
+// ==========================================
+// 5. Visual Treatment Plan & 32-Tooth Records
+// ==========================================
+
+model TreatmentPlan {
+  id               String           @id @default(uuid())
+  patientEmail     String           @unique
+  user             User             @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  doctorId         String
+  doctor           Doctor           @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  status           String           @default("proposed") // "proposed" | "approved"
+  signatureDataUrl String?          @db.Text
+  signedByName     String?
+  approvedAt       DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  teeth            ToothRecord[]
+  phases           TreatmentPhase[]
+
+  @@map("treatment_plan")
+}
+
+model ToothRecord {
+  id                String        @id @default(uuid())
+  treatmentPlanId   String
+  treatmentPlan     TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Cascade)
+  toothNumber       Int           // FDI 11-48
+  label             String
+  status            String        // "healthy" | "urgent" | "restorative" | "elective" | "treated"
+  condition         String
+  proposedTreatment String
+  phaseOrder        Int?          // 1 | 2 | 3
+  xrayNote          String?
+
+  @@unique([treatmentPlanId, toothNumber])
+  @@map("tooth_record")
+}
+
+model TreatmentPhase {
+  id                     String        @id @default(uuid())
+  treatmentPlanId        String
+  treatmentPlan          TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Cascade)
+  order                  Int           // 1 | 2 | 3
+  priority               String        // "urgent" | "restorative" | "elective"
+  title                  String
+  description            String
+  toothNumber            Int?
+  serviceId              String
+  service                Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  durationMinutes        Int           @default(45)
+  totalFeeEgp            Int
+  insuranceScaffoldNote  String?
+  outOfPocketEgp         Int
+  scheduledAppointmentId String?
+  scheduledAppointment   Appointment?  @relation(fields: [scheduledAppointmentId], references: [id], onDelete: SetNull)
+
+  @@map("treatment_phase")
+}
+
+// ==========================================
+// 6. Care Summaries & e-Prescriptions
+// ==========================================
+
+model VisitCareSummary {
+  id                 String             @id @default(uuid())
+  patientEmail       String
+  user               User               @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  visitDate          String             // "YYYY-MM-DD"
+  doctorId           String
+  doctor             Doctor             @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  serviceId          String
+  service            Service            @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  whatWasDone        String             @db.Text
+  postOpInstructions String[]           // Postgres text[]
+  createdAt          DateTime           @default(now())
+
+  prescriptions      PrescriptionItem[]
+
+  @@index([patientEmail])
+  @@map("visit_care_summary")
+}
+
+model PrescriptionItem {
+  id                 String           @id @default(uuid())
+  visitCareSummaryId String
+  careSummary        VisitCareSummary @relation(fields: [visitCareSummaryId], references: [id], onDelete: Cascade)
+  medication         String
+  dosage             String
+  frequency          String
+  durationDays       Int
+  instructions       String
+
+  @@map("prescription_item")
+}
+
+// ==========================================
+// 7. Invoices & Billing
+// ==========================================
+
+model PatientInvoice {
+  id                  String            @id @default(uuid())
+  patientEmail        String
+  user                User              @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  issuedDate          String            // "YYYY-MM-DD"
+  doctorId            String
+  doctor              Doctor            @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  totalFeeEgp         Int
+  paidAmountEgp       Int               @default(0)
+  balanceEgp          Int
+  status              String            @default("balance_due") // "balance_due" | "paid"
+  nextInstallmentDate String?
+  paymentMethod       String?           // "card" | "apple_pay" | "google_pay" | "mobile_wallet"
+  receiptNumber       String?
+  paidAt              DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  items               InvoiceLineItem[]
+
+  @@index([patientEmail])
+  @@map("patient_invoice")
+}
+
+model InvoiceLineItem {
+  id        String         @id @default(uuid())
+  invoiceId String
+  invoice   PatientInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  procedure String
+  tooth     String?
+  feeEgp    Int
+
+  @@map("invoice_line_item")
+}
