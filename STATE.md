@@ -18,7 +18,8 @@
   - **Parallel Subagent Execution & Root Review**:
     - Dispatched 2 `flash` subagents (Worker 1: Admin & Booking API; Worker 2: Patient Portal API & Sync).
     - Root personally reviewed every line of code diff, adjusted route handlers, fixed type assertions, and resolved lint issues.
-  - **Verification**:
+  - **Verification & Signoff**:
+    - Commit `01d8b04` certified with Tier-2 machine signoff: Tests (30/30 PASS), Security (200 files scanned, PASS), Performance (33 pages bounded, PASS), Revisor (token-lint & visual audit across 375px/768px/1440px viewports, PASS).
     - `npm test`: 30/30 tests passing (14 legacy repository & i18n, 6 database domain tests, 5 admin & booking integration tests, 5 patient portal integration tests).
     - `npx tsc --noEmit`: 0 errors.
     - `npm run lint`: 0 errors.
