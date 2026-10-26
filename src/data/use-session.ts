@@ -1,102 +1,14 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import type { AccountRole } from "@/data/mock/catalog";
-
-const SESSION_KEY = "dental-demo-admin-email";
-const SESSION_ROLE_KEY = "dental-demo-user-role";
-const SESSION_NAME_KEY = "dental-demo-user-name";
-const SESSION_GOOGLE_KEY = "dental-demo-google-connected";
+import { authClient } from "@/lib/auth-client";
 
 export type SessionState = {
   email: string | null;
   role: AccountRole | null;
   name?: string | null;
-  googleConnected?: boolean;
+  isPending?: boolean;
 };
-
-let memorySession: SessionState = {
-  email: null,
-  role: null,
-  name: null,
-  googleConnected: false,
-};
-
-const listeners = new Set<() => void>();
-
-function getSessionSnapshot(): SessionState {
-  if (typeof window === "undefined") return memorySession;
-  try {
-    const email = memorySession.email ?? window.sessionStorage.getItem(SESSION_KEY);
-    const role = (memorySession.role ?? window.sessionStorage.getItem(SESSION_ROLE_KEY)) as AccountRole | null;
-    const name = memorySession.name ?? window.sessionStorage.getItem(SESSION_NAME_KEY);
-    const googleStored = window.sessionStorage.getItem(SESSION_GOOGLE_KEY);
-    const googleConnected = memorySession.googleConnected ?? (googleStored ? googleStored === "true" : false);
-
-    if (
-      memorySession.email !== email ||
-      memorySession.role !== role ||
-      memorySession.name !== name ||
-      memorySession.googleConnected !== googleConnected
-    ) {
-      memorySession = { email, role, name, googleConnected };
-    }
-    return memorySession;
-  } catch {
-    return memorySession;
-  }
-}
-
-const serverSnapshot: SessionState = { email: null, role: null, name: null, googleConnected: false };
-
-function getServerSnapshot(): SessionState {
-  return serverSnapshot;
-}
-
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  return () => {
-    listeners.delete(callback);
-  };
-}
-
-export function updateSession(
-  email: string | null,
-  role: AccountRole = "admin",
-  name?: string | null,
-  googleConnected?: boolean
-) {
-  memorySession = {
-    email,
-    role: email ? role : null,
-    name: email ? (name ?? null) : null,
-    googleConnected: email ? Boolean(googleConnected) : false,
-  };
-  try {
-    if (typeof window !== "undefined") {
-      if (email) {
-        window.sessionStorage.setItem(SESSION_KEY, email);
-        window.sessionStorage.setItem(SESSION_ROLE_KEY, role);
-        if (name) {
-          window.sessionStorage.setItem(SESSION_NAME_KEY, name);
-        } else {
-          window.sessionStorage.removeItem(SESSION_NAME_KEY);
-        }
-        if (googleConnected) {
-          window.sessionStorage.setItem(SESSION_GOOGLE_KEY, "true");
-        } else {
-          window.sessionStorage.removeItem(SESSION_GOOGLE_KEY);
-        }
-      } else {
-        window.sessionStorage.removeItem(SESSION_KEY);
-        window.sessionStorage.removeItem(SESSION_ROLE_KEY);
-        window.sessionStorage.removeItem(SESSION_NAME_KEY);
-        window.sessionStorage.removeItem(SESSION_GOOGLE_KEY);
-      }
-    }
-  } catch {}
-  listeners.forEach((l) => l());
-}
 
 /**
  * Resolves the appropriate dashboard route depending on the user's role.
@@ -107,7 +19,6 @@ export function getDashboardRoute(role?: AccountRole | string | null): string {
     case "admin":
       return "/admin/overview";
     case "doctor":
-      // Currently directs to clinic overview; ready for future /doctor/dashboard
       return "/admin/overview";
     case "patient":
       return "/patient/overview";
@@ -116,23 +27,55 @@ export function getDashboardRoute(role?: AccountRole | string | null): string {
   }
 }
 
+/**
+ * @deprecated Legacy session update retained for backwards compatibility with legacy callers.
+ * Does not mutate storage; session state is managed via Better Auth.
+ */
+export function updateSession(
+  email: string | null,
+  role?: AccountRole,
+  name?: string | null
+) {
+  // No-op: Better Auth cookies and server-side state are the single source of truth.
+  void email;
+  void role;
+  void name;
+}
+
 export function useSession() {
-  const session = useSyncExternalStore(subscribe, getSessionSnapshot, getServerSnapshot);
-  const dashboardRoute = getDashboardRoute(session.role);
+  const { data, isPending } = authClient.useSession();
+  const user = data?.user as (Record<string, unknown> | undefined);
+
+  const email = (user?.email as string) || null;
+  const role = (user?.role as AccountRole) || (email ? "patient" : null);
+  const name = (user?.name as string) || null;
+  const dashboardRoute = getDashboardRoute(role);
 
   return {
-    signedInEmail: session.email,
-    role: session.role,
-    name: session.name ?? null,
-    googleConnected: Boolean(session.googleConnected),
-    isLoggedIn: Boolean(session.email),
+    signedInEmail: email,
+    email,
+    role,
+    name,
+    isPending,
+    isLoggedIn: Boolean(email),
     dashboardRoute,
-    signIn: (
-      email: string,
-      role: AccountRole = "admin",
-      name?: string | null,
-      googleConnected?: boolean
-    ) => updateSession(email, role, name, googleConnected),
-    signOut: () => updateSession(null),
+    signIn: async (
+      emailOrOpts: string | { email: string; password?: string },
+      passwordOrRole?: string | AccountRole
+    ) => {
+      if (typeof emailOrOpts === "object") {
+        return await authClient.signIn.email({
+          email: emailOrOpts.email,
+          password: emailOrOpts.password || "",
+        });
+      }
+      return await authClient.signIn.email({
+        email: emailOrOpts,
+        password: typeof passwordOrRole === "string" ? passwordOrRole : "",
+      });
+    },
+    signOut: async () => {
+      await authClient.signOut();
+    },
   };
 }

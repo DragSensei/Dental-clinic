@@ -1,31 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateDoctor, ClinicError } from "@/lib/clinic-db";
-import { requireUser } from "@/lib/auth";
+import { updateDoctor } from "@/lib/clinic-db";
+import { requireRole, HttpError } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import prisma from "@/lib/prisma";
+import { updateDoctorSchema } from "@/lib/clinic-schemas";
+import { toDoctorDTO } from "@/lib/clinic-mappers";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireUser(request);
+    await requireRole(request, ["admin"]);
     const { id } = await params;
     const body = await request.json();
-    const doctor = await updateDoctor(id, {
-      name: body.name,
-      specialty: body.specialty,
-      bio: body.bio,
-      serviceIds: body.serviceIds,
-      status: body.status,
+    const parsed = updateDoctorSchema.parse(body);
+
+    const existing = await prisma.doctor.findUnique({
+      where: { id },
+      include: { services: true },
     });
-    return NextResponse.json({ doctor });
-  } catch (err: unknown) {
-    if (err instanceof ClinicError) {
-      return NextResponse.json({ error: err.code }, { status: 400 });
+    if (!existing) {
+      throw new HttpError(404, "not_found");
     }
-    console.error("Failed to update doctor:", err);
-    return NextResponse.json(
-      { error: (err as Error)?.message || "Failed to update doctor" },
-      { status: 500 }
-    );
+
+    const doctor = await updateDoctor(id, {
+      name: parsed.name ?? existing.name,
+      specialty: parsed.specialty ?? existing.specialty,
+      bio: parsed.bio ?? existing.bio,
+      serviceIds: parsed.serviceIds ?? existing.services.map((s) => s.serviceId),
+      status: parsed.status ?? existing.status,
+    });
+    return NextResponse.json({ doctor: toDoctorDTO(doctor) });
+  } catch (err: unknown) {
+    return toErrorResponse(err);
   }
 }

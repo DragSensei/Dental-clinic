@@ -1,8 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// Run against test database
-process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/dental_reservation_test?schema=public";
+import { RUN_ID, prisma, cleanup } from "./_setup.mjs";
 
 const {
   checkDatabaseHealth,
@@ -17,31 +16,13 @@ const {
   getTreatmentPlan,
   getVisitCareSummaries,
   getPatientInvoices,
-} = await import("../src/lib/clinic-db.ts");
-
-const { default: prisma } = await import("../src/lib/prisma.ts");
-
-test.beforeEach(async () => {
-  await prisma.appointment.deleteMany({
-    where: {
-      OR: [
-        { patientName: { contains: "Test" } },
-        { email: { contains: "test" } },
-      ],
-    },
-  });
-});
+  getAppointments,
+  payPatientInvoice,
+  ClinicError,
+} = await import("../../src/lib/clinic-db.ts");
 
 test.after(async () => {
-  await prisma.appointment.deleteMany({
-    where: {
-      OR: [
-        { patientName: { contains: "Test" } },
-        { email: { contains: "test" } },
-      ],
-    },
-  });
-  await prisma.$disconnect();
+  await cleanup();
 });
 
 test("clinic-db: health check reports connected and healthy", async () => {
@@ -79,14 +60,19 @@ test("clinic-db: getAvailableDates excludes closed days and provides valid dates
 });
 
 test("clinic-db: booking appointment and conflict prevention", async () => {
-  const doctors = await getDoctors();
-  const doc = doctors[0];
-  const srv = doc.serviceIds[0];
-  const dates = await getAvailableDates(srv, doc.id);
+  const docService = await prisma.doctorService.findFirst({
+    where: { service: { durationMinutes: 45 } },
+    include: { doctor: true, service: true },
+  });
+  assert.ok(docService, "Doc service found");
+  const doc = docService.doctor;
+  const srv = docService.service;
+
+  const dates = await getAvailableDates(srv.id, doc.id);
   let targetDate = dates[0];
   let slots = [];
   for (const candidateDate of dates) {
-    const candidateSlots = await getAvailableSlots(srv, doc.id, candidateDate);
+    const candidateSlots = await getAvailableSlots(srv.id, doc.id, candidateDate);
     if (candidateSlots.length > 0) {
       targetDate = candidateDate;
       slots = candidateSlots;
@@ -97,12 +83,12 @@ test("clinic-db: booking appointment and conflict prevention", async () => {
   const slotTime = slots[0];
 
   const booking = await bookAppointment({
-    serviceId: srv,
+    serviceId: srv.id,
     doctorId: doc.id,
     date: targetDate,
     time: slotTime,
-    patientName: "Test Patient",
-    email: "test.patient@example.com",
+    patientName: `${RUN_ID} DB Test Patient`,
+    email: `${RUN_ID}-dbtest@example.com`,
     phone: "+20 10 9999 8888",
     reasonCategory: "new-exam",
   });
@@ -112,19 +98,19 @@ test("clinic-db: booking appointment and conflict prevention", async () => {
   assert.equal(booking.time, slotTime);
 
   // Slot should now be unavailable
-  const slotsAfter = await getAvailableSlots(srv, doc.id, targetDate);
+  const slotsAfter = await getAvailableSlots(srv.id, doc.id, targetDate);
   assert.ok(!slotsAfter.includes(slotTime));
 
   // Trying to book same slot must throw slot_unavailable
   await assert.rejects(
     async () => {
       await bookAppointment({
-        serviceId: srv,
+        serviceId: srv.id,
         doctorId: doc.id,
         date: targetDate,
         time: slotTime,
-        patientName: "Conflict Patient",
-        email: "conflict@example.com",
+        patientName: `${RUN_ID} Conflict Patient`,
+        email: `${RUN_ID}-conflict@example.com`,
         phone: "+20 10 1111 2222",
       });
     },
@@ -168,4 +154,59 @@ test("clinic-db: retrieves Mariam's seeded patient workflows", async () => {
   const invoices = await getPatientInvoices(email);
   assert.ok(invoices.length > 0);
   assert.ok(invoices[0].items.length > 0);
+});
+
+test("clinic-db: getAppointments enforces bounded scan (default 200, dynamic custom, capped at 200)", async () => {
+  // 1. Default bound
+  const defaultAppts = await getAppointments();
+  assert.ok(Array.isArray(defaultAppts));
+  assert.ok(defaultAppts.length <= 200, "Default take must not exceed 200");
+
+  // 2. Custom dynamic bound below 200
+  const singleAppt = await getAppointments({ take: 1 });
+  assert.ok(Array.isArray(singleAppt));
+  assert.ok(singleAppt.length <= 1, "take: 1 must return at most 1 item");
+
+  // 3. Dynamic bound above 200 is clamped to 200 max ceiling
+  const clampedAppts = await getAppointments({ take: 500 });
+  assert.ok(Array.isArray(clampedAppts));
+  assert.ok(clampedAppts.length <= 200, "Excessive take (500) must be clamped to 200");
+});
+
+test("clinic-db: payPatientInvoice allows only balance_due status; rejects non-payable statuses with invalid_transition", async () => {
+  const doc = await prisma.doctor.findFirst();
+
+  const patient = await prisma.user.create({
+    data: {
+      email: `${RUN_ID}-patient@example.com`,
+      name: `${RUN_ID} Test Patient`,
+      role: "patient",
+    },
+  });
+
+  // Create an invoice with non-payable status: cancelled
+  const cancelledInv = await prisma.patientInvoice.create({
+    data: {
+      id: `${RUN_ID}-inv-cancelled`,
+      patientEmail: patient.email,
+      doctorId: doc.id,
+      issuedDate: "2026-11-01",
+      totalFeeEgp: 1500,
+      balanceEgp: 1500,
+      status: "cancelled",
+    },
+  });
+
+  // Attempting to pay cancelled invoice must throw invalid_transition
+  await assert.rejects(
+    async () => {
+      await payPatientInvoice(cancelledInv.id, "card");
+    },
+    (err) => err instanceof ClinicError && err.code === "invalid_transition"
+  );
+
+  // Status must remain unchanged (not transitioned to paid)
+  const afterCheck = await prisma.patientInvoice.findUnique({ where: { id: cancelledInv.id } });
+  assert.equal(afterCheck?.status, "cancelled");
+  assert.equal(afterCheck?.paidAmountEgp, 0);
 });

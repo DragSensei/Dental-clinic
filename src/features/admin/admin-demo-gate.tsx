@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import type { ErrorKey } from "@/i18n/dictionaries";
 import { useI18n } from "@/i18n/locale-provider";
@@ -20,25 +20,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertErrorWithEverything } from "@/components/shared/alert-error";
 import { authClient } from "@/lib/auth-client";
-
+import { getDashboardRoute } from "@/data/use-session";
 import type { AccountRole } from "@/data/mock/catalog";
 
 export type DemoAccount = {
   email: string;
-  password: string;
   name?: string;
   role?: AccountRole;
 };
 
 export function AdminDemoGate({
-  accounts,
   onSignUp,
   onSignIn,
 }: {
-  accounts: DemoAccount[];
-  onSignUp: (account: DemoAccount) => void;
-  onSignIn: (email: string, role?: AccountRole) => void;
-}) {
+  accounts?: DemoAccount[];
+  onSignUp?: (account: DemoAccount) => void;
+  onSignIn?: (email: string, role?: AccountRole) => void;
+} = {}) {
+  const router = useRouter();
   const { locale, t } = useI18n();
   const copy = t.admin.gate;
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -53,23 +52,18 @@ export function AdminDemoGate({
 
     try {
       const res = await authClient.signIn.email({ email, password });
-      if (!res.error) {
-        const matched = accounts.find((account) => account.email === email);
-        const resolvedRole: AccountRole =
-          matched?.role ?? (email === "mariam.a@example.com" ? "patient" : "admin");
-        onSignIn(email, resolvedRole);
+      if (res?.error) {
+        setError("login_invalid");
         return;
       }
+      router.refresh();
+      const sessionRes = await authClient.getSession();
+      const role = (sessionRes?.data?.user as { role?: AccountRole } | undefined)?.role || "patient";
+      onSignIn?.(email, role);
+      router.replace(getDashboardRoute(role));
     } catch {
-      // Offline fallback
-    }
-
-    const matched = accounts.find((account) => account.email === email && account.password === password);
-    if (!matched) {
       setError("login_invalid");
-      return;
     }
-    onSignIn(email, matched.role ?? "admin");
   }
 
   async function handleSignUp(event: FormEvent<HTMLFormElement>) {
@@ -92,19 +86,35 @@ export function AdminDemoGate({
         password,
         name: name || "Clinic User",
       });
-      if (!res.error) {
-        onSignUp({ email, password, role: "admin", ...(name ? { name } : {}) });
+      if (res?.error) {
+        setError("signup_duplicate");
         return;
       }
+      router.refresh();
+      onSignUp?.({ email, role: "patient", ...(name ? { name } : {}) });
+      router.replace(getDashboardRoute("patient"));
     } catch {
-      // Offline fallback
-    }
-
-    if (accounts.some((account) => account.email === email)) {
       setError("signup_duplicate");
-      return;
     }
-    onSignUp({ email, password, role: "admin", ...(name ? { name } : {}) });
+  }
+
+  async function handleDemoLogin(role: "admin" | "doctor" | "patient") {
+    setError("");
+    try {
+      const res = await fetch("/api/dev/demo-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        setError("login_invalid");
+        return;
+      }
+      router.refresh();
+      router.replace(getDashboardRoute(role));
+    } catch {
+      setError("login_invalid");
+    }
   }
 
   return (
@@ -229,8 +239,15 @@ export function AdminDemoGate({
                         </span>
                       </div>
 
-                      <Link
-                        href="/api/auth/google"
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          await authClient.signIn.social({
+                            provider: "google",
+                            callbackURL: "/patient/overview",
+                          });
+                        }}
                         className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
                       >
                         <svg className="size-4 shrink-0 text-primary" viewBox="0 0 24 24" aria-hidden="true">
@@ -252,28 +269,30 @@ export function AdminDemoGate({
                           />
                         </svg>
                         <span>{locale === "ar" ? "المتابعة باستخدام Google" : "Continue with Google"}</span>
-                      </Link>
+                      </Button>
 
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onSignIn("mariam.a@example.com", "patient")}
-                          className="min-h-11 rounded-xl text-xs font-medium text-primary hover:bg-secondary"
-                        >
-                          Demo Patient (Mariam)
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onSignIn("admin@bluehaven.example", "admin")}
-                          className="min-h-11 rounded-xl text-xs font-medium text-foreground hover:bg-secondary"
-                        >
-                          Demo Staff (Admin)
-                        </Button>
-                      </div>
+                      {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDemoLogin("patient")}
+                            className="min-h-11 rounded-xl text-xs font-medium text-primary hover:bg-secondary"
+                          >
+                            Demo Patient (Mariam)
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDemoLogin("admin")}
+                            className="min-h-11 rounded-xl text-xs font-medium text-foreground hover:bg-secondary"
+                          >
+                            Demo Staff (Admin)
+                          </Button>
+                        </div>
+                      )}
                     </form>
                   </CardContent>
                 </div>
@@ -428,7 +447,6 @@ export function AdminDemoGate({
             }`}
           >
             <div className="relative flex h-full w-full flex-col items-center justify-center p-8 text-center text-white sm:p-10">
-              {/* Background picture */}
               <Image
                 src="/dental-visit-hero.png"
                 alt=""
@@ -438,7 +456,6 @@ export function AdminDemoGate({
                 priority
               />
 
-              {/* Global Theme Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/95 via-brand-primary/85 to-brand-hover/95 backdrop-blur-[2px]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(85,169,220,0.35),_transparent_75%)]" />
 

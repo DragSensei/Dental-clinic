@@ -1,66 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPatientIntakeForm, upsertPatientIntakeForm } from "@/lib/clinic-db";
-import { requireUser } from "@/lib/auth";
+import { requireSession, resolvePatientEmail, isStaff, HttpError } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import { patientIntakeInputSchema } from "@/lib/clinic-schemas";
+import { toIntakeDTO, fromIntakeInput } from "@/lib/clinic-mappers";
 
 export async function GET(request: Request | NextRequest) {
   try {
-    const session = await requireUser(request);
+    const user = await requireSession(request);
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get("email");
-    if (!email) {
-      return NextResponse.json({ error: "email query parameter is required" }, { status: 400 });
-    }
+    const email = resolvePatientEmail(user, searchParams.get("email"));
 
     const intakeForm = await getPatientIntakeForm(email);
-    return NextResponse.json({ intakeForm });
+    return NextResponse.json({ intakeForm: intakeForm ? toIntakeDTO(intakeForm) : null });
   } catch (error) {
-    console.error("Error fetching patient intake form:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }
 
 export async function PUT(request: Request | NextRequest) {
   try {
-    const session = await requireUser(request);
-    const body = await request.json();
-    const {
-      email,
-      phone,
-      emergencyContact,
-      noChangesVerified,
-      insuranceEnabled,
-      insuranceProvider,
-      insuranceMemberId,
-      conditions,
-      allergies,
-      medications,
-      consentSigned,
-      signatureDataUrl,
-      signedByName,
-    } = body;
-
-    if (!email) {
-      return NextResponse.json({ error: "email is required" }, { status: 400 });
+    const user = await requireSession(request);
+    if (isStaff(user)) {
+      throw new HttpError(403, "forbidden");
     }
+    const body = await request.json();
+    const email = resolvePatientEmail(user, body?.email);
+    const parsed = patientIntakeInputSchema.parse(body);
 
-    const intakeForm = await upsertPatientIntakeForm(email, {
-      phone: phone || "",
-      emergencyContact: emergencyContact || "",
-      noChangesVerified,
-      insuranceEnabled,
-      insuranceProvider,
-      insuranceMemberId,
-      conditions: Array.isArray(conditions) ? conditions : [],
-      allergies: Array.isArray(allergies) ? allergies : [],
-      medications,
-      consentSigned,
-      signatureDataUrl,
-      signedByName,
-    });
+    const inputData = fromIntakeInput(parsed);
+    const intakeForm = await upsertPatientIntakeForm(email, inputData);
 
-    return NextResponse.json({ intakeForm });
+    return NextResponse.json({ intakeForm: toIntakeDTO(intakeForm) });
   } catch (error) {
-    console.error("Error upserting patient intake form:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }

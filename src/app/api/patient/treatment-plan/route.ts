@@ -1,48 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTreatmentPlan, approveTreatmentPlan } from "@/lib/clinic-db";
-import { requireUser } from "@/lib/auth";
+import { getTreatmentPlan, approveTreatmentPlan, ClinicError } from "@/lib/clinic-db";
+import { requireSession, resolvePatientEmail, isStaff, HttpError } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import { approveTreatmentPlanSchema } from "@/lib/clinic-schemas";
+import { toTreatmentPlanDTO } from "@/lib/clinic-mappers";
 
 export async function GET(request: Request | NextRequest) {
   try {
-    const session = await requireUser(request);
+    const user = await requireSession(request);
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get("email");
-    if (!email) {
-      return NextResponse.json({ error: "email query parameter is required" }, { status: 400 });
-    }
+    const email = resolvePatientEmail(user, searchParams.get("email"));
 
     const treatmentPlan = await getTreatmentPlan(email);
-    return NextResponse.json({ treatmentPlan });
+    if (!treatmentPlan) {
+      throw new HttpError(404, "not_found");
+    }
+    return NextResponse.json({ treatmentPlan: toTreatmentPlanDTO(treatmentPlan) });
   } catch (error) {
-    console.error("Error fetching treatment plan:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }
 
 export async function POST(request: Request | NextRequest) {
   try {
-    const session = await requireUser(request);
+    const user = await requireSession(request);
+    if (isStaff(user)) {
+      throw new HttpError(403, "forbidden");
+    }
     const body = await request.json();
-    const { email, action, signatureDataUrl, signedByName } = body;
+    const email = resolvePatientEmail(user, body?.email);
+    const parsed = approveTreatmentPlanSchema.parse(body);
 
-    if (!email) {
-      return NextResponse.json({ error: "email is required" }, { status: 400 });
+    const existing = await getTreatmentPlan(email);
+    if (!existing) {
+      throw new HttpError(404, "not_found");
+    }
+    if (existing.status === "approved") {
+      throw new ClinicError("already_approved");
     }
 
-    if (action === "approve") {
-      if (!signatureDataUrl || !signedByName) {
-        return NextResponse.json(
-          { error: "signatureDataUrl and signedByName are required to approve treatment plan" },
-          { status: 400 }
-        );
-      }
-      const treatmentPlan = await approveTreatmentPlan(email, signatureDataUrl, signedByName);
-      return NextResponse.json({ treatmentPlan });
-    }
-
-    return NextResponse.json({ error: `Unsupported action: ${action}` }, { status: 400 });
+    const treatmentPlan = await approveTreatmentPlan(
+      email,
+      parsed.signatureDataUrl,
+      parsed.signedByName
+    );
+    return NextResponse.json({ treatmentPlan: toTreatmentPlanDTO(treatmentPlan) });
   } catch (error) {
-    console.error("Error updating treatment plan:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }

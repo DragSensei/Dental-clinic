@@ -14,11 +14,17 @@ if (process.env.RESEND_API_KEY) {
   console.warn("⚠️ RESEND_API_KEY is not set. Email notifications will be disabled.");
 }
 
-const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
+const socialProviders: Record<
+  string,
+  { clientId: string; clientSecret: string; scope?: string[]; accessType?: string; prompt?: string }
+> = {};
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   socialProviders.google = {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    scope: ["https://www.googleapis.com/auth/calendar.events"],
+    accessType: "offline",
+    prompt: "consent",
   };
 } else {
   console.warn("⚠️ GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set. Google OAuth will be disabled.");
@@ -60,19 +66,17 @@ export const auth = betterAuth({
     },
     requireEmailVerification: Boolean(process.env.RESEND_API_KEY),
   },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 10,
+    customRules: {
+      "/get-session": false,
+    },
+  },
   socialProviders,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  plugins: [admin(), nextCookies()],
+  plugins: [admin({ defaultRole: "patient", adminRoles: ["admin"] }), nextCookies()],
 });
-
-export async function requireUser(request?: Request) {
-  try {
-    const headersList = request?.headers ?? (await import("next/headers").then((m) => m.headers()).catch(() => null));
-    if (!headersList) return null;
-    return await auth.api.getSession({ headers: headersList });
-  } catch {
-    return null;
-  }
-}

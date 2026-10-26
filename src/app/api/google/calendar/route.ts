@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireSession } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import { CLINIC_TIME_ZONE, clinicInstant } from "@/lib/clinic-time";
+import { auth } from "@/lib/auth";
+import { calendarSyncSchema } from "@/lib/clinic-schemas";
 
 function toGoogleCalendarDate(d: Date): string {
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-export async function POST(request: Request | NextRequest) {
+export async function POST(request: NextRequest) {
   try {
+    const user = await requireSession(request);
     const body = await request.json();
+    const parsed = calendarSyncSchema.parse(body);
     const {
       appointmentId,
       title,
@@ -15,10 +22,9 @@ export async function POST(request: Request | NextRequest) {
       date,
       time,
       durationMinutes = 45,
-      patientEmail,
       doctorName,
       location = "BlueHaven Dental Clinic, Makram Ebeid, Nasr City, Cairo",
-    } = body;
+    } = parsed;
 
     const eventTitle =
       title || (doctorName ? `Dental Appointment - Dr. ${doctorName}` : "Dental Appointment - BlueHaven Clinic");
@@ -28,39 +34,47 @@ export async function POST(request: Request | NextRequest) {
       const details = [
         "BlueHaven Dental Care Consultation",
         doctorName ? `Doctor: ${doctorName}` : null,
-        patientEmail ? `Patient: ${patientEmail}` : null,
+        user.email ? `Patient: ${user.email}` : null,
         appointmentId ? `Appointment Ref: ${appointmentId}` : null,
       ].filter(Boolean);
       eventDescription = details.join("\n");
     }
 
-    let startDate: Date;
-    if (startDateTime) {
-      startDate = new Date(startDateTime);
-    } else if (date && time) {
-      startDate = new Date(`${date}T${time}:00Z`);
+    let startMs: number;
+    if (date && time) {
+      startMs = clinicInstant(date, time);
+    } else if (startDateTime) {
+      startMs = new Date(startDateTime).getTime();
     } else {
-      startDate = new Date(Date.now() + 48 * 3600 * 1000);
+      startMs = Date.now() + 48 * 3600 * 1000;
     }
 
     const duration = Number(durationMinutes) || 45;
-    const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+    const endMs = startMs + duration * 60 * 1000;
+
+    const startDate = new Date(startMs);
+    const endDate = new Date(endMs);
 
     const datesParam = `${toGoogleCalendarDate(startDate)}/${toGoogleCalendarDate(endDate)}`;
     const templateUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       eventTitle
     )}&dates=${datesParam}&details=${encodeURIComponent(eventDescription)}&location=${encodeURIComponent(location)}`;
 
-    const cookieToken =
-      typeof (request as NextRequest).cookies?.get === "function"
-        ? (request as NextRequest).cookies.get("dental_google_token")?.value
-        : undefined;
-
-    const token =
-      process.env.GOOGLE_CALENDAR_ACCESS_TOKEN ||
-      process.env.GOOGLE_ACCESS_TOKEN ||
-      process.env.GOOGLE_CALENDAR_TOKEN ||
-      cookieToken;
+    const cookieToken = (request as NextRequest).cookies?.get("dental_google_token")?.value;
+    let token = cookieToken;
+    const authApi = auth.api as unknown as Record<
+      string,
+      ((opts: { body: { providerId: string }; headers: Headers }) => Promise<{ accessToken?: string }>) | undefined
+    >;
+    if (!token && typeof authApi.getAccessToken === "function") {
+      try {
+        const tokenRes = await authApi.getAccessToken({
+          body: { providerId: "google" },
+          headers: request.headers,
+        });
+        token = tokenRes?.accessToken;
+      } catch {}
+    }
 
     let eventId: string | null = null;
     let finalUrl = templateUrl;
@@ -77,13 +91,13 @@ export async function POST(request: Request | NextRequest) {
             summary: eventTitle,
             description: eventDescription,
             location,
-            start: { dateTime: startDate.toISOString() },
-            end: { dateTime: endDate.toISOString() },
+            start: { dateTime: startDate.toISOString(), timeZone: CLINIC_TIME_ZONE },
+            end: { dateTime: endDate.toISOString(), timeZone: CLINIC_TIME_ZONE },
             reminders: {
               useDefault: false,
               overrides: [
-                { method: "popup", minutes: 2880 }, // 48-hour reminder
-                { method: "popup", minutes: 1440 }, // 24-hour reminder
+                { method: "popup", minutes: 2880 },
+                { method: "popup", minutes: 1440 },
               ],
             },
           }),
@@ -105,12 +119,11 @@ export async function POST(request: Request | NextRequest) {
       success: true,
       url: finalUrl,
       eventId,
-      synced: true,
+      synced: eventId !== null,
       mode: eventId ? "google_api" : "template_url",
       templateUrl,
     });
   } catch (err) {
-    console.error("Error processing calendar request:", err);
-    return NextResponse.json({ error: "Invalid calendar request payload", success: false }, { status: 400 });
+    return toErrorResponse(err);
   }
 }

@@ -3,49 +3,46 @@ import {
   cancelAppointment,
   rescheduleAppointment,
   confirmAppointmentAttendance,
-  ClinicError,
 } from "@/lib/clinic-db";
-import { requireUser } from "@/lib/auth";
+import { requireSession, isStaff, HttpError } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import prisma from "@/lib/prisma";
+import { patchAppointmentSchema } from "@/lib/clinic-schemas";
+import { toAppointmentDTO } from "@/lib/clinic-mappers";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireUser(request);
+    const user = await requireSession(request);
     const { id } = await params;
     const body = await request.json();
-    const { action, isStaff, date, time } = body;
+    const parsed = patchAppointmentSchema.parse(body);
+
+    const appt = await prisma.appointment.findUnique({ where: { id } });
+    if (!appt) {
+      throw new HttpError(404, "not_found");
+    }
+
+    if (!isStaff(user) && appt.email !== user.email) {
+      throw new HttpError(404, "not_found");
+    }
 
     let appointment;
-    if (action === "cancel") {
-      appointment = await cancelAppointment(id, Boolean(isStaff));
-    } else if (action === "reschedule") {
-      if (!date || !time) {
-        return NextResponse.json(
-          { error: "date and time are required for rescheduling" },
-          { status: 400 }
-        );
-      }
-      appointment = await rescheduleAppointment(id, date, time);
-    } else if (action === "confirm_attendance") {
-      appointment = await confirmAppointmentAttendance(id);
+    if (parsed.action === "cancel") {
+      appointment = await cancelAppointment(id, isStaff(user));
+    } else if (parsed.action === "reschedule") {
+      appointment = await rescheduleAppointment(id, parsed.date, parsed.time, isStaff(user));
     } else {
-      return NextResponse.json(
-        { error: `Unsupported action: ${action}` },
-        { status: 400 }
-      );
+      if (appt.email !== user.email) {
+        throw new HttpError(403, "forbidden");
+      }
+      appointment = await confirmAppointmentAttendance(id);
     }
 
-    return NextResponse.json({ appointment });
+    return NextResponse.json({ appointment: toAppointmentDTO(appointment) });
   } catch (err: unknown) {
-    if (err instanceof ClinicError) {
-      return NextResponse.json({ error: err.code }, { status: 400 });
-    }
-    console.error("Failed to update appointment:", err);
-    return NextResponse.json(
-      { error: (err as Error)?.message || "Failed to update appointment" },
-      { status: 500 }
-    );
+    return toErrorResponse(err);
   }
 }

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServices, getDoctors, getClinicWorkingHours } from "@/lib/clinic-db";
+import { toErrorResponse } from "@/lib/http";
+import { toServiceDTO, toDoctorDTO } from "@/lib/clinic-mappers";
 
 export async function GET() {
   try {
@@ -9,9 +11,12 @@ export async function GET() {
       getClinicWorkingHours(),
     ]);
 
-    return NextResponse.json({ services, doctors, workingHours });
+    return NextResponse.json({
+      services: services.map(toServiceDTO),
+      doctors: doctors.map(toDoctorDTO),
+      workingHours,
+    });
   } catch (error) {
-    console.error("Failed to fetch clinic catalog:", error);
-    return NextResponse.json({ error: "Failed to fetch clinic catalog" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }

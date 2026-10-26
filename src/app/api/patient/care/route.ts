@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVisitCareSummaries } from "@/lib/clinic-db";
-import { requireUser } from "@/lib/auth";
+import { requireSession, resolvePatientEmail } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import { toCareSummaryDTO } from "@/lib/clinic-mappers";
 
 export async function GET(request: Request | NextRequest) {
   try {
-    const session = await requireUser(request);
+    const user = await requireSession(request);
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get("email");
-    if (!email) {
-      return NextResponse.json({ error: "email query parameter is required" }, { status: 400 });
-    }
+    const email = resolvePatientEmail(user, searchParams.get("email"));
 
     const careSummaries = await getVisitCareSummaries(email);
-    return NextResponse.json({ careSummaries });
+    return NextResponse.json({ careSummaries: careSummaries.map(toCareSummaryDTO) });
   } catch (error) {
-    console.error("Error fetching visit care summaries:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }

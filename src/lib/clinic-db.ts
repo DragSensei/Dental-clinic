@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { clinicInstant, hoursUntil, CANCEL_WINDOW_HOURS } from "@/lib/clinic-time";
 
 export type ClinicErrorCode =
   | "service_clinician_mismatch"
@@ -13,7 +14,14 @@ export type ClinicErrorCode =
   | "invalid_doctor"
   | "doctor_not_found"
   | "doctor_service_blocked"
-  | "cancellation_policy_locked";
+  | "cancellation_policy_locked"
+  | "cancellation_window"
+  | "invalid_transition"
+  | "already_paid"
+  | "invoice_not_found"
+  | "plan_not_found"
+  | "already_approved"
+  | "invalid_reference";
 
 export class ClinicError extends Error {
   readonly code: ClinicErrorCode;
@@ -240,7 +248,7 @@ export async function updateDoctor(
     take: 100,
   });
   if (services.length !== input.serviceIds.length) {
-    throw new ClinicError("invalid_doctor");
+    throw new ClinicError("invalid_reference");
   }
 
   // Active appointment guard: doctor cannot remove a service for which they have confirmed future appointments
@@ -320,16 +328,21 @@ export async function getAvailableSlots(serviceId: string, doctorId: string, dat
       status: "confirmed",
       id: excludeId ? { not: excludeId } : undefined,
     },
-    include: { service: true },
     take: 100,
   });
 
+  const now = Date.now();
+
   return slotStarts.filter((time) => {
+    // Reject slots in the past even if today
+    if (clinicInstant(date, time) <= now) {
+      return false;
+    }
     const start = minutes(time);
     const end = start + service.durationMinutes;
     return !active.some((item) => {
       const otherStart = minutes(item.time);
-      const otherEnd = otherStart + item.service.durationMinutes;
+      const otherEnd = otherStart + (item.durationMinutes || 45);
       return start < otherEnd && otherStart < end;
     });
   });
@@ -354,26 +367,30 @@ export async function bookAppointment(input: {
     throw new ClinicError("invalid_contact");
   }
 
+  // 1. Server-side slot validation
+  const available = await getAvailableSlots(input.serviceId, input.doctorId, input.date);
+  if (!available.includes(input.time)) {
+    throw new ClinicError("slot_unavailable");
+  }
+
+  // 2. Concurrency: per-doctor-per-day advisory lock inside transaction
   return await prisma.$transaction(async (tx) => {
-    const doctor = await tx.doctor.findUnique({
-      where: { id: input.doctorId },
-      include: { services: true },
-    });
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.doctorId} || ':' || ${input.date}))`;
+
     const service = await tx.service.findUnique({
       where: { id: input.serviceId },
     });
-    if (!service || !doctor || !doctor.services.some((s) => s.serviceId === input.serviceId)) {
+    if (!service) {
       throw new ClinicError("service_clinician_mismatch");
     }
 
-    // Check availability inside transaction
+    // Re-run the overlap query with tx
     const active = await tx.appointment.findMany({
       where: {
         doctorId: input.doctorId,
         date: input.date,
         status: "confirmed",
       },
-      include: { service: true },
       take: 100,
     });
 
@@ -381,10 +398,12 @@ export async function bookAppointment(input: {
     const end = start + service.durationMinutes;
     const hasConflict = active.some((item) => {
       const otherStart = minutes(item.time);
-      const otherEnd = otherStart + item.service.durationMinutes;
+      const otherEnd = otherStart + (item.durationMinutes || 45);
       return start < otherEnd && otherStart < end;
     });
-    if (hasConflict) throw new ClinicError("slot_unavailable");
+    if (hasConflict) {
+      throw new ClinicError("slot_unavailable");
+    }
 
     return await tx.appointment.create({
       data: {
@@ -407,13 +426,10 @@ export async function bookAppointment(input: {
 
 export function canCancelAppointment(dateStr: string, timeStr: string): { allowed: boolean; hoursRemaining: number } {
   try {
-    const appointmentDateTime = new Date(`${dateStr}T${timeStr}:00`);
-    const now = new Date();
-    const diffMs = appointmentDateTime.getTime() - now.getTime();
-    const hoursRemaining = Math.round(diffMs / (1000 * 60 * 60));
+    const remaining = hoursUntil(dateStr, timeStr);
     return {
-      allowed: hoursRemaining >= 24,
-      hoursRemaining,
+      allowed: remaining >= CANCEL_WINDOW_HOURS,
+      hoursRemaining: Math.max(0, Math.floor(remaining)),
     };
   } catch {
     return { allowed: false, hoursRemaining: 0 };
@@ -423,14 +439,18 @@ export function canCancelAppointment(dateStr: string, timeStr: string): { allowe
 export async function cancelAppointment(id: string, isStaff: boolean = false) {
   const appointment = await prisma.appointment.findUnique({ where: { id } });
   if (!appointment) throw new ClinicError("appointment_not_found");
-  if (appointment.status === "cancelled") return appointment;
 
-  // Unless staff override, enforce 24-hour hold-button cancellation policy
-  if (!isStaff) {
-    const check = canCancelAppointment(appointment.date, appointment.time);
-    if (!check.allowed) {
-      throw new ClinicError("cancellation_policy_locked");
-    }
+  if (appointment.status !== "confirmed") {
+    throw new ClinicError("invalid_transition");
+  }
+
+  const remaining = hoursUntil(appointment.date, appointment.time);
+  if (remaining <= 0) {
+    throw new ClinicError("invalid_transition");
+  }
+
+  if (!isStaff && remaining < CANCEL_WINDOW_HOURS) {
+    throw new ClinicError("cancellation_window");
   }
 
   return await prisma.appointment.update({
@@ -440,26 +460,95 @@ export async function cancelAppointment(id: string, isStaff: boolean = false) {
   });
 }
 
-export async function rescheduleAppointment(id: string, date: string, time: string) {
+export async function rescheduleAppointment(
+  id: string,
+  date: string,
+  time: string,
+  isStaff: boolean = false
+) {
   const appointment = await prisma.appointment.findUnique({
-    where: { id, status: "confirmed" },
-    include: { service: true },
-  });
-  if (!appointment) throw new ClinicError("confirmed_not_found");
-
-  const available = await getAvailableSlots(appointment.serviceId, appointment.doctorId, date, id);
-  if (!available.includes(time)) throw new ClinicError("time_unavailable");
-
-  return await prisma.appointment.update({
     where: { id },
-    data: { date, time },
-    include: { service: true, doctor: true },
+  });
+  if (!appointment) throw new ClinicError("appointment_not_found");
+
+  if (appointment.status !== "confirmed") {
+    throw new ClinicError("invalid_transition");
+  }
+
+  const remainingOld = hoursUntil(appointment.date, appointment.time);
+  if (remainingOld <= 0) {
+    throw new ClinicError("invalid_transition");
+  }
+
+  if (!isStaff && remainingOld < CANCEL_WINDOW_HOURS) {
+    throw new ClinicError("cancellation_window");
+  }
+
+  // Target slot availability check
+  const available = await getAvailableSlots(appointment.serviceId, appointment.doctorId, date, id);
+  if (!available.includes(time)) {
+    throw new ClinicError("slot_unavailable");
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    // Acquire locks in sorted order to avoid deadlock
+    const lockKeys = Array.from(
+      new Set([`${appointment.doctorId}:${appointment.date}`, `${appointment.doctorId}:${date}`])
+    ).sort();
+
+    for (const key of lockKeys) {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
+    }
+
+    const service = await tx.service.findUnique({ where: { id: appointment.serviceId } });
+    const duration = appointment.durationMinutes || service?.durationMinutes || 45;
+
+    const active = await tx.appointment.findMany({
+      where: {
+        doctorId: appointment.doctorId,
+        date,
+        status: "confirmed",
+        id: { not: id },
+      },
+      take: 100,
+    });
+
+    const start = minutes(time);
+    const end = start + duration;
+    const hasConflict = active.some((item) => {
+      const otherStart = minutes(item.time);
+      const otherEnd = otherStart + (item.durationMinutes || 45);
+      return start < otherEnd && otherStart < end;
+    });
+    if (hasConflict) {
+      throw new ClinicError("slot_unavailable");
+    }
+
+    return await tx.appointment.update({
+      where: { id },
+      data: { date, time },
+      include: { service: true, doctor: true },
+    });
   });
 }
 
 export async function confirmAppointmentAttendance(id: string) {
   const appointment = await prisma.appointment.findUnique({ where: { id } });
   if (!appointment) throw new ClinicError("appointment_not_found");
+
+  if (appointment.status !== "confirmed") {
+    throw new ClinicError("invalid_transition");
+  }
+
+  const remaining = hoursUntil(appointment.date, appointment.time);
+  if (remaining <= 0) {
+    throw new ClinicError("invalid_transition");
+  }
+
+  if (appointment.attendanceConfirmed) {
+    throw new ClinicError("invalid_transition");
+  }
+
   return await prisma.appointment.update({
     where: { id },
     data: { attendanceConfirmed: true, confirmedAt: new Date() },
@@ -467,16 +556,35 @@ export async function confirmAppointmentAttendance(id: string) {
   });
 }
 
-export async function getAppointments(filter?: { email?: string; doctorId?: string; date?: string; status?: string }) {
+export async function getAppointments(filter?: {
+  email?: string;
+  doctorId?: string;
+  date?: string;
+  fromDate?: string;
+  toDate?: string;
+  status?: string;
+  take?: number;
+}) {
+  const dateFilter = filter?.date
+    ? filter.date
+    : filter?.fromDate || filter?.toDate
+    ? {
+        gte: filter?.fromDate,
+        lte: filter?.toDate,
+      }
+    : undefined;
+
+  const boundedTake = Math.min(Math.max(1, filter?.take ?? 200), 200);
+
   return await prisma.appointment.findMany({
     where: {
       email: filter?.email ? filter.email.toLowerCase() : undefined,
       doctorId: filter?.doctorId,
-      date: filter?.date,
+      date: dateFilter,
       status: filter?.status,
     },
     include: { service: true, doctor: true },
-    take: 500,
+    take: boundedTake,
     orderBy: [{ date: "asc" }, { time: "asc" }],
   });
 }
@@ -559,6 +667,14 @@ export async function getTreatmentPlan(email: string) {
 
 export async function approveTreatmentPlan(email: string, signatureDataUrl: string, signedByName: string) {
   const patientEmail = email.toLowerCase();
+  const existing = await prisma.treatmentPlan.findUnique({ where: { patientEmail } });
+  if (!existing) {
+    throw new ClinicError("plan_not_found");
+  }
+  if (existing.status === "approved") {
+    throw new ClinicError("already_approved");
+  }
+
   return await prisma.treatmentPlan.update({
     where: { patientEmail },
     data: {
@@ -594,20 +710,51 @@ export async function getPatientInvoices(email: string) {
   });
 }
 
-export async function payPatientInvoice(invoiceId: string, paymentMethod: string) {
-  const invoice = await prisma.patientInvoice.findUnique({ where: { id: invoiceId } });
-  if (!invoice) throw new Error("Invoice not found");
-  return await prisma.patientInvoice.update({
-    where: { id: invoiceId },
-    data: {
-      paidAmountEgp: invoice.totalFeeEgp,
-      balanceEgp: 0,
-      status: "paid",
-      paymentMethod,
-      receiptNumber: `REC-${Date.now().toString().slice(-6)}`,
-      paidAt: new Date(),
-    },
-    include: { doctor: true, items: true },
+export async function payPatientInvoice(invoiceId: string, paymentMethod: string, ownerEmail?: string) {
+  const receiptNumber = `REC-${Date.now().toString().slice(-6)}`;
+  return await prisma.$transaction(async (tx) => {
+    const existing = await tx.patientInvoice.findUnique({ where: { id: invoiceId } });
+    if (!existing) {
+      throw new ClinicError("invoice_not_found");
+    }
+    if (ownerEmail && existing.patientEmail.toLowerCase() !== ownerEmail.toLowerCase()) {
+      throw new ClinicError("invoice_not_found");
+    }
+    if (existing.status === "paid") {
+      throw new ClinicError("already_paid");
+    }
+    if (existing.status !== "balance_due") {
+      throw new ClinicError("invalid_transition");
+    }
+
+    const r = await tx.patientInvoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: "balance_due",
+        ...(ownerEmail ? { patientEmail: ownerEmail.toLowerCase() } : {}),
+      },
+      data: {
+        paidAmountEgp: existing.totalFeeEgp,
+        balanceEgp: 0,
+        status: "paid",
+        paymentMethod,
+        receiptNumber,
+        paidAt: new Date(),
+      },
+    });
+
+    if (r.count === 0) {
+      const latest = await tx.patientInvoice.findUnique({ where: { id: invoiceId } });
+      if (latest?.status === "paid") {
+        throw new ClinicError("already_paid");
+      }
+      throw new ClinicError("invalid_transition");
+    }
+
+    return await tx.patientInvoice.findUnique({
+      where: { id: invoiceId },
+      include: { doctor: true, items: true },
+    });
   });
 }
 

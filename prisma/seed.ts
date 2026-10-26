@@ -1,3 +1,5 @@
+import "dotenv/config";
+import { hashPassword } from "better-auth/crypto";
 import prisma from "../src/lib/prisma";
 import {
   services,
@@ -10,6 +12,11 @@ import {
 } from "../src/data/mock/catalog";
 
 async function main() {
+  if (process.env.NODE_ENV === "production") {
+    console.error("❌ Refusing to run seed in production environment!");
+    process.exit(1);
+  }
+
   console.log("🌱 Seeding database...");
 
   // 1. Seed ClinicWorkingHours (Sunday: 0, Monday: 1, ..., Friday: 5 (closed), Saturday: 6)
@@ -65,25 +72,54 @@ async function main() {
     });
   }
 
-  // 3. Seed Users & Doctors
-  console.log("Seeding users & doctors...");
+  // 3. Seed Users, Doctors & Credentials
+  console.log("Seeding users & demo accounts...");
+  const seedPassword = process.env.SEED_DEMO_PASSWORD;
+  if (!seedPassword) {
+    console.warn("⚠️ Warning: SEED_DEMO_PASSWORD is not set. Skipping credential seeding for demo accounts.");
+  }
+
   for (const acc of demoAccounts) {
+    const normalizedEmail = acc.email.trim().toLowerCase();
     const user = await prisma.user.upsert({
-      where: { email: acc.email.toLowerCase() },
+      where: { email: normalizedEmail },
       update: {
         name: acc.name,
         role: acc.role,
         status: acc.status,
         phone: acc.phone,
+        emailVerified: true,
       },
       create: {
         name: acc.name,
-        email: acc.email.toLowerCase(),
+        email: normalizedEmail,
         role: acc.role,
         status: acc.status,
         phone: acc.phone,
+        emailVerified: true,
       },
     });
+
+    if (seedPassword) {
+      const existingAccount = await prisma.account.findFirst({
+        where: {
+          userId: user.id,
+          providerId: "credential",
+        },
+      });
+
+      if (!existingAccount) {
+        const hashedPassword = await hashPassword(seedPassword);
+        await prisma.account.create({
+          data: {
+            userId: user.id,
+            accountId: user.id,
+            providerId: "credential",
+            password: hashedPassword,
+          },
+        });
+      }
+    }
 
     if (acc.role === "doctor") {
       const docFixture = doctors.find((d) => d.name === acc.name);
@@ -121,8 +157,9 @@ async function main() {
 
   // 4. Seed Mariam's Patient Intake Form
   console.log("Seeding Mariam's intake form...");
+  const normalizedIntakeEmail = mariamIntakeForm.patientEmail.trim().toLowerCase();
   await prisma.patientIntakeForm.upsert({
-    where: { patientEmail: mariamIntakeForm.patientEmail.toLowerCase() },
+    where: { patientEmail: normalizedIntakeEmail },
     update: {
       phone: mariamIntakeForm.phone,
       emergencyContact: mariamIntakeForm.emergencyContact,
@@ -136,7 +173,7 @@ async function main() {
       signedByName: mariamIntakeForm.signedByName,
     },
     create: {
-      patientEmail: mariamIntakeForm.patientEmail.toLowerCase(),
+      patientEmail: normalizedIntakeEmail,
       phone: mariamIntakeForm.phone,
       emergencyContact: mariamIntakeForm.emergencyContact,
       noChangesVerified: mariamIntakeForm.noChangesVerified,
@@ -150,58 +187,66 @@ async function main() {
     },
   });
 
-  // 5. Seed Mariam's Treatment Plan & Teeth
-  console.log("Seeding Mariam's treatment plan...");
-  const plan = await prisma.treatmentPlan.upsert({
-    where: { patientEmail: mariamTreatmentPlan.patientEmail.toLowerCase() },
-    update: {
-      doctorId: mariamTreatmentPlan.doctorId,
-      status: mariamTreatmentPlan.status,
-      signatureDataUrl: mariamTreatmentPlan.signatureDataUrl,
-      signedByName: mariamTreatmentPlan.signedByName,
-    },
-    create: {
-      id: mariamTreatmentPlan.id,
-      patientEmail: mariamTreatmentPlan.patientEmail.toLowerCase(),
-      doctorId: mariamTreatmentPlan.doctorId,
-      status: mariamTreatmentPlan.status,
-      signatureDataUrl: mariamTreatmentPlan.signatureDataUrl,
-      signedByName: mariamTreatmentPlan.signedByName,
-    },
+  // 5. Seed Mariam's Treatment Plan & Teeth (Non-destructive on re-run)
+  console.log("Seeding Mariam's treatment plan (non-destructive)...");
+  const normalizedPlanEmail = mariamTreatmentPlan.patientEmail.trim().toLowerCase();
+  let plan = await prisma.treatmentPlan.findUnique({
+    where: { patientEmail: normalizedPlanEmail },
   });
 
-  await prisma.toothRecord.deleteMany({ where: { treatmentPlanId: plan.id } });
-  await prisma.toothRecord.createMany({
-    data: mariamTreatmentPlan.teeth.map((t) => ({
-      treatmentPlanId: plan.id,
-      toothNumber: t.toothNumber,
-      label: t.label,
-      status: t.status,
-      condition: t.condition,
-      proposedTreatment: t.proposedTreatment,
-      phaseOrder: t.phaseOrder,
-      xrayNote: t.xrayNote,
-    })),
-  });
-
-  await prisma.treatmentPhase.deleteMany({ where: { treatmentPlanId: plan.id } });
-  for (const ph of mariamTreatmentPlan.phases) {
-    await prisma.treatmentPhase.create({
+  if (!plan) {
+    plan = await prisma.treatmentPlan.create({
       data: {
-        id: ph.id,
-        treatmentPlanId: plan.id,
-        order: ph.order,
-        priority: ph.priority,
-        title: ph.title,
-        description: ph.description,
-        toothNumber: ph.toothNumber,
-        serviceId: ph.serviceId,
-        durationMinutes: ph.durationMinutes,
-        totalFeeEgp: ph.totalFeeEgp,
-        insuranceScaffoldNote: ph.insuranceScaffoldNote,
-        outOfPocketEgp: ph.outOfPocketEgp,
+        id: mariamTreatmentPlan.id,
+        patientEmail: normalizedPlanEmail,
+        doctorId: mariamTreatmentPlan.doctorId,
+        status: mariamTreatmentPlan.status,
+        signatureDataUrl: mariamTreatmentPlan.signatureDataUrl,
+        signedByName: mariamTreatmentPlan.signedByName,
       },
     });
+  }
+
+  const existingTeethCount = await prisma.toothRecord.count({
+    where: { treatmentPlanId: plan.id },
+  });
+  if (existingTeethCount === 0) {
+    await prisma.toothRecord.createMany({
+      data: mariamTreatmentPlan.teeth.map((t) => ({
+        treatmentPlanId: plan.id,
+        toothNumber: t.toothNumber,
+        label: t.label,
+        status: t.status,
+        condition: t.condition,
+        proposedTreatment: t.proposedTreatment,
+        phaseOrder: t.phaseOrder,
+        xrayNote: t.xrayNote,
+      })),
+    });
+  }
+
+  const existingPhaseCount = await prisma.treatmentPhase.count({
+    where: { treatmentPlanId: plan.id },
+  });
+  if (existingPhaseCount === 0) {
+    for (const ph of mariamTreatmentPlan.phases) {
+      await prisma.treatmentPhase.create({
+        data: {
+          id: ph.id,
+          treatmentPlanId: plan.id,
+          order: ph.order,
+          priority: ph.priority,
+          title: ph.title,
+          description: ph.description,
+          toothNumber: ph.toothNumber,
+          serviceId: ph.serviceId,
+          durationMinutes: ph.durationMinutes,
+          totalFeeEgp: ph.totalFeeEgp,
+          insuranceScaffoldNote: ph.insuranceScaffoldNote,
+          outOfPocketEgp: ph.outOfPocketEgp,
+        },
+      });
+    }
   }
 
   // 6. Seed Mariam's Care Summaries
@@ -212,7 +257,7 @@ async function main() {
       await prisma.visitCareSummary.create({
         data: {
           id: cs.id,
-          patientEmail: cs.patientEmail.toLowerCase(),
+          patientEmail: cs.patientEmail.trim().toLowerCase(),
           visitDate: cs.visitDate,
           doctorId: cs.doctorId,
           serviceId: cs.serviceId,
@@ -241,7 +286,7 @@ async function main() {
       await prisma.patientInvoice.create({
         data: {
           id: inv.id,
-          patientEmail: inv.patientEmail.toLowerCase(),
+          patientEmail: inv.patientEmail.trim().toLowerCase(),
           issuedDate: inv.issuedDate,
           doctorId: inv.doctorId,
           totalFeeEgp: inv.totalFeeEgp,
@@ -271,7 +316,7 @@ async function main() {
   const dateStr = sampleDate.toISOString().slice(0, 10);
 
   const existingApp = await prisma.appointment.findFirst({
-    where: { email: "mariam.a@example.com" },
+    where: { email: "mariam.a@example.com".trim().toLowerCase() },
   });
   if (!existingApp) {
     await prisma.appointment.create({
@@ -283,7 +328,7 @@ async function main() {
         time: "10:30",
         durationMinutes: 30,
         patientName: "Mariam Ahmed",
-        email: "mariam.a@example.com",
+        email: "mariam.a@example.com".trim().toLowerCase(),
         phone: "+20 10 1234 5678",
         status: "confirmed",
         attendanceConfirmed: false,

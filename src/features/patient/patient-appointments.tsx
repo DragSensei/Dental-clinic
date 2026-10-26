@@ -87,10 +87,6 @@ function PatientAppointmentsContent() {
 
   const email = signedInEmail || "mariam.a@example.com";
   const userAccount = clinic.accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
-
-  useEffect(() => {
-    clinic.ensurePatientDemoAppointment(email, name || "Mariam Ahmed", "+20 10 1234 5678");
-  }, [clinic, email, name]);
   const patientPhone = userAccount?.phone || "+20 10 1234 5678";
 
   // Tab State: "manage" vs "book"

@@ -1,5 +1,53 @@
 # Project state
 
+## Backend Authorization, Data Integrity & Security Remediation (10-Phase Plan) — 2026-10-25
+- Implemented complete 10-phase remediation plan (`fix/backend-authz-remediation` branch) resolving auth bypasses, race conditions, and mock fallbacks:
+  - **Auth Model & Server Authorization Core (`src/lib/authz.ts`, `src/lib/auth.ts`)**:
+    - Better Auth configured with `admin({ defaultRole: "patient", adminRoles: ["admin"] })` and `nextCookies()`.
+    - Server-side guards: `requireSession(request)` (validates session against database, rejects banned accounts, defaults role to `"patient"`) and `requireRole(request, roles)` (enforces strict role matching: `"admin"`, `"doctor"`, `"patient"`).
+    - Session-backed ownership checks: `assertPatientOwner(authed, resourceOwnerEmail)` ensures patients can access only their own clinical records, intake forms, treatment plans, visit care summaries, and billing invoices.
+    - Zero `requireUser` / `isAuthenticated` theater: removed fake Google OAuth auto-login callback, legacy bypass routes, and insecure `src/server/user.ts`.
+  - **Server-Side Edge Proxy Gate (`src/proxy.ts`)**:
+    - Centralized edge proxy intercepts unauthenticated and wrong-role access before routing or executing page bundles.
+    - Strict 404 invariant: unauthorized access to `/admin`, `/admin/*`, `/patient`, `/patient/*` rewrites directly to `/__not-found` 404 (rendering the standard not-found page with body identical to `/does-not-exist`), preventing path enumeration.
+    - Explicit redirect: only `/admin/login` or `/login` with an active session redirects to that role's dashboard.
+  - **Approved Product Decisions (D1–D8)**:
+    | # | Decision | Policy Enforced |
+    |---|---|---|
+    | D1 | Who may book? | Public guest booking remains open. Name, email, and phone are stored solely on the appointment record. |
+    | D2 | Roles | `admin` has full access. `doctor` has staff access to appointments (all clinicians' schedules) and read-only access to patient records, but cannot access `/api/admin/*`. `patient` accesses only their own records. |
+    | D3 | Patient cancel/reschedule | Permitted strictly at least 24 hours prior to the slot in clinic local time. Staff are exempt from the 24-hour limit. |
+    | D4 | Clinic time zone | `Africa/Cairo` (UTC+2 / UTC+3 DST aware). All slot calculations use wall-clock clinic time. |
+    | D5 | Unauthorized route access | HTTP 404 with standard not-found response (never a redirect) for unauthenticated or wrong-role visits. |
+    | D6 | Invoice payment | Demo payment action: marks invoice paid idempotently with a single receipt number; strictly restricted to invoice owner. |
+    | D7 | Public sign-up | Creates accounts with `role: "patient"`. Staff (`admin`, `doctor`) accounts can only be created by an authenticated `admin`. |
+    | D8 | Demo quick-login | Rendered only when `NEXT_PUBLIC_DEMO_MODE=true`. Signs in through server-side Better Auth (`/api/dev/demo-login`) with seeded credentials. Zero offline password bypass. |
+  - **Booking Concurrency, Integrity & State Transitions (`src/lib/clinic-db.ts`)**:
+    - PostgreSQL transactional advisory locks (`pg_advisory_xact_lock(hashtext(...))`) on doctor-day slots serialize concurrent bookings and prevent double-booking race conditions.
+    - Slot validation: verifies date (valid calendar day within 21-day window, non-Friday), time format, working hours bounds, and historical slot restrictions.
+    - Overlap calculation: evaluates slot ranges using stored appointment `durationMinutes` rather than current catalog duration.
+    - Cancellation window math: computes exact fractional hours without `Math.round` rounding up.
+    - Status transitions: strict validation blocks double cancellations or attendance confirmation on cancelled visits.
+    - Invoice payment idempotency: conditional update (`where: { id, status: "balance_due" }`) ensures exactly one successful payment per invoice under concurrent attempts.
+  - **Input Validation & DTO Protection (`src/lib/clinic-schemas.ts`, `src/lib/clinic-mappers.ts`)**:
+    - Zod schemas validate bodies and query parameters on all endpoints; malformed inputs return 400, missing foreign entities return 422, duplicates return 409.
+    - DTO mappers sanitize database entities, strip internal IDs/passwords/hashes, normalize nulls, and guarantee persistence of service `extendedDetails` and intake `insuranceScaffold`.
+  - **Rate Limiting (`src/lib/rate-limit.ts`)**:
+    - In-memory IP rate limiter on `POST /api/appointments` (10 bookings / 10 minutes per IP).
+    - Better Auth rate limiter configured on auth actions with `/get-session` exemption.
+  - **Frontend Repository Cleanup (`src/data/clinic-repository.ts`, `src/data/use-session.ts`)**:
+    - `useSession` rebuilt on `authClient.useSession()` with zero `sessionStorage` fallback or role defaults.
+    - Centralized `api<T>` client helper throws typed `ClinicError` with HTTP status and server error codes.
+    - Removed all silent `try {} catch {}` swallow blocks and fake `demo-patient-upcoming-*` booking injections.
+    - Layout-driven hydration (`AdminLayoutShell`, `PatientLayoutShell`) fetches protected data only after verified session arrival.
+  - **Testing & Verification Matrix**:
+    - Integration test suite in `tests/integration/` (`security-matrix.test.mjs`, `api-admin-booking.test.mjs`, `api-patient.test.mjs`, `clinic-db.test.mjs`, `rate-limit.test.mjs`).
+    - Guarded with `tests/integration/_setup.mjs` verifying `TEST_DATABASE_URL` ends in `_test`, zero drift on seeded rows, and dynamic `RUN_ID` isolation.
+    - 64/64 automated tests pass cleanly across unit, dictionary, and integration matrices.
+    - 6/6 visual audits passed across mobile (375px), tablet (768px), and desktop (1440px) with 100% compliant touch targets and zero horizontal overflow.
+  - **Correction of Prior Commit Sign-off Claim**:
+    - Commit `01d8b04` previously claimed "Tier-2 machine signoff (30/30 PASS)". That claim was invalid: the implementation contained synthetic reviewer signatures, client-side session storage bypasses (`updateSession` role spoofing), unauthenticated API endpoints, unhashed demo credentials, missing concurrency locks, and client-only 404 gating. All of these have been remediated in this branch.
+
 ## Backend Architecture & Next.js Template Integration (Prisma 7, PostgreSQL, Better Auth, REST Endpoints, Live Wiring) — 2026-10-25
 - Integrated backend stack from `https://github.com/synapsys-tech/nextjs-template`:
   - **Prisma 7 ORM & PostgreSQL**: Configured with `@prisma/adapter-pg` driver adapter, `prisma.config.ts`, and singleton in `src/lib/prisma.ts`. Schema defined with full relations for Better Auth (`User`, `Session`, `Account`, `Verification`), Clinic Catalog (`Service`, `Doctor`, `DoctorService`), Working Hours (`ClinicWorkingHours`, `DoctorWorkingHours`), `Appointment` (with attendance confirmation, 24h cancellation, and Google Calendar sync markers), and Patient Workflows (`PatientIntakeForm`, `TreatmentPlan`, `ToothRecord`, `TreatmentPhase`, `VisitCareSummary`, `PrescriptionItem`, `PatientInvoice`, `InvoiceLineItem`).
@@ -19,7 +67,7 @@
     - Dispatched 2 `flash` subagents (Worker 1: Admin & Booking API; Worker 2: Patient Portal API & Sync).
     - Root personally reviewed every line of code diff, adjusted route handlers, fixed type assertions, and resolved lint issues.
   - **Verification & Signoff**:
-    - Commit `01d8b04` certified with Tier-2 machine signoff: Tests (30/30 PASS), Security (200 files scanned, PASS), Performance (33 pages bounded, PASS), Revisor (token-lint & visual audit across 375px/768px/1440px viewports, PASS).
+    - Commit `01d8b04` claimed Tier-2 machine signoff (30/30 PASS) which was subsequently found invalid (synthetic reviews, in-memory auth bypasses, mock data fallbacks, missing concurrency locks). Fully remediated in branch `fix/backend-authz-remediation`.
     - `npm test`: 30/30 tests passing (14 legacy repository & i18n, 6 database domain tests, 5 admin & booking integration tests, 5 patient portal integration tests).
     - `npx tsc --noEmit`: 0 errors.
     - `npm run lint`: 0 errors.
@@ -102,7 +150,7 @@
 - Verification: 14/14 repository & i18n tests pass, `tsc --noEmit` and `eslint` passed with 0 warnings/errors, Next.js build compiled 43/43 routes, Playwright automated end-to-end tests verified swipe animations, signup/login transitions, responsive fit (zero horizontal overflow at 375px/768px/1440px), and visual audit snapshots confirmed theme token conformity.
 
 ## Strict 404 admin gate, capsule sidebar extension, footer removal, and shadcn Badge component — 2026-10-21
-- Strict unauthenticated 404 gate: Any direct request to any `/admin/*` route (`/admin`, `/admin/overview`, `/admin/accounts`, `/admin/services`, etc.) now strictly returns 404 via `notFound()` if not signed in, preventing unauthorized visitors from seeing or enumerating admin pages or forms.
+- Strict unauthenticated 404 gate: Enforced server-side by `src/proxy.ts` (rewriting unauthorized paths to `/__not-found` rendering the exact 404 not-found page identical to non-existent URLs). It covers both unauthenticated visitors and wrong-role visitors across `/admin/*` and `/patient/*`.
 - Dedicated login route: Added `/admin/login` and `/login` (redirects to `/admin/login`) as the exclusive entrypoint hosting the login/signup gate. Successful sign-in preserves the session in `sessionStorage` via `useSyncExternalStore` and routes to `/admin/overview`.
 - Capsule sidebar extension: Restored the rounded capsule card design (`rounded-[2rem] border border-border bg-card shadow-sm`) and removed sticky locking, allowing the sidebar card to stretch smoothly alongside the content all the way to the end of the page (`h-full min-h-0`).
 - Removed admin footer: Set `SiteFooter` to return `null` for all `pathname.startsWith("/admin")` paths, giving the admin dashboard full vertical height without footer clutter.

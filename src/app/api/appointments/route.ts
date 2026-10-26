@@ -1,58 +1,91 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppointments, bookAppointment, ClinicError } from "@/lib/clinic-db";
+import { getAppointments, bookAppointment } from "@/lib/clinic-db";
+import { requireSession, HttpError } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import { auth } from "@/lib/auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  getAppointmentsQuerySchema,
+  bookAppointmentSchema,
+} from "@/lib/clinic-schemas";
+import { toAppointmentDTO } from "@/lib/clinic-mappers";
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const email = searchParams.get("email") || undefined;
-    const doctorId = searchParams.get("doctorId") || undefined;
-    const date = searchParams.get("date") || undefined;
-    const status = searchParams.get("status") || undefined;
+    const user = await requireSession(request);
+    const searchParams =
+      request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
+    const query = getAppointmentsQuerySchema.parse({
+      email: searchParams.get("email") || undefined,
+      doctorId: searchParams.get("doctorId") || undefined,
+      date: searchParams.get("date") || undefined,
+      from: searchParams.get("from") || undefined,
+      to: searchParams.get("to") || undefined,
+      status: searchParams.get("status") || undefined,
+    });
 
-    const appointments = await getAppointments({ email, doctorId, date, status });
-    return NextResponse.json({ appointments });
-  } catch (error) {
-    console.error("Failed to fetch appointments:", error);
-    return NextResponse.json({ error: "Failed to fetch appointments" }, { status: 500 });
+    let email: string | undefined;
+    const date = query.date;
+    let fromDate = query.from;
+    let toDate = query.to;
+    const doctorId = query.doctorId;
+    const status = query.status;
+
+    if (user.role === "patient") {
+      email = user.email;
+    } else {
+      email = query.email;
+      if (!date && !fromDate && !toDate) {
+        const now = new Date();
+        fromDate = now.toISOString().slice(0, 10);
+        const future = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        toDate = future.toISOString().slice(0, 10);
+      }
+    }
+
+    const appointments = await getAppointments({
+      email,
+      doctorId,
+      date,
+      fromDate,
+      toDate,
+      status,
+      take: 200,
+    });
+    return NextResponse.json({ appointments: appointments.map(toAppointmentDTO) });
+  } catch (err) {
+    return toErrorResponse(err);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rateCheck = checkRateLimit(`appointments:${ip}`, 10, 10 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      throw new HttpError(429, "rate_limited");
+    }
+
+    const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+    const u = session?.user as (Record<string, unknown> | undefined);
     const body = await request.json();
-    const {
-      serviceId,
-      doctorId,
-      date,
-      time,
-      patientName,
-      email,
-      phone,
-      note,
-      reasonCategory,
-    } = body;
+    const parsed = bookAppointmentSchema.parse(body);
+
+    let email = parsed.email;
+    if (u && (u.role === "patient" || !u.role)) {
+      email = String(u.email).trim().toLowerCase();
+    }
+    if (!email) {
+      throw new HttpError(400, "email_required");
+    }
 
     const appointment = await bookAppointment({
-      serviceId,
-      doctorId,
-      date,
-      time,
-      patientName,
+      ...parsed,
       email,
-      phone,
-      note,
-      reasonCategory,
     });
 
-    return NextResponse.json({ appointment }, { status: 201 });
+    return NextResponse.json({ appointment: toAppointmentDTO(appointment) }, { status: 201 });
   } catch (err: unknown) {
-    if (err instanceof ClinicError) {
-      return NextResponse.json({ error: err.code }, { status: 400 });
-    }
-    console.error("Failed to book appointment:", err);
-    return NextResponse.json(
-      { error: (err as Error)?.message || "Failed to book appointment" },
-      { status: 500 }
-    );
+    return toErrorResponse(err);
   }
 }

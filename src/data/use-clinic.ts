@@ -54,6 +54,7 @@ export function useClinic() {
     getPatientInvoices: repository.getPatientInvoices,
     getLastCleaningDate: repository.getLastCleaningDate,
     hydrateClinicData: repository.hydrateClinicData,
+    hydrateAppointments: repository.hydrateAppointments,
     hydratePatientData: repository.hydratePatientData,
   };
 }

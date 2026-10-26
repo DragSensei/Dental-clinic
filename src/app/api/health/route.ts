@@ -6,8 +6,8 @@ export async function GET() {
   const timestamp = new Date().toISOString();
 
   if (health.status === "healthy") {
-    return NextResponse.json({ ...health, timestamp }, { status: 200 });
+    return NextResponse.json({ status: "healthy", timestamp }, { status: 200 });
   }
 
-  return NextResponse.json({ ...health, timestamp }, { status: 503 });
+  return NextResponse.json({ status: "unhealthy", timestamp }, { status: 503 });
 }

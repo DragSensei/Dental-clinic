@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { notFound, usePathname, useRouter } from "next/navigation";
 import { useSession } from "@/data/use-session";
-import { useClinic } from "@/data/use-clinic";
+import { hydrateAppointments, hydratePatientData } from "@/data/clinic-repository";
 import { useI18n } from "@/i18n/locale-provider";
 import { PatientSidebarContext } from "./patient-sidebar-context";
 
@@ -16,27 +16,38 @@ export function PatientLayoutShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signedInEmail, name, signOut } = useSession();
-  const clinic = useClinic();
+  const { signedInEmail, name, role, isPending, signOut } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const { t } = useI18n();
 
   useEffect(() => {
-    if (signedInEmail) {
-      void clinic.ensurePatientDemoAppointment(
-        signedInEmail,
-        name || "Mariam Ahmed",
-        "+20 10 1234 5678"
-      );
+    if (signedInEmail && role === "patient") {
+      void hydrateAppointments();
+      void hydratePatientData(signedInEmail);
     }
-  }, [signedInEmail, name, clinic]);
+  }, [signedInEmail, role]);
 
-  if (pathname === "/patient" || !signedInEmail) {
+  if (pathname === "/patient") {
     notFound();
   }
 
-  const handleSignOut = () => {
-    signOut();
+  // While checking session, render a neutral loading skeleton instead of notFound()
+  if (isPending) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <p role="status" className="rounded-xl bg-muted p-4 text-sm text-muted-foreground animate-pulse">
+          {t.system.loading}...
+        </p>
+      </div>
+    );
+  }
+
+  if (!signedInEmail || role !== "patient") {
+    notFound();
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
     router.push("/");
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   CalendarCheck2,
@@ -93,10 +93,6 @@ export function PatientOverview() {
   const email = signedInEmail || "mariam.a@example.com";
   const dateOpts: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric", year: "numeric" };
   const shortDateOpts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
-
-  useEffect(() => {
-    clinic.ensurePatientDemoAppointment(email, name || "Mariam Ahmed", "+20 10 1234 5678");
-  }, [clinic, email, name]);
 
   // Patient appointments
   const patientAppointments = useMemo(() => {

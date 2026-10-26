@@ -1,29 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAvailableDates, getAvailableSlots } from "@/lib/clinic-db";
+import { toErrorResponse } from "@/lib/http";
+import { availabilityQuerySchema } from "@/lib/clinic-schemas";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const serviceId = searchParams.get("serviceId");
-  const doctorId = searchParams.get("doctorId");
-  const date = searchParams.get("date");
-
-  if (!serviceId || !doctorId) {
-    return NextResponse.json(
-      { error: "serviceId and doctorId query parameters are required" },
-      { status: 400 }
-    );
-  }
-
   try {
-    if (date) {
-      const slots = await getAvailableSlots(serviceId, doctorId, date);
+    const searchParams =
+      request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
+    const parsed = availabilityQuerySchema.parse({
+      serviceId: searchParams.get("serviceId"),
+      doctorId: searchParams.get("doctorId"),
+      date: searchParams.get("date") || undefined,
+    });
+
+    if (parsed.date) {
+      const slots = await getAvailableSlots(parsed.serviceId, parsed.doctorId, parsed.date);
       return NextResponse.json({ slots });
     }
 
-    const dates = await getAvailableDates(serviceId, doctorId);
+    const dates = await getAvailableDates(parsed.serviceId, parsed.doctorId);
     return NextResponse.json({ dates });
   } catch (error) {
-    console.error("Failed to fetch availability:", error);
-    return NextResponse.json({ error: "Failed to fetch availability" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }

@@ -80,9 +80,11 @@ export type PatientIntakeForm = {
   emergencyContact: string;
   noChangesVerified: boolean;
   insuranceScaffold: {
-    enabled: false;
+    enabled: boolean;
     providerPlaceholder: string;
     memberIdPlaceholder: string;
+    provider?: string;
+    memberId?: string;
   };
   conditions: readonly string[];
   allergies: readonly string[];

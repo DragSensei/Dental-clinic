@@ -1,32 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createService, getServices, ClinicError } from "@/lib/clinic-db";
-import { requireUser } from "@/lib/auth";
+import { createService, getServices } from "@/lib/clinic-db";
+import { requireRole } from "@/lib/authz";
+import { toErrorResponse } from "@/lib/http";
+import { createServiceSchema } from "@/lib/clinic-schemas";
+import { toServiceDTO, fromServiceInput } from "@/lib/clinic-mappers";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireUser(request);
+    await requireRole(request, ["admin"]);
     const services = await getServices();
-    return NextResponse.json({ services });
+    return NextResponse.json({ services: services.map(toServiceDTO) });
   } catch (error) {
-    console.error("Failed to fetch services:", error);
-    return NextResponse.json({ error: "Failed to fetch services" }, { status: 500 });
+    return toErrorResponse(error);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireUser(request);
+    await requireRole(request, ["admin"]);
     const body = await request.json();
-    const service = await createService(body);
-    return NextResponse.json({ service }, { status: 201 });
+    const parsed = createServiceSchema.parse(body);
+    const serviceInput = fromServiceInput(parsed);
+    const service = await createService({
+      title: serviceInput.title ?? parsed.title,
+      description: serviceInput.description ?? parsed.description,
+      durationMinutes: serviceInput.durationMinutes ?? parsed.durationMinutes,
+      category: serviceInput.category ?? parsed.category,
+      image: serviceInput.image ?? parsed.image,
+      overview: serviceInput.overview ?? undefined,
+      procedure: serviceInput.procedure ?? undefined,
+      benefits: serviceInput.benefits ?? undefined,
+      aftercare: serviceInput.aftercare ?? undefined,
+    });
+    return NextResponse.json({ service: toServiceDTO(service) }, { status: 201 });
   } catch (err: unknown) {
-    if (err instanceof ClinicError) {
-      return NextResponse.json({ error: err.code }, { status: 400 });
-    }
-    console.error("Failed to create service:", err);
-    return NextResponse.json(
-      { error: (err as Error)?.message || "Failed to create service" },
-      { status: 500 }
-    );
+    return toErrorResponse(err);
   }
 }
