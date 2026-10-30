@@ -5,7 +5,7 @@ import { decideGate } from "../../src/proxy.ts";
 test("decideGate matrix for logged-out visitor (null role)", () => {
   assert.deepEqual(decideGate("/admin", null), { kind: "notFound" });
   assert.deepEqual(decideGate("/admin/overview", null), { kind: "notFound" });
-  assert.deepEqual(decideGate("/admin/login", null), { kind: "next" });
+  assert.deepEqual(decideGate("/admin/login", null), { kind: "redirect", to: "/login" });
   assert.deepEqual(decideGate("/patient/overview", null), { kind: "notFound" });
   assert.deepEqual(decideGate("/login", null), { kind: "next" });
 });

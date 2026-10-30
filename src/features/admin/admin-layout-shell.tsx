@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, type ReactNode } from "react";
-import { notFound, usePathname, useRouter } from "next/navigation";
+import { notFound, redirect, usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { AdminDemoGate } from "@/features/admin/admin-demo-gate";
 import { useSession } from "@/data/use-session";
@@ -45,7 +45,7 @@ export function AdminLayoutShell({
 
   if (!signedInEmail) {
     if (pathname === "/admin/login") {
-      return <AdminDemoGate />;
+      redirect("/login");
     }
     notFound();
   }
@@ -56,7 +56,7 @@ export function AdminLayoutShell({
   }
 
   if (pathname === "/admin/login") {
-    return null;
+    redirect("/login");
   }
 
   const handleSignOut = async () => {

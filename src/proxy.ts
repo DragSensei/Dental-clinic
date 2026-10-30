@@ -7,8 +7,16 @@ import type { Role } from "@/lib/authz";
 export type Gate = { kind: "next" } | { kind: "notFound" } | { kind: "redirect"; to: string };
 
 export function decideGate(pathname: string, role: Role | null): Gate {
-  const isLogin = pathname === "/admin/login" || pathname === "/login";
-  if (isLogin) return role ? { kind: "redirect", to: role === "patient" ? "/patient/overview" : "/admin/overview" } : { kind: "next" };
+  if (pathname === "/admin/login") {
+    return role
+      ? { kind: "redirect", to: role === "patient" ? "/patient/overview" : "/admin/overview" }
+      : { kind: "redirect", to: "/login" };
+  }
+  if (pathname === "/login") {
+    return role
+      ? { kind: "redirect", to: role === "patient" ? "/patient/overview" : "/admin/overview" }
+      : { kind: "next" };
+  }
   if (pathname === "/admin") return { kind: "notFound" }; // bare /admin is always 404 (existing contract)
   if (pathname.startsWith("/admin/")) return role === "admin" || role === "doctor" ? { kind: "next" } : { kind: "notFound" };
   if (pathname === "/patient" || pathname.startsWith("/patient/")) return role === "patient" ? { kind: "next" } : { kind: "notFound" };

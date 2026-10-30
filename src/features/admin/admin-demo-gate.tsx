@@ -275,7 +275,7 @@ export function AdminDemoGate({
                           <p className="text-xs text-center font-medium text-muted-foreground mb-2">
                             {locale === "ar" ? "تسجيل دخول تجريبي فوري بنقرة واحدة:" : "Quick Demo Access (Choose Role):"}
                           </p>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             <Button
                               type="button"
                               variant="outline"
@@ -284,15 +284,6 @@ export function AdminDemoGate({
                               className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
                             >
                               Admin
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDemoLogin("doctor")}
-                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
-                            >
-                              Doctor
                             </Button>
                             <Button
                               type="button"
@@ -434,7 +425,7 @@ export function AdminDemoGate({
                           <p className="text-xs text-center font-medium text-muted-foreground mb-2">
                             {locale === "ar" ? "تسجيل دخول تجريبي فوري بنقرة واحدة:" : "Quick Demo Access (Choose Role):"}
                           </p>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             <Button
                               type="button"
                               variant="outline"
@@ -443,15 +434,6 @@ export function AdminDemoGate({
                               className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
                             >
                               Admin
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDemoLogin("doctor")}
-                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
-                            >
-                              Doctor
                             </Button>
                             <Button
                               type="button"

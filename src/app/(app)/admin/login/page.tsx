@@ -1,6 +1,5 @@
-export const instant = false;
+import { redirect } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const session = null;
-  return <div className="sr-only" aria-hidden="true">{session}</div>;
+  redirect("/login");
 }
