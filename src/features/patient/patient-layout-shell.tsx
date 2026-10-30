@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { notFound, usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { useSession } from "@/data/use-session";
 import { hydrateAppointments, hydratePatientData } from "@/data/clinic-repository";
 import { useI18n } from "@/i18n/locale-provider";

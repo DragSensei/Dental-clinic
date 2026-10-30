@@ -32,11 +32,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "d3nt4lCl1n1c$3cr3tK3y2026!AbCdEf12345",
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined) ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined),
   trustedOrigins: [
     "https://dentalclinicdemo-one.vercel.app",
     "https://*.vercel.app",
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
   ],
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
