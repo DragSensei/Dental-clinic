@@ -6,6 +6,7 @@ import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import { useClinic } from "@/data/use-clinic";
 import { interpolate } from "@/i18n/format";
 import { useI18n } from "@/i18n/locale-provider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ServiceDetail({ id }: { id: string }) {
   const { services, doctors } = useClinic();
@@ -25,5 +26,19 @@ export function ServiceDetail({ id }: { id: string }) {
 
 export function ServiceDetailFallback() {
   const { t } = useI18n();
-  return <main aria-busy="true" aria-label={t.services.detail.loading} className="page-shell min-h-[60vh]"><div className="surface animate-pulse motion-reduce:animate-none overflow-hidden"><div className="bg-brand-subtle p-7 sm:p-10"><div className="h-3 w-24 rounded bg-brand-border" /><div className="mt-5 h-10 max-w-md rounded bg-brand-border" /><div className="mt-5 h-5 max-w-2xl rounded bg-brand-border" /></div><div className="p-7 sm:p-10"><div className="h-6 w-56 rounded bg-brand-subtle" /><div className="mt-5 h-11 w-48 rounded bg-brand-subtle" /></div></div></main>;
+  return (
+    <main aria-busy="true" aria-label={t.services.detail.loading} className="page-shell min-h-[60vh]">
+      <div className="surface overflow-hidden">
+        <div className="bg-brand-subtle p-7 sm:p-10 space-y-4">
+          <Skeleton className="h-3 w-24 bg-brand-border/60" />
+          <Skeleton className="h-10 max-w-md bg-brand-border/60" />
+          <Skeleton className="h-5 max-w-2xl bg-brand-border/60" />
+        </div>
+        <div className="p-7 sm:p-10 space-y-4">
+          <Skeleton className="h-6 w-56 bg-brand-subtle" />
+          <Skeleton className="h-11 w-48 bg-brand-subtle" />
+        </div>
+      </div>
+    </main>
+  );
 }

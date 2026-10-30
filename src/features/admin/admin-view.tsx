@@ -3,6 +3,7 @@
 import { useClinic } from "@/data/use-clinic";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import { useI18n } from "@/i18n/locale-provider";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Appointments as AdminAppointments, AppointmentDetail } from "@/features/admin/admin-appointments";
 import { Calendar as AdminCalendar } from "@/features/admin/admin-calendar";
 import { DoctorEditor, ServiceCreator, ServiceEditor, Services } from "@/features/admin/admin-catalog";
@@ -44,15 +45,45 @@ export function AdminView({ view, id }: { view: View; id?: string }) {
 
 export function AppointmentFallback() {
   const { t } = useI18n();
-  return <div aria-busy="true" aria-label={t.admin.loading.appointment} className="motion-reduce:animate-none animate-pulse"><div className="mb-8 border-b border-border pb-6"><div className="h-3 w-40 rounded bg-muted"/><div className="mt-4 h-9 w-64 rounded bg-muted"/><div className="mt-3 h-4 w-80 max-w-full rounded bg-muted"/></div><div className="grid gap-5 lg:grid-cols-2"><div className="h-64 rounded-2xl border border-border bg-card"/><div className="h-64 rounded-2xl border border-border bg-card"/></div></div>;
+  return (
+    <div aria-busy="true" aria-label={t.admin.loading.appointment} className="space-y-6">
+      <div className="mb-8 border-b border-border pb-6 space-y-3">
+        <Skeleton className="h-3 w-40" />
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-4 w-80 max-w-full" />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Skeleton className="h-64 rounded-2xl border border-border" />
+        <Skeleton className="h-64 rounded-2xl border border-border" />
+      </div>
+    </div>
+  );
 }
 
 export function DoctorFallback() {
   const { t } = useI18n();
-  return <div aria-busy="true" aria-label={t.admin.loading.doctor} className="motion-reduce:animate-none animate-pulse"><div className="mb-8 border-b border-border pb-6"><div className="h-3 w-40 rounded bg-muted"/><div className="mt-4 h-9 w-64 rounded bg-muted"/><div className="mt-3 h-4 w-80 max-w-full rounded bg-muted"/></div><div className="h-[28rem] max-w-2xl rounded-2xl border border-border bg-card"/></div>;
+  return (
+    <div aria-busy="true" aria-label={t.admin.loading.doctor} className="space-y-6">
+      <div className="mb-8 border-b border-border pb-6 space-y-3">
+        <Skeleton className="h-3 w-40" />
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-4 w-80 max-w-full" />
+      </div>
+      <Skeleton className="h-[28rem] max-w-2xl rounded-2xl border border-border" />
+    </div>
+  );
 }
 
 export function ServiceFallback() {
   const { t } = useI18n();
-  return <div aria-busy="true" aria-label={t.admin.loading.service} className="motion-reduce:animate-none animate-pulse"><div className="mb-8 border-b border-border pb-6"><div className="h-3 w-40 rounded bg-muted"/><div className="mt-4 h-9 w-64 rounded bg-muted"/><div className="mt-3 h-4 w-80 max-w-full rounded bg-muted"/></div><div className="h-72 max-w-2xl rounded-2xl border border-border bg-card"/></div>;
+  return (
+    <div aria-busy="true" aria-label={t.admin.loading.service} className="space-y-6">
+      <div className="mb-8 border-b border-border pb-6 space-y-3">
+        <Skeleton className="h-3 w-40" />
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-4 w-80 max-w-full" />
+      </div>
+      <Skeleton className="h-72 max-w-2xl rounded-2xl border border-border" />
+    </div>
+  );
 }

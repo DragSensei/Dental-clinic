@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Stethoscope } from "lucide-react";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import { useClinic } from "@/data/use-clinic";
 import { useI18n } from "@/i18n/locale-provider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DoctorProfile({ id }: { id: string }) {
   const { doctors, services } = useClinic();
@@ -20,5 +21,20 @@ export function DoctorProfile({ id }: { id: string }) {
 
 export function DoctorProfileFallback() {
   const { t } = useI18n();
-  return <main aria-busy="true" aria-label={t.doctors.profile.loading} className="page-shell min-h-[60vh]"><div className="surface animate-pulse motion-reduce:animate-none overflow-hidden"><div className="bg-brand-subtle p-7 sm:p-10"><div className="size-14 rounded-2xl bg-brand-border" /><div className="mt-6 h-3 w-36 rounded bg-brand-border" /><div className="mt-4 h-10 max-w-md rounded bg-brand-border" /><div className="mt-5 h-5 max-w-2xl rounded bg-brand-border" /></div><div className="p-7 sm:p-10"><div className="h-6 w-56 rounded bg-brand-subtle" /><div className="mt-5 h-11 w-48 rounded bg-brand-subtle" /></div></div></main>;
+  return (
+    <main aria-busy="true" aria-label={t.doctors.profile.loading} className="page-shell min-h-[60vh]">
+      <div className="surface overflow-hidden">
+        <div className="bg-brand-subtle p-7 sm:p-10 space-y-4">
+          <Skeleton className="size-14 rounded-2xl bg-brand-border/60" />
+          <Skeleton className="h-3 w-36 bg-brand-border/60" />
+          <Skeleton className="h-10 max-w-md bg-brand-border/60" />
+          <Skeleton className="h-5 max-w-2xl bg-brand-border/60" />
+        </div>
+        <div className="p-7 sm:p-10 space-y-4">
+          <Skeleton className="h-6 w-56 bg-brand-subtle" />
+          <Skeleton className="h-11 w-48 bg-brand-subtle" />
+        </div>
+      </div>
+    </main>
+  );
 }
