@@ -12,9 +12,9 @@ import {
 } from "../src/data/mock/catalog";
 
 async function main() {
-  if (process.env.NODE_ENV === "production") {
-    console.error("❌ Refusing to run seed in production environment!");
-    process.exit(1);
+  if (process.env.NODE_ENV === "production" && process.env.DEMO_MODE !== "true") {
+    console.log("ℹ️ Skipping seed in production (DEMO_MODE is not true).");
+    return;
   }
 
   console.log("🌱 Seeding database...");
