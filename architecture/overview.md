@@ -6,7 +6,7 @@
 - ESLint `eslint-plugin-boundaries` enforces local import boundaries.
 
 ## Source layout
-- `src/app/` owns routes, layouts, metadata, and composition.
+- `src/app/` owns routes, layouts, metadata, and composition. `(site)/` holds public marketing routes with the global navbar and footer; `(app)/` holds the admin, doctor, and patient dashboards with the slim `AppTopBar` and no marketing chrome.
 - `src/features/<feature>/` owns isolated business capabilities.
 - `src/components/` owns reusable UI: `ui/` for basic primitives, `shared/` for cross-feature components, and top-level global blocks (nav, footer, theme provider).
 - `src/lib/` owns shared utilities (`utils.ts`).

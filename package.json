@@ -7,31 +7,46 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npx tsx --test ./src/data/clinic-repository.test.mjs ./src/i18n/i18n.test.mjs"
+    "test": "npx tsx --test ./src/data/clinic-repository.test.mjs ./src/i18n/i18n.test.mjs ./tests/unit/*.test.mjs ./tests/integration/*.test.mjs",
+    "test:integration": "npx tsx --test ./tests/integration/*.test.mjs"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "better-auth": "^1.7.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.5.0",
+    "dotenv": "^17.4.2",
     "lucide-react": "^1.59.0",
     "motion": "^14.4.0",
     "next": "16.4.2",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-email": "^6.11.3",
+    "resend": "^6.34.1",
     "tailwind-merge": "^3.7.0",
-    "tw-animate-css": "^1.4.0"
+    "tw-animate-css": "^1.4.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "eslint-plugin-boundaries": "^5.4.0",
     "playwright": "^1.64.1",
+    "prisma": "^7.10.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   },
   "overrides": {
@@ -41,55 +56,55 @@
     "visual": {
       "baseUrl": "http://127.0.0.1:3000",
       "routes": {
-        "src/app/admin/appointments/page.tsx": [
+        "src/app/(app)/admin/appointments/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/appointments/[id]/page.tsx": [
+        "src/app/(app)/admin/appointments/[id]/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/calendar/page.tsx": [
+        "src/app/(app)/admin/calendar/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/doctors/page.tsx": [
+        "src/app/(app)/admin/doctors/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/doctors/[id]/page.tsx": [
+        "src/app/(app)/admin/doctors/[id]/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/layout.tsx": [
+        "src/app/(app)/admin/layout.tsx": [
           "/"
         ],
-        "src/app/admin/overview/page.tsx": [
+        "src/app/(app)/admin/overview/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/accounts/[id]/page.tsx": [
+        "src/app/(app)/admin/accounts/[id]/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/accounts/page.tsx": [
+        "src/app/(app)/admin/accounts/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/accounts/new/page.tsx": [
+        "src/app/(app)/admin/accounts/new/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/services/new/page.tsx": [
+        "src/app/(app)/admin/services/new/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/services/page.tsx": [
+        "src/app/(app)/admin/services/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/services/[id]/page.tsx": [
+        "src/app/(app)/admin/services/[id]/page.tsx": [
           "/admin/login"
         ],
-        "src/app/admin/settings/page.tsx": [
+        "src/app/(app)/admin/settings/page.tsx": [
           "/admin/login"
         ],
-        "src/app/book/page.tsx": [
+        "src/app/(site)/book/page.tsx": [
           "/book"
         ],
-        "src/app/doctors/page.tsx": [
+        "src/app/(site)/doctors/page.tsx": [
           "/doctors"
         ],
-        "src/app/doctors/[id]/page.tsx": [
+        "src/app/(site)/doctors/[id]/page.tsx": [
           "/doctors/doctor-1"
         ],
         "src/app/error.tsx": [
@@ -114,24 +129,39 @@
           "/"
         ],
         "src/app/not-found.tsx": [
-          "/services/missing"
-        ],
-        "src/app/page.tsx": [
           "/"
         ],
-        "src/app/services/page.tsx": [
+        "src/app/(site)/page.tsx": [
+          "/"
+        ],
+        "src/app/(site)/services/page.tsx": [
           "/services"
         ],
-        "src/app/services/[id]/page.tsx": [
+        "src/app/(site)/services/[id]/page.tsx": [
           "/services/service-1"
         ],
-        "src/app/template.tsx": [
+        "src/app/(site)/template.tsx": [
           "/",
           "/services",
           "/book",
           "/admin/login"
         ],
-        "src/app/visit/page.tsx": [
+        "src/app/(app)/template.tsx": [
+          "/",
+          "/services",
+          "/book",
+          "/admin/login"
+        ],
+        "src/app/(site)/layout.tsx": [
+          "/",
+          "/services",
+          "/book",
+          "/admin/login"
+        ],
+        "src/app/(app)/layout.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(site)/visit/page.tsx": [
           "/visit"
         ],
         "src/features/admin/admin-appointments.tsx": [
@@ -290,6 +320,138 @@
         ],
         "public/window.svg": [
           "/"
+        ],
+        "src/components/ui/bottom-nav-bar.tsx": [
+          "/admin/login"
+        ],
+        "src/components/shared/dashboard-bottom-nav.tsx": [
+          "/admin/login"
+        ],
+        "src/components/shared/dashboard-sidebar.tsx": [
+          "/admin/login"
+        ],
+        "src/components/shared/signature-pad.tsx": [
+          "/admin/login"
+        ],
+        "src/components/site-footer-client.tsx": [
+          "/"
+        ],
+        "src/features/admin/admin-navigation-client.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/layout.tsx": [
+          "/"
+        ],
+        "src/app/(app)/patient/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/overview/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/appointments/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/forms/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/treatment-plan/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/care/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/patient/billing/page.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-sidebar-context.ts": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-navigation.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-navigation-client.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-layout-shell.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-overview.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-appointments.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-intake-forms.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-treatment-plan.tsx": [
+          "/admin/login"
+        ],
+        "src/features/patient/patient-care-billing.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/radio-group.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/switch.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/progress.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/accordion.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/tabs.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/dialog.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/separator.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/avatar.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/toggle.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/toggle-group.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/table.tsx": [
+          "/admin/login"
+        ],
+        "src/components/ui/textarea.tsx": [
+          "/admin/login"
+        ],
+        "src/components/app-top-bar.tsx": [
+          "/admin/login"
+        ],
+        "src/components/not-found-body.tsx": [
+          "/"
+        ],
+        "src/components/site-nav-interactive.tsx": [
+          "/",
+          "/services",
+          "/book",
+          "/admin/login"
+        ],
+        "src/app/(app)/admin/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(app)/admin/patients/page.tsx": [
+          "/admin/login"
+        ],
+        "src/app/(site)/login/page.tsx": [
+          "/admin/login"
+        ],
+        "src/components/emails/reset-password.tsx": [
+          "/admin/login"
+        ],
+        "src/components/emails/verify-email.tsx": [
+          "/admin/login"
         ]
       }
     }

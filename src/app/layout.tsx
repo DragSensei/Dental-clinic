@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
-import { SiteNav } from "@/components/site-nav";
-import { SiteFooter } from "@/components/site-footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/i18n/locale-provider";
 import "./globals.css";
@@ -26,9 +24,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Script id="theme-init" strategy="beforeInteractive">{themeInitScript}</Script>
         <LocaleProvider>
           <ThemeProvider>
-            <SiteNav />
             {children}
-            <SiteFooter />
           </ThemeProvider>
         </LocaleProvider>
       </body>

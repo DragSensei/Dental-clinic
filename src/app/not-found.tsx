@@ -1,9 +1,14 @@
-"use client";
+import { SiteNav } from "@/components/site-nav";
+import { SiteFooter } from "@/components/site-footer";
+import { NotFoundBody } from "@/components/not-found-body";
 
-import Link from "next/link";
-import { useI18n } from "@/i18n/locale-provider";
-
+// Unmatched URLs and signed-out dashboard visits render outside both route groups, so restore the public chrome here.
 export default function NotFound() {
-  const { t } = useI18n();
-  return <main className="page-shell flex-1"><section className="surface mx-auto max-w-2xl p-8 text-center"><p className="eyebrow">{t.system.notFoundEyebrow}</p><h1 className="page-title">{t.system.notFoundTitle}</h1><p className="mt-4 text-muted-foreground">{t.system.notFoundBody}</p><Link className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-primary px-5 font-semibold text-primary-foreground" href="/">{t.system.returnHome}</Link></section></main>;
+  return (
+    <>
+      <SiteNav />
+      <NotFoundBody />
+      <SiteFooter />
+    </>
+  );
 }

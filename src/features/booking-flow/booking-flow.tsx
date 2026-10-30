@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, Stethoscope } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, Stethoscope, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClinic } from "@/data/use-clinic";
+import { useSession } from "@/data/use-session";
 import { getAvailableDates, getAvailableSlots } from "@/data/clinic-repository";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import type { Appointment, BookingDetails } from "@/data/mock/catalog";
@@ -38,7 +39,8 @@ export function BookingFallback() {
 export function BookingFlow() {
   const router = useRouter();
   const query = useSearchParams();
-  const { appointments, services, doctors, bookAppointment } = useClinic();
+  const { appointments, services, doctors, accounts, bookAppointment } = useClinic();
+  const { signedInEmail, name: sessionName, isLoggedIn } = useSession();
   const { locale, t } = useI18n();
   const steps = t.booking.steps;
   const requestedService = query.get("serviceId") || query.get("service") || "";
@@ -68,6 +70,21 @@ export function BookingFlow() {
   const selectedDate = useMemo(() => availableDates.includes(date) ? date : "", [availableDates, date]);
   const slotKey = `${serviceId}|${doctorId}|${date}`;
   const availableSlots = slotResult?.key === slotKey ? slotResult.slots : [];
+
+  // When logged in via useSession(), auto-populate contact from the signed-in account
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      if (signedInEmail && !contact.email) {
+        const matched = accounts.find((a) => a.email.toLowerCase() === signedInEmail.toLowerCase());
+        setContact((prev) => ({
+          patientName: prev.patientName || sessionName || matched?.name || "",
+          email: prev.email || signedInEmail,
+          phone: prev.phone || matched?.phone || "",
+        }));
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [signedInEmail, sessionName, accounts, contact.email]);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -211,6 +228,32 @@ export function BookingFlow() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{t.booking.title}</h1>
           <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">{t.booking.lead}</p>
         </header>
+
+        {/* Subtle Shortcut Banner when Logged In */}
+        {isLoggedIn && (
+          <aside aria-label="Signed-in Patient Shortcut" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3.5 text-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
+                <UserCheck className="size-4" />
+              </span>
+              <p className="text-sm text-foreground">
+                <strong className="font-semibold">{locale === "ar" ? "حساب مريض نشط:" : "Active Patient Portal:"}</strong>{" "}
+                <span className="text-muted-foreground">
+                  {locale === "ar"
+                    ? `مرحبًا، ${sessionName || signedInEmail}. يمكنك إدارة مواعيدك مباشرة.`
+                    : `Signed in as ${sessionName || signedInEmail}. You can manage appointments directly.`}
+                </span>
+              </p>
+            </div>
+            <Link
+              href="/patient/appointments"
+              className="inline-flex min-h-11 items-center rounded-xl bg-primary px-3.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              {locale === "ar" ? "الانتقال لمواعيدي ←" : "Go to Patient Appointments →"}
+            </Link>
+          </aside>
+        )}
+
         <BookingProgress step={step} onSelect={setStep} disabled={pending} />
         <section aria-labelledby="step-title" className="rounded-3xl border border-border bg-card p-5 text-card-foreground sm:p-9">
           <div className="mb-7">

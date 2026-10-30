@@ -1,6 +1,99 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+let idCounter = 1;
+const bookedSlots = new Set();
+
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async (url, init = {}) => {
+  const method = init.method || "GET";
+  const body = init.body ? JSON.parse(init.body) : {};
+
+  if (url === "/api/appointments" && method === "POST") {
+    const slotKey = `${body.doctorId}:${body.date}:${body.time}`;
+    if (bookedSlots.has(slotKey)) {
+      return {
+        ok: false,
+        status: 409,
+        json: async () => ({ error: "slot_unavailable" }),
+      };
+    }
+    bookedSlots.add(slotKey);
+    return {
+      ok: true,
+      status: 201,
+      json: async () => ({
+        appointment: {
+          id: `app-${idCounter++}`,
+          ...body,
+          status: "confirmed",
+          createdAt: new Date().toISOString(),
+        },
+      }),
+    };
+  }
+
+  if (url.startsWith("/api/appointments/") && method === "PATCH") {
+    const id = url.split("/").pop();
+    const app = repository.getSnapshot().appointments.find((a) => a.id === id);
+    if (body.action === "cancel") {
+      if (app) {
+        bookedSlots.delete(`${app.doctorId}:${app.date}:${app.time}`);
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          appointment: { ...(app || {}), status: "cancelled" },
+        }),
+      };
+    }
+    if (body.action === "reschedule") {
+      if (app) {
+        bookedSlots.delete(`${app.doctorId}:${app.date}:${app.time}`);
+        bookedSlots.add(`${app.doctorId}:${body.date}:${body.time}`);
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          appointment: { ...(app || {}), date: body.date, time: body.time },
+        }),
+      };
+    }
+  }
+
+  if (url.startsWith("/api/admin/services") && (method === "PATCH" || method === "PUT")) {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ service: body }),
+    };
+  }
+
+  if (url.startsWith("/api/admin/doctors") && method === "PATCH") {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ doctor: body }),
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({}),
+  };
+};
+
+test.beforeEach(() => {
+  bookedSlots.clear();
+});
+
+test.after(() => {
+  globalThis.fetch = originalFetch;
+});
+
 const repository = await import("./clinic-repository.ts");
 const { services, doctors } = await import("./mock/catalog.ts");
 

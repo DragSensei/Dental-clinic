@@ -51,7 +51,7 @@ export function AppCombobox({
         <Combobox.InputGroup className="relative flex min-h-11 w-full min-w-0 items-center rounded-lg border border-input bg-background transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring data-[disabled]:opacity-60">
           <Combobox.Input
             id={inputId}
-            className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            className="min-w-0 flex-1 h-11 min-h-11 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
             placeholder={placeholder ?? t.combobox.choose}
             readOnly={readOnly}
           />

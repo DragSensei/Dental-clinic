@@ -20,6 +20,9 @@ const eslintConfig = defineConfig([
         { type: "shared", pattern: "src/lib/**" },
         { type: "shared", pattern: "src/data/**" },
         { type: "shared", pattern: "src/i18n/**" },
+        { type: "shared", pattern: "src/server/**" },
+        { type: "shared", pattern: "src/types/**" },
+        { type: "shared", pattern: "src/generated/**" },
       ],
     },
     rules: {
@@ -51,6 +54,7 @@ const eslintConfig = defineConfig([
   // Override default ignores of eslint-config-next.
   globalIgnores([
     ".audit/**",
+    "src/generated/**",
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",

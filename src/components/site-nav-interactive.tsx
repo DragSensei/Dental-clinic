@@ -314,10 +314,10 @@ export function SiteNavInteractive() {
             href={dashboardRoute}
             className={buttonVariants({
               variant: "accent",
-              className: "min-h-11 rounded-full px-4 sm:px-6 text-xs sm:text-sm font-semibold shadow-xs whitespace-nowrap gap-2",
+              className: "min-h-11 rounded-full px-3 sm:px-6 text-xs sm:text-sm font-semibold shadow-xs whitespace-nowrap gap-1.5 sm:gap-2",
             })}
           >
-            <LayoutDashboard className="size-4" />
+            <LayoutDashboard className="hidden sm:block size-4 shrink-0" />
             <span>{t.nav.openDashboard}</span>
           </Link>
         ) : (

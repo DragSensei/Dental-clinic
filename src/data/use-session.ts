@@ -1,98 +1,81 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import type { AccountRole } from "@/data/mock/catalog";
-
-const SESSION_KEY = "dental-demo-admin-email";
-const SESSION_ROLE_KEY = "dental-demo-user-role";
+import { authClient } from "@/lib/auth-client";
 
 export type SessionState = {
   email: string | null;
   role: AccountRole | null;
+  name?: string | null;
+  isPending?: boolean;
 };
-
-let memorySession: SessionState = {
-  email: null,
-  role: null,
-};
-
-const listeners = new Set<() => void>();
-
-function getSessionSnapshot(): SessionState {
-  if (typeof window === "undefined") return memorySession;
-  try {
-    const email = memorySession.email ?? window.sessionStorage.getItem(SESSION_KEY);
-    const role = (memorySession.role ?? window.sessionStorage.getItem(SESSION_ROLE_KEY)) as AccountRole | null;
-    if (memorySession.email !== email || memorySession.role !== role) {
-      memorySession = { email, role };
-    }
-    return memorySession;
-  } catch {
-    return memorySession;
-  }
-}
-
-const serverSnapshot: SessionState = { email: null, role: null };
-
-function getServerSnapshot(): SessionState {
-  return serverSnapshot;
-}
-
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  return () => {
-    listeners.delete(callback);
-  };
-}
-
-export function updateSession(email: string | null, role: AccountRole = "admin") {
-  memorySession = {
-    email,
-    role: email ? role : null,
-  };
-  try {
-    if (typeof window !== "undefined") {
-      if (email) {
-        window.sessionStorage.setItem(SESSION_KEY, email);
-        window.sessionStorage.setItem(SESSION_ROLE_KEY, role);
-      } else {
-        window.sessionStorage.removeItem(SESSION_KEY);
-        window.sessionStorage.removeItem(SESSION_ROLE_KEY);
-      }
-    }
-  } catch {}
-  listeners.forEach((l) => l());
-}
 
 /**
  * Resolves the appropriate dashboard route depending on the user's role.
- * Extensible for future role-specific dashboards (e.g. Doctor dashboard, Patient portal).
+ * Routes patient to /patient/overview.
  */
 export function getDashboardRoute(role?: AccountRole | string | null): string {
   switch (role) {
     case "admin":
       return "/admin/overview";
     case "doctor":
-      // Currently directs to clinic overview; ready for future /doctor/dashboard
       return "/admin/overview";
     case "patient":
-      // Currently directs to clinic overview; ready for future /patient/dashboard
-      return "/admin/overview";
+      return "/patient/overview";
     default:
       return "/admin/overview";
   }
 }
 
+/**
+ * @deprecated Legacy session update retained for backwards compatibility with legacy callers.
+ * Does not mutate storage; session state is managed via Better Auth.
+ */
+export function updateSession(
+  email: string | null,
+  role?: AccountRole,
+  name?: string | null
+) {
+  // No-op: Better Auth cookies and server-side state are the single source of truth.
+  void email;
+  void role;
+  void name;
+}
+
 export function useSession() {
-  const session = useSyncExternalStore(subscribe, getSessionSnapshot, getServerSnapshot);
-  const dashboardRoute = getDashboardRoute(session.role);
+  const { data, isPending } = authClient.useSession();
+  const user = data?.user as (Record<string, unknown> | undefined);
+
+  const email = (user?.email as string) || null;
+  const role = (user?.role as AccountRole) || (email ? "patient" : null);
+  const name = (user?.name as string) || null;
+  const dashboardRoute = getDashboardRoute(role);
 
   return {
-    signedInEmail: session.email,
-    role: session.role,
-    isLoggedIn: Boolean(session.email),
+    signedInEmail: email,
+    email,
+    role,
+    name,
+    isPending,
+    isLoggedIn: Boolean(email),
     dashboardRoute,
-    signIn: (email: string, role: AccountRole = "admin") => updateSession(email, role),
-    signOut: () => updateSession(null),
+    signIn: async (
+      emailOrOpts: string | { email: string; password?: string },
+      passwordOrRole?: string | AccountRole
+    ) => {
+      if (typeof emailOrOpts === "object") {
+        return await authClient.signIn.email({
+          email: emailOrOpts.email,
+          password: emailOrOpts.password || "",
+        });
+      }
+      return await authClient.signIn.email({
+        email: emailOrOpts,
+        password: typeof passwordOrRole === "string" ? passwordOrRole : "",
+      });
+    },
+    signOut: async () => {
+      await authClient.signOut();
+    },
   };
 }

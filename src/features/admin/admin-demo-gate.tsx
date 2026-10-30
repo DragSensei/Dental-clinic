@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import type { ErrorKey } from "@/i18n/dictionaries";
 import { useI18n } from "@/i18n/locale-provider";
@@ -18,46 +19,54 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertErrorWithEverything } from "@/components/shared/alert-error";
-
+import { authClient } from "@/lib/auth-client";
+import { getDashboardRoute } from "@/data/use-session";
 import type { AccountRole } from "@/data/mock/catalog";
 
 export type DemoAccount = {
   email: string;
-  password: string;
   name?: string;
   role?: AccountRole;
 };
 
 export function AdminDemoGate({
-  accounts,
   onSignUp,
   onSignIn,
 }: {
-  accounts: DemoAccount[];
-  onSignUp: (account: DemoAccount) => void;
-  onSignIn: (email: string, role?: AccountRole) => void;
-}) {
+  accounts?: DemoAccount[];
+  onSignUp?: (account: DemoAccount) => void;
+  onSignIn?: (email: string, role?: AccountRole) => void;
+} = {}) {
+  const router = useRouter();
   const { locale, t } = useI18n();
   const copy = t.admin.gate;
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState<ErrorKey | "">("");
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") ?? "").trim().toLowerCase();
     const password = String(data.get("password") ?? "");
 
-    const matched = accounts.find((account) => account.email === email && account.password === password);
-    if (!matched) {
+    try {
+      const res = await authClient.signIn.email({ email, password });
+      if (res?.error) {
+        setError("login_invalid");
+        return;
+      }
+      router.refresh();
+      const sessionRes = await authClient.getSession();
+      const role = (sessionRes?.data?.user as { role?: AccountRole } | undefined)?.role || "patient";
+      onSignIn?.(email, role);
+      router.replace(getDashboardRoute(role));
+    } catch {
       setError("login_invalid");
-      return;
     }
-    onSignIn(email, matched.role ?? "admin");
   }
 
-  function handleSignUp(event: FormEvent<HTMLFormElement>) {
+  async function handleSignUp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     const data = new FormData(event.currentTarget);
@@ -66,15 +75,46 @@ export function AdminDemoGate({
     const confirmPassword = String(data.get("confirmPassword") ?? "");
     const name = String(data.get("name") ?? "").trim();
 
-    if (accounts.some((account) => account.email === email)) {
-      setError("signup_duplicate");
-      return;
-    }
     if (password !== confirmPassword) {
       setError("password_mismatch");
       return;
     }
-    onSignUp({ email, password, role: "admin", ...(name ? { name } : {}) });
+
+    try {
+      const res = await authClient.signUp.email({
+        email,
+        password,
+        name: name || "Clinic User",
+      });
+      if (res?.error) {
+        setError("signup_duplicate");
+        return;
+      }
+      router.refresh();
+      onSignUp?.({ email, role: "patient", ...(name ? { name } : {}) });
+      router.replace(getDashboardRoute("patient"));
+    } catch {
+      setError("signup_duplicate");
+    }
+  }
+
+  async function handleDemoLogin(role: "admin" | "doctor" | "patient") {
+    setError("");
+    try {
+      const res = await fetch("/api/dev/demo-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        setError("login_invalid");
+        return;
+      }
+      router.refresh();
+      router.replace(getDashboardRoute(role));
+    } catch {
+      setError("login_invalid");
+    }
   }
 
   return (
@@ -191,6 +231,68 @@ export function AdminDemoGate({
                       >
                         {copy.loginButton}
                       </Button>
+
+                      <div className="relative my-2 flex items-center justify-center">
+                        <div className="w-full border-t border-border" />
+                        <span className="absolute bg-card px-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+                          {locale === "ar" ? "أو" : "Or"}
+                        </span>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          await authClient.signIn.social({
+                            provider: "google",
+                            callbackURL: "/patient/overview",
+                          });
+                        }}
+                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                      >
+                        <svg className="size-4 shrink-0 text-primary" viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            fill="currentColor"
+                            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+                          />
+                          <path
+                            fill="currentColor"
+                            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"
+                          />
+                          <path
+                            fill="currentColor"
+                            d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                          />
+                          <path
+                            fill="currentColor"
+                            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                          />
+                        </svg>
+                        <span>{locale === "ar" ? "المتابعة باستخدام Google" : "Continue with Google"}</span>
+                      </Button>
+
+                      {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDemoLogin("patient")}
+                            className="min-h-11 rounded-xl text-xs font-medium text-primary hover:bg-secondary"
+                          >
+                            Demo Patient (Mariam)
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDemoLogin("admin")}
+                            className="min-h-11 rounded-xl text-xs font-medium text-foreground hover:bg-secondary"
+                          >
+                            Demo Staff (Admin)
+                          </Button>
+                        </div>
+                      )}
                     </form>
                   </CardContent>
                 </div>
@@ -345,7 +447,6 @@ export function AdminDemoGate({
             }`}
           >
             <div className="relative flex h-full w-full flex-col items-center justify-center p-8 text-center text-white sm:p-10">
-              {/* Background picture */}
               <Image
                 src="/dental-visit-hero.png"
                 alt=""
@@ -355,7 +456,6 @@ export function AdminDemoGate({
                 priority
               />
 
-              {/* Global Theme Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/95 via-brand-primary/85 to-brand-hover/95 backdrop-blur-[2px]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(85,169,220,0.35),_transparent_75%)]" />
 
