@@ -19,51 +19,6 @@ export function AppTopBar() {
           <SiteBrand />
         </div>
         <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-1 rounded-lg border border-border bg-muted/50 p-1 text-xs">
-            <span className="px-1.5 text-muted-foreground font-medium">Demo:</span>
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch("/api/dev/demo-login", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ role: "admin" }),
-                });
-                window.location.href = "/admin/overview";
-              }}
-              className="rounded-md px-2 py-1 font-semibold text-foreground hover:bg-background shadow-xs transition-colors"
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch("/api/dev/demo-login", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ role: "doctor" }),
-                });
-                window.location.href = "/admin/overview";
-              }}
-              className="rounded-md px-2 py-1 font-semibold text-foreground hover:bg-background shadow-xs transition-colors"
-            >
-              Doctor
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch("/api/dev/demo-login", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ role: "patient" }),
-                });
-                window.location.href = "/patient/overview";
-              }}
-              className="rounded-md px-2 py-1 font-semibold text-primary hover:bg-background shadow-xs transition-colors"
-            >
-              Patient
-            </button>
-          </div>
           <Link
             className="hidden min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring sm:inline-flex"
             href="/"

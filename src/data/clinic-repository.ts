@@ -81,6 +81,7 @@ export class ClinicError extends Error {
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
+    credentials: "include",
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
@@ -168,8 +169,8 @@ export async function hydrateAppointments(): Promise<void> {
         appointments: data.appointments,
       });
     }
-  } catch (err) {
-    console.warn("Could not hydrate appointments from API:", err);
+  } catch {
+    // Silently keep current snapshot when unauthenticated or during initial session check
   }
 }
 
