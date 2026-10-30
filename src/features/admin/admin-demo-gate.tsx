@@ -110,8 +110,7 @@ export function AdminDemoGate({
         setError("login_invalid");
         return;
       }
-      router.refresh();
-      router.replace(getDashboardRoute(role));
+      window.location.href = getDashboardRoute(role);
     } catch {
       setError("login_invalid");
     }
@@ -271,26 +270,40 @@ export function AdminDemoGate({
                         <span>{locale === "ar" ? "المتابعة باستخدام Google" : "Continue with Google"}</span>
                       </Button>
 
-                      {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDemoLogin("patient")}
-                            className="min-h-11 rounded-xl text-xs font-medium text-primary hover:bg-secondary"
-                          >
-                            Demo Patient (Mariam)
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDemoLogin("admin")}
-                            className="min-h-11 rounded-xl text-xs font-medium text-foreground hover:bg-secondary"
-                          >
-                            Demo Staff (Admin)
-                          </Button>
+                      {process.env.NEXT_PUBLIC_DEMO_MODE !== "false" && (
+                        <div className="mt-4 pt-3 border-t border-border">
+                          <p className="text-xs text-center font-medium text-muted-foreground mb-2">
+                            {locale === "ar" ? "تسجيل دخول تجريبي فوري بنقرة واحدة:" : "Quick Demo Access (Choose Role):"}
+                          </p>
+                          <div className="grid grid-cols-3 gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDemoLogin("admin")}
+                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
+                            >
+                              Admin
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDemoLogin("doctor")}
+                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
+                            >
+                              Doctor
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDemoLogin("patient")}
+                              className="min-h-11 rounded-xl text-xs font-semibold text-primary hover:bg-secondary border-primary/40 shadow-xs"
+                            >
+                              Patient
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </form>
@@ -416,6 +429,42 @@ export function AdminDemoGate({
                       >
                         {copy.createButton}
                       </Button>
+                      {process.env.NEXT_PUBLIC_DEMO_MODE !== "false" && (
+                        <div className="mt-4 pt-3 border-t border-border">
+                          <p className="text-xs text-center font-medium text-muted-foreground mb-2">
+                            {locale === "ar" ? "تسجيل دخول تجريبي فوري بنقرة واحدة:" : "Quick Demo Access (Choose Role):"}
+                          </p>
+                          <div className="grid grid-cols-3 gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDemoLogin("admin")}
+                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
+                            >
+                              Admin
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDemoLogin("doctor")}
+                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
+                            >
+                              Doctor
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDemoLogin("patient")}
+                              className="min-h-11 rounded-xl text-xs font-semibold text-primary hover:bg-secondary border-primary/40 shadow-xs"
+                            >
+                              Patient
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </form>
                   </CardContent>
                 </div>

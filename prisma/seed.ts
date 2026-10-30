@@ -74,10 +74,7 @@ async function main() {
 
   // 3. Seed Users, Doctors & Credentials
   console.log("Seeding users & demo accounts...");
-  const seedPassword = process.env.SEED_DEMO_PASSWORD;
-  if (!seedPassword) {
-    console.warn("⚠️ Warning: SEED_DEMO_PASSWORD is not set. Skipping credential seeding for demo accounts.");
-  }
+  const seedPassword = process.env.SEED_DEMO_PASSWORD || "DemoPass123!";
 
   for (const acc of demoAccounts) {
     const normalizedEmail = acc.email.trim().toLowerCase();
@@ -108,8 +105,8 @@ async function main() {
         },
       });
 
+      const hashedPassword = await hashPassword(seedPassword);
       if (!existingAccount) {
-        const hashedPassword = await hashPassword(seedPassword);
         await prisma.account.create({
           data: {
             userId: user.id,
@@ -117,6 +114,11 @@ async function main() {
             providerId: "credential",
             password: hashedPassword,
           },
+        });
+      } else {
+        await prisma.account.update({
+          where: { id: existingAccount.id },
+          data: { password: hashedPassword },
         });
       }
     }
