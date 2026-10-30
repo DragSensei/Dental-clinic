@@ -47,8 +47,12 @@ export function PatientLayoutShell({
   }
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/");
+    try {
+      await authClient.signOut();
+    } catch (e) {
+      console.warn("SignOut API failed, redirecting:", e);
+    }
+    window.location.href = "/";
   };
 
   return (

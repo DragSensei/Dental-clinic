@@ -62,9 +62,10 @@ export function AdminLayoutShell({
   const handleSignOut = async () => {
     try {
       await authClient.signOut();
-    } catch {}
-    await signOut();
-    router.push("/");
+    } catch (e) {
+      console.warn("SignOut API failed, redirecting:", e);
+    }
+    window.location.href = "/";
   };
 
   return (

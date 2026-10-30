@@ -75,7 +75,9 @@ export function useSession() {
       });
     },
     signOut: async () => {
-      await authClient.signOut();
+      try {
+        await authClient.signOut();
+      } catch {}
     },
   };
 }
