@@ -13,8 +13,20 @@
   --color-action: var(--action);
   --color-action-foreground: var(--action-foreground);
   --color-action-hover: var(--action-hover);
-  --font-sans: Geist, "Inter Tight", Arial, sans-serif;
+  --color-hero-scrim: var(--hero-scrim);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
   --font-mono: ui-monospace, monospace;
+
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 4rem;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 4.75rem;
+  --text-9xl: 8rem;
+  --text-9xl--line-height: 1;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -44,6 +56,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -53,92 +66,112 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Rebrand by changing these four values; component colors map to them below. */
 :root {
   color-scheme: light;
-  --brand-primary: #19476b;
-  --brand-hover: #123b5c;
-  --brand-subtle: #eef7fc;
-  --brand-border: #c8dce8;
 
-  --background: #ffffff;
-  --foreground: #18334a;
-  --card: #ffffff;
-  --card-foreground: #18334a;
-  --popover: #ffffff;
-  --popover-foreground: #18334a;
-  --primary: var(--brand-primary);
-  --primary-foreground: #ffffff;
-  --secondary: var(--brand-subtle);
-  --secondary-foreground: #18334a;
-  --muted: var(--brand-subtle);
-  --muted-foreground: #40596b;
-  --accent: var(--brand-subtle);
-  --accent-foreground: #18334a;
-  --destructive: #b42318;
-  --border: var(--brand-border);
-  --input: var(--brand-border);
-  --ring: #398fc5;
-  --action: #0070f3;
-  --action-foreground: #ffffff;
-  --action-hover: #0060df;
-  --chart-1: #19476b;
-  --chart-2: #398fc5;
-  --chart-3: #55a9dc;
-  --chart-4: #77b9df;
-  --chart-5: #a5d5ef;
-  --radius: 0.625rem;
-  --sidebar: #f5faff;
-  --sidebar-foreground: #18334a;
-  --sidebar-primary: var(--brand-primary);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--brand-subtle);
-  --sidebar-accent-foreground: #19476b;
-  --sidebar-border: var(--brand-border);
-  --sidebar-ring: #398fc5;
+  /* Typography defaults (Latin) */
+  --font-display: var(--font-display-latin, "Cormorant Garamond", Georgia, serif);
+  --font-body: var(--font-body-latin, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+
+  /* DESIGN.md Section 3: Calm Luxury (OKLCH) */
+  --background: oklch(0.985 0.008 230);
+  --foreground: oklch(0.25 0.04 250);
+  --primary: oklch(0.74 0.11 230);
+  --primary-foreground: oklch(0.22 0.05 250);
+  --secondary: oklch(0.94 0.03 230);
+  --secondary-foreground: oklch(0.25 0.04 250);
+  --accent: oklch(0.90 0.035 80);
+  --accent-foreground: oklch(0.25 0.04 250);
+  --muted: oklch(0.94 0.03 230);
+  --muted-foreground: oklch(0.48 0.03 250);
+  --border: oklch(0.90 0.015 230);
+  --input: oklch(0.90 0.015 230);
+  --ring: oklch(0.74 0.11 230);
+  --hero-scrim: oklch(0.985 0.008 230 / 0.85);
+
+  --brand-primary: oklch(0.25 0.04 250);
+  --brand-hover: oklch(0.20 0.04 250);
+  --brand-subtle: oklch(0.94 0.03 230);
+  --brand-border: oklch(0.90 0.015 230);
+  --action: oklch(0.74 0.11 230);
+  --action-foreground: oklch(0.22 0.05 250);
+  --action-hover: oklch(0.68 0.12 230);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.04 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.04 250);
+  --destructive: oklch(0.58 0.22 25);
+  --chart-1: oklch(0.25 0.04 250);
+  --chart-2: oklch(0.74 0.11 230);
+  --chart-3: oklch(0.60 0.10 230);
+  --chart-4: oklch(0.85 0.06 230);
+  --chart-5: oklch(0.90 0.035 80);
+  --radius: 0.75rem;
+
+  --sidebar: oklch(0.985 0.008 230);
+  --sidebar-foreground: oklch(0.25 0.04 250);
+  --sidebar-primary: oklch(0.74 0.11 230);
+  --sidebar-primary-foreground: oklch(0.22 0.05 250);
+  --sidebar-accent: oklch(0.94 0.03 230);
+  --sidebar-accent-foreground: oklch(0.25 0.04 250);
+  --sidebar-border: oklch(0.90 0.015 230);
+  --sidebar-ring: oklch(0.74 0.11 230);
 }
 
 .dark {
   color-scheme: dark;
-  --brand-primary: #82c9f2;
-  --brand-hover: #a0d9f7;
-  --brand-subtle: #22394a;
-  --brand-border: #355367;
 
-  --background: #101f2c;
-  --foreground: #edf7fc;
-  --card: #172a39;
-  --card-foreground: #edf7fc;
-  --popover: #172a39;
-  --popover-foreground: #edf7fc;
-  --primary: var(--brand-primary);
-  --primary-foreground: #10202c;
-  --secondary: var(--brand-subtle);
-  --secondary-foreground: #edf7fc;
-  --muted: var(--brand-subtle);
-  --muted-foreground: #b8cdda;
-  --accent: var(--brand-subtle);
-  --accent-foreground: #edf7fc;
-  --destructive: #f87171;
-  --border: var(--brand-border);
-  --input: var(--brand-border);
-  --action: #82c9f2;
-  --action-foreground: #102634;
-  --action-hover: #a0d9f7;
-  --ring: #82c9f2;
-  --chart-1: #82c9f2;
-  --chart-2: #55a9dc;
-  --chart-3: #398fc5;
-  --chart-4: #6eadd0;
-  --chart-5: #b4e1f7;
-  --sidebar: #112533;
-  --sidebar-foreground: #edf7fc;
-  --sidebar-primary: var(--brand-primary);
-  --sidebar-primary-foreground: #10202c;
-  --sidebar-accent: var(--brand-subtle);
-  --sidebar-accent-foreground: #edf7fc;
-  --sidebar-border: var(--brand-border);
-  --sidebar-ring: #82c9f2;
+  /* DESIGN.md Section 3: Calm Luxury Dark (OKLCH) */
+  --background: oklch(0.18 0.03 250);
+  --foreground: oklch(0.96 0.01 230);
+  --primary: oklch(0.74 0.11 230);
+  --primary-foreground: oklch(0.20 0.05 250);
+  --secondary: oklch(0.26 0.04 250);
+  --secondary-foreground: oklch(0.96 0.01 230);
+  --accent: oklch(0.35 0.04 80);
+  --accent-foreground: oklch(0.96 0.01 230);
+  --muted: oklch(0.26 0.04 250);
+  --muted-foreground: oklch(0.72 0.02 230);
+  --border: oklch(0.30 0.03 250);
+  --input: oklch(0.30 0.03 250);
+  --ring: oklch(0.74 0.11 230);
+  --hero-scrim: oklch(0.18 0.03 250 / 0.85);
+
+  --brand-primary: oklch(0.74 0.11 230);
+  --brand-hover: oklch(0.80 0.10 230);
+  --brand-subtle: oklch(0.26 0.04 250);
+  --brand-border: oklch(0.30 0.03 250);
+  --action: oklch(0.74 0.11 230);
+  --action-foreground: oklch(0.20 0.05 250);
+  --action-hover: oklch(0.80 0.10 230);
+  --card: oklch(0.22 0.035 250);
+  --card-foreground: oklch(0.96 0.01 230);
+  --popover: oklch(0.22 0.035 250);
+  --popover-foreground: oklch(0.96 0.01 230);
+  --destructive: oklch(0.65 0.20 25);
+  --chart-1: oklch(0.74 0.11 230);
+  --chart-2: oklch(0.60 0.10 230);
+  --chart-3: oklch(0.45 0.08 230);
+  --chart-4: oklch(0.85 0.06 230);
+  --chart-5: oklch(0.35 0.04 80);
+
+  --sidebar: oklch(0.18 0.03 250);
+  --sidebar-foreground: oklch(0.96 0.01 230);
+  --sidebar-primary: oklch(0.74 0.11 230);
+  --sidebar-primary-foreground: oklch(0.20 0.05 250);
+  --sidebar-accent: oklch(0.26 0.04 250);
+  --sidebar-accent-foreground: oklch(0.96 0.01 230);
+  --sidebar-border: oklch(0.30 0.03 250);
+  --sidebar-ring: oklch(0.74 0.11 230);
+}
+
+/* Typography switching for Arabic */
+:root[dir="rtl"],
+[dir="rtl"],
+:root[lang^="ar"],
+[lang^="ar"] {
+  --font-display: var(--font-display-arabic, Amiri, Georgia, serif);
+  --font-body: var(--font-body-arabic, "IBM Plex Sans Arabic", sans-serif);
 }
 
 @layer base {
@@ -148,12 +181,65 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
   }
 
   html {
-    @apply font-sans;
+    font-family: var(--font-body);
     scrollbar-gutter: stable;
     scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+[dir="rtl"] .font-display,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3 {
+  letter-spacing: normal !important;
+}
+
+/* Three custom type sizes from DESIGN.md Section 4 */
+@utility text-6xl {
+  font-size: 3.75rem;
+  line-height: 4rem;
+}
+
+@utility text-7xl {
+  font-size: 4.5rem;
+  line-height: 4.75rem;
+}
+
+@utility text-9xl {
+  font-size: 8rem;
+  line-height: 1;
+}
+
+/* Hero Scrim gradient utility */
+.hero-scrim-start {
+  background: linear-gradient(to right, var(--hero-scrim) 0%, var(--hero-scrim) 40%, transparent 100%);
+}
+[dir="rtl"] .hero-scrim-start {
+  background: linear-gradient(to left, var(--hero-scrim) 0%, var(--hero-scrim) 40%, transparent 100%);
+}
+
+@media (max-width: 767px) {
+  .hero-scrim-start {
+    background: linear-gradient(to bottom, var(--hero-scrim) 0%, var(--hero-scrim) 70%, transparent 100%);
+  }
+  [dir="rtl"] .hero-scrim-start {
+    background: linear-gradient(to bottom, var(--hero-scrim) 0%, var(--hero-scrim) 70%, transparent 100%);
   }
 }
 
@@ -162,7 +248,7 @@
   .page-header { margin-bottom: 2.5rem; max-width: 48rem; }
   .page-title { margin-top: .75rem; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; letter-spacing: -.05em; line-height: 1.05; }
   .eyebrow { color: var(--brand-primary); font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-  .surface { border: 1px solid var(--brand-border); border-radius: 1.25rem; background: var(--card); }
+  .surface { border: 1px solid var(--border); border-radius: 1rem; background: var(--card); }
   .route-enter { animation: route-enter 260ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
   @keyframes route-enter { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; } }
   .booking-step-enter { animation: booking-step-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
@@ -229,17 +315,6 @@
     100% { transform: translateX(100%); }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .faq-answer { transition: none; }
-    .skeleton-glow::after { animation: none; display: none; }
-    .nav-dropdown-enter { animation: none; }
-    .route-enter { animation: none; }
-    .booking-step-enter { animation: none; }
-    .site-nav-link-0, .site-nav-link-1, .site-nav-link-2, .site-nav-link-3, .site-nav-link-4 { animation: none; }
-    .site-nav-link::after { transition: none; }
-  }
-
   .before-after-range {
     position: absolute;
     inset: 0;
@@ -290,20 +365,26 @@
   }
 }
 
-/* Arabic: system fonts with Arabic glyphs, no Latin tracking (it breaks joined letters), and mirrored motion. */
-html[lang="ar"] {
-  font-family: "Segoe UI", Tahoma, Arial, "Noto Sans Arabic", sans-serif;
+/* Reduced motion ergonomics: section 6 */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto !important; }
+  .faq-answer { transition: none !important; }
+  .skeleton-glow::after { animation: none !important; display: none !important; }
+  .nav-dropdown-enter { animation: none !important; }
+  .route-enter { animation: none !important; }
+  .booking-step-enter { animation: none !important; }
+  .site-nav-link-0, .site-nav-link-1, .site-nav-link-2, .site-nav-link-3, .site-nav-link-4 { animation: none !important; }
+  .site-nav-link::after { transition: none !important; }
 }
 
 html[lang="ar"] * {
   letter-spacing: normal !important;
-  text-transform: none !important;
-}
-
-html[lang="ar"] h1,
-html[lang="ar"] h2,
-html[lang="ar"] h3 {
-  line-height: 1.3;
 }
 
 html[dir="rtl"] .booking-step-enter {
@@ -326,4 +407,3 @@ nextjs-portal {
 input[id*="hidden-input"] {
   display: none !important;
 }
-
