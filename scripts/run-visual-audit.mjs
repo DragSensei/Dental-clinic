@@ -11,7 +11,8 @@ const VIEWPORTS = [
 const THEMES = ["light", "dark"];
 const LOCALES = ["en", "ar"];
 
-const outputDir = path.resolve(process.cwd(), ".audit/screenshots");
+const repoRoot = path.resolve(import.meta.dirname, "..");
+const outputDir = path.resolve(repoRoot, ".audit/screenshots");
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }

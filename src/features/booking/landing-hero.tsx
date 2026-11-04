@@ -15,9 +15,10 @@ import { useClinic } from "@/data/use-clinic";
 import { useI18n } from "@/i18n/locale-provider";
 
 export function LandingHero() {
-  const { t, locale, formatDate } = useI18n();
+  const { t, formatDate } = useI18n();
   const { services, doctors, getAvailableDatesForAnyDoctor, getAvailableSlotsForAnyDoctor } = useClinic();
   const [imageError, setImageError] = useState(false);
+  const isDev = process.env.NODE_ENV === "development";
 
   // Compute 3 real appointment slots from the clinic repository
   const upcomingSlots = useMemo(() => {
@@ -93,23 +94,20 @@ export function LandingHero() {
 
   return (
     <section
-      className="relative mx-auto flex min-h-[calc(100vh-68px)] w-full flex-col justify-between overflow-hidden"
+      className="relative mx-auto flex min-h-[calc(100vh-68px)] lg:min-h-screen w-full flex-col justify-between overflow-hidden"
       id="home"
       aria-label={t.landing.hero.title}
     >
-      {/* 1. Full-Bleed Studio Photography from public/images/demo/ (Z-0 plane) */}
+      {/* 1. Full-Bleed Studio Photography from public/images/demo/ (covers entire hero, edge to edge) */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {imageError ? (
           <div
             role="img"
-            aria-label="Clinic photo demo placeholder"
-            className="flex h-full w-full flex-col items-center justify-center border-2 border-dashed border-border bg-secondary/50 p-6 text-center text-muted-foreground"
+            aria-label="Hero photo placeholder"
+            className="flex h-full w-full items-center justify-center bg-secondary/50 p-6 text-center text-muted-foreground"
           >
-            <p className="font-semibold uppercase tracking-wider text-xs sm:text-sm">
-              [CLINIC PHOTO DEMO ASSET · REPLACE PER CLINIC]
-            </p>
-            <p className="mt-1 text-xs">
-              /public/images/demo/hero-desktop.jpg (16:9) · hero-mobile.jpg (4:5)
+            <p className="font-body text-sm font-medium tracking-wide">
+              Hero photo: hero-desktop.jpg, 16:9, subject in right third
             </p>
           </div>
         ) : (
@@ -149,29 +147,28 @@ export function LandingHero() {
         className="hero-scrim-start pointer-events-none absolute inset-0 z-10"
       />
 
-      {/* 3. Hero Content Container (Z-20 plane) */}
-      <div className="hero-fade-up relative z-20 mx-auto my-auto w-full max-w-7xl px-4 pt-16 pb-6 sm:px-8 sm:pt-28 sm:pb-12 lg:px-12 2xl:px-16">
+      {/* 3. Hero Content Container (Z-20 plane, aligned to navigation container, lower-middle stage) */}
+      <div className="hero-fade-up relative z-20 mx-auto w-full max-w-7xl px-4 pt-20 pb-4 sm:px-8 sm:pt-24 sm:pb-6 lg:px-12 2xl:px-16 my-auto">
         <div className="grid items-center gap-6 sm:gap-8 lg:grid-cols-12 lg:gap-12">
-          {/* Start Side: Display Headline, Support Line & CTAs */}
+          {/* Start Side: Headline block aligned with navigation logo */}
           <div className="col-span-12 lg:col-span-7">
-            {/* Eyebrow Pill */}
-            <div className="inline-flex min-h-7 sm:min-h-8 items-center gap-2 rounded-full border border-border bg-background/80 px-3.5 py-0.5 text-xs font-semibold text-foreground backdrop-blur-xs">
-              <span className="size-2 rounded-full bg-primary" />
-              <span>{t.landing.hero.eyebrow}</span>
-            </div>
+            {/* Plain small text in muted-foreground (pill removed per review) */}
+            <p className="font-body text-xs sm:text-sm font-semibold tracking-wider uppercase text-muted-foreground">
+              {t.landing.hero.eyebrow}
+            </p>
 
             {/* Display Headline: Cormorant Garamond (Latin) / Amiri (Arabic) */}
-            <h1 className="font-display mt-3 sm:mt-4 text-[clamp(2.15rem,6.5vw,4.5rem)] font-semibold leading-[1.06] tracking-tight text-foreground">
+            <h1 className="font-display mt-2 sm:mt-3 text-[clamp(2rem,6vw,4.25rem)] font-semibold leading-[1.06] tracking-tight text-foreground">
               {t.landing.hero.title}
             </h1>
 
             {/* Support Line */}
-            <p className="font-body mt-3 sm:mt-4 max-w-xl text-sm sm:text-base lg:text-lg leading-relaxed text-muted-foreground">
+            <p className="font-body mt-2.5 sm:mt-4 max-w-xl text-sm sm:text-base lg:text-lg leading-relaxed text-muted-foreground">
               {t.landing.hero.lead}
             </p>
 
-            {/* Dual CTAs: Rounded-full per Section 6 */}
-            <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3 sm:gap-4">
+            {/* Desktop CTAs: Placed below support line on lg+ */}
+            <div className="hidden lg:flex mt-6 flex-wrap items-center gap-4">
               <Link
                 href="/book"
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xs transition-all duration-150 hover:brightness-105 outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -188,9 +185,9 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* End Side (Desktop) / Below Headline (Mobile): Floating 'Next available' Card */}
-          <div className="col-span-12 lg:col-span-5 w-full max-w-md mx-auto lg:ms-auto">
-            <div className="rounded-2xl border border-border/80 bg-background/85 p-3.5 sm:p-5 shadow-md backdrop-blur-md">
+          {/* End Side: Floating booking card (lines up with "Book a consultation" button in nav) */}
+          <div className="col-span-12 lg:col-span-5 flex flex-col items-center lg:items-end w-full">
+            <div className="w-full max-w-md rounded-2xl border border-border/80 bg-background/85 p-3.5 sm:p-5 shadow-md backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-border/60 pb-2.5 sm:pb-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -203,9 +200,11 @@ export function LandingHero() {
                     {t.landing.hero.nextAvailableSubtitle || "Real-time clinic availability"}
                   </p>
                 </div>
-                <span className="font-body rounded-full bg-secondary px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-foreground">
-                  {t.landing.hero.clinicSlotBadge || "CLINIC SLOT"}
-                </span>
+                {isDev && (
+                  <span className="font-body rounded-full bg-secondary px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-foreground">
+                    {t.landing.hero.clinicSlotBadge || "CLINIC SLOT"}
+                  </span>
+                )}
               </div>
 
               {/* Real Slots: One Tap to Book */}
@@ -216,7 +215,7 @@ export function LandingHero() {
                     href={`/book?serviceId=${encodeURIComponent(slot.serviceId)}&doctorId=${encodeURIComponent(slot.doctorId)}&date=${encodeURIComponent(slot.date)}&time=${encodeURIComponent(slot.time)}`}
                     className="group flex min-h-11 items-center justify-between rounded-xl border border-border/60 bg-background/60 p-2 sm:p-3 transition-colors hover:bg-secondary/70 hover:border-primary/50 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="flex items-center gap-2.5 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <span className="grid size-8 sm:size-9 shrink-0 place-items-center rounded-lg bg-secondary text-foreground group-hover:text-primary transition-colors">
                         <Calendar aria-hidden="true" className="size-3.5 sm:size-4" />
                       </span>
@@ -229,7 +228,7 @@ export function LandingHero() {
                         </p>
                       </div>
                     </div>
-                    <span className="font-body inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 sm:px-3 text-xs font-semibold text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    <span className="font-body inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 sm:px-3 text-xs font-semibold text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                       <span>{t.landing.hero.bookThisSlot || "Book slot"}</span>
                       <ArrowRight aria-hidden="true" className="size-3 rtl:-scale-x-100" />
                     </span>
@@ -237,88 +236,113 @@ export function LandingHero() {
                 ))}
               </div>
             </div>
+
+            {/* Mobile CTAs: Sits directly under the booking card on mobile */}
+            <div className="flex lg:hidden mt-3 sm:mt-4 w-full max-w-md items-center gap-2.5">
+              <Link
+                href="/book"
+                className="flex-1 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs transition-all duration-150 hover:brightness-105 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span>{t.landing.hero.bookAppointment}</span>
+                <ArrowRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
+              </Link>
+              <Link
+                href="/services"
+                className="flex-1 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-border bg-background/80 px-4 text-xs sm:text-sm font-semibold text-foreground shadow-xs backdrop-blur-xs transition-all duration-150 hover:bg-secondary outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span>{t.landing.hero.viewTreatments || "View treatments"}</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Bottom Edge Trust Strip with clearly marked placeholder values (Z-20 plane) */}
+      {/* 4. Trust Strip: Solid bar on bottom edge spanning container, photo continues behind */}
       <aside
         aria-label="Clinic Trust Highlights"
-        className="relative z-20 w-full border-t border-border/80 bg-background/90 sm:bg-background/70 backdrop-blur-xs py-5 sm:py-7 px-4 sm:px-8 lg:px-12 2xl:px-16"
+        className="relative z-20 w-full mt-auto pb-4 sm:pb-6"
       >
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
-            {/* Slot 1: Rating & Reviews */}
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-amber-500 shadow-xs">
-                <Star aria-hidden="true" className="size-4 sm:size-5 fill-amber-400 text-amber-500" />
-              </span>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-12 2xl:px-16">
+          <div className="rounded-2xl border border-border bg-background shadow-xs py-3.5 px-4 sm:py-4 sm:px-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
+              {/* Slot 1: Rating & Reviews */}
+              <div className="flex items-start gap-2.5 sm:gap-3">
+                <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-amber-500 shadow-xs">
+                  <Star aria-hidden="true" className="size-4 sm:size-5 fill-amber-400 text-amber-500" />
+                </span>
+                <div className="min-w-0">
                   <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
                     {t.landing.hero.trustRating || "4.9 ★ Clinic Rating"}
                   </p>
+                  <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                    {t.landing.hero.trustRatingSub || "1,250+ Verified Reviews"}
+                  </p>
+                  {isDev && (
+                    <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
+                      [CLINIC SLOT]
+                    </span>
+                  )}
                 </div>
-                <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  {t.landing.hero.trustRatingSub || "1,250+ Verified Reviews"}
-                </p>
-                <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
-                  [CLINIC SLOT]
-                </span>
               </div>
-            </div>
 
-            {/* Slot 2: Insurance & Payment Plans */}
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary shadow-xs">
-                <ShieldCheck aria-hidden="true" className="size-4 sm:size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
-                  {t.landing.hero.trustInsurance || "Major Insurance Accepted"}
-                </p>
-                <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  {t.landing.hero.trustInsuranceSub || "0% APR Financing Plans"}
-                </p>
-                <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
-                  [CLINIC SLOT]
+              {/* Slot 2: Insurance & Payment Plans */}
+              <div className="flex items-start gap-2.5 sm:gap-3">
+                <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary shadow-xs">
+                  <ShieldCheck aria-hidden="true" className="size-4 sm:size-5" />
                 </span>
+                <div className="min-w-0">
+                  <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
+                    {t.landing.hero.trustInsurance || "Major Insurance Accepted"}
+                  </p>
+                  <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                    {t.landing.hero.trustInsuranceSub || "0% APR Financing Plans"}
+                  </p>
+                  {isDev && (
+                    <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
+                      [CLINIC SLOT]
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Slot 3: Same-Week Appointments */}
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary shadow-xs">
-                <Clock aria-hidden="true" className="size-4 sm:size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
-                  {t.landing.hero.trustSameWeek || "Same-Week Appointments"}
-                </p>
-                <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  {t.landing.hero.trustSameWeekSub || "Guaranteed Routine Slots"}
-                </p>
-                <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
-                  [CLINIC SLOT]
+              {/* Slot 3: Same-Week Appointments */}
+              <div className="flex items-start gap-2.5 sm:gap-3">
+                <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary shadow-xs">
+                  <Clock aria-hidden="true" className="size-4 sm:size-5" />
                 </span>
+                <div className="min-w-0">
+                  <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
+                    {t.landing.hero.trustSameWeek || "Same-Week Appointments"}
+                  </p>
+                  <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                    {t.landing.hero.trustSameWeekSub || "Guaranteed Routine Slots"}
+                  </p>
+                  {isDev && (
+                    <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
+                      [CLINIC SLOT]
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Slot 4: Emergency Line */}
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary shadow-xs">
-                <PhoneCall aria-hidden="true" className="size-4 sm:size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
-                  {t.landing.hero.trustEmergency || "24/7 Urgent Care Line"}
-                </p>
-                <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                  {t.landing.hero.trustEmergencySub || "(555) 234-DENT"}
-                </p>
-                <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
-                  [CLINIC SLOT]
+              {/* Slot 4: Emergency Line */}
+              <div className="flex items-start gap-2.5 sm:gap-3">
+                <span className="grid size-9 sm:size-10 shrink-0 place-items-center rounded-full bg-secondary text-primary shadow-xs">
+                  <PhoneCall aria-hidden="true" className="size-4 sm:size-5" />
                 </span>
+                <div className="min-w-0">
+                  <p className="font-body text-xs sm:text-sm font-semibold text-foreground">
+                    {t.landing.hero.trustEmergency || "24/7 Urgent Care Line"}
+                  </p>
+                  <p className="font-body text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                    {t.landing.hero.trustEmergencySub || "(555) 234-DENT"}
+                  </p>
+                  {isDev && (
+                    <span className="inline-block mt-0.5 text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/80 px-1.5 py-0.2 rounded">
+                      [CLINIC SLOT]
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
