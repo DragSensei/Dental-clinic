@@ -1,5 +1,22 @@
 # Project state
 
+## Landing Page Redesign (Calm Luxury) — Step 1: Hero & Trust Strip (2026-11-05)
+- Branch: `redesign/calm-luxury`
+- Feature inventory recorded in `docs/redesign-feature-inventory.md` covering all 10 sections and bidirectional features.
+- Design contract: fully implemented DESIGN.md section 3 (OKLCH tokens, 3 custom type sizes, and `--hero-scrim` via `@theme inline`), section 4 fonts (Cormorant Garamond & Manrope for Latin, Amiri & IBM Plex Sans Arabic for Arabic), and section 8 items 1–2.
+- Hero architecture:
+  - Edge-to-edge full-bleed photography from `public/images/demo/hero-desktop.jpg` and `hero-mobile.jpg` (authentic clinic photo with negative space for text).
+  - High-contrast start-side scrim gradient (`--hero-scrim`) ensuring readability for display headlines in light and dark modes.
+  - Symmetrical grid alignment to navigation container (`max-w-7xl px-4 sm:px-8 lg:px-12 2xl:px-16`): headline start lines up with brand logo; booking card end edge lines up with "Book a consultation" button.
+  - Lower-middle stage positioning echoing Pelmatech reference pattern.
+  - Interactive "Next available" card with real booking slots and 1-tap booking flow; sits directly under headline on mobile and fully above the fold on 375x667.
+  - Solid trust strip bar spanning the navigation container with photo continuing behind it; `[CLINIC SLOT]` markers conditionally rendered in development mode.
+- Verification:
+  - Visual audit across 12 combinations (1440, 768, 375; light & dark; EN & AR) passed with 0px horizontal spill, 37/37 touch targets on mobile, and 100% above-the-fold visibility.
+  - TypeScript `tsc --noEmit`: 0 errors.
+  - Test suites: 18/18 passing.
+
+
 ## Backend Authorization, Data Integrity & Security Remediation (10-Phase Plan) — 2026-10-25
 - Implemented complete 10-phase remediation plan (`fix/backend-authz-remediation` branch) resolving auth bypasses, race conditions, and mock fallbacks:
   - **Auth Model & Server Authorization Core (`src/lib/authz.ts`, `src/lib/auth.ts`)**:
