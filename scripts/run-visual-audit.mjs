@@ -118,9 +118,23 @@ async function runAudit() {
           });
         }
 
-        // 4. Capture screenshot
+        // 4. Capture screenshots
         const screenshotPath = path.join(outputDir, `${key}.png`);
         await page.screenshot({ path: screenshotPath, fullPage: false });
+
+        // Capture care guide and smile showcase sections
+        try {
+          const careEl = page.locator("#care");
+          if (await careEl.count() > 0) {
+            await careEl.screenshot({ path: path.join(outputDir, `${key}-care.png`) });
+          }
+          const smilesEl = page.locator("#smile-preview");
+          if (await smilesEl.count() > 0) {
+            await smilesEl.screenshot({ path: path.join(outputDir, `${key}-smiles.png`) });
+          }
+        } catch (e) {
+          console.warn("Section screenshot failed:", e.message);
+        }
 
         results.push({
           key,

@@ -14,6 +14,10 @@
   --color-action-foreground: var(--action-foreground);
   --color-action-hover: var(--action-hover);
   --color-hero-scrim: var(--hero-scrim);
+  --color-navy-band: var(--navy-band);
+  --color-navy-band-foreground: var(--navy-band-foreground);
+  --color-navy-band-muted: var(--navy-band-muted);
+  --color-navy-band-border: var(--navy-band-border);
 
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
@@ -88,6 +92,10 @@
   --input: oklch(0.90 0.015 230);
   --ring: oklch(0.74 0.11 230);
   --hero-scrim: oklch(0.985 0.008 230 / 0.85);
+  --navy-band: oklch(0.20 0.04 250);
+  --navy-band-foreground: oklch(0.96 0.01 230);
+  --navy-band-muted: oklch(0.72 0.02 230);
+  --navy-band-border: oklch(0.30 0.03 250);
 
   --brand-primary: oklch(0.25 0.04 250);
   --brand-hover: oklch(0.20 0.04 250);
@@ -136,6 +144,10 @@
   --input: oklch(0.30 0.03 250);
   --ring: oklch(0.74 0.11 230);
   --hero-scrim: oklch(0.18 0.03 250 / 0.85);
+  --navy-band: oklch(0.14 0.03 250);
+  --navy-band-foreground: oklch(0.96 0.01 230);
+  --navy-band-muted: oklch(0.72 0.02 230);
+  --navy-band-border: oklch(0.25 0.03 250);
 
   --brand-primary: oklch(0.74 0.11 230);
   --brand-hover: oklch(0.80 0.10 230);
@@ -243,6 +255,20 @@
   }
 }
 
+/* Navy Band utilities for high-contrast showcase */
+@utility bg-navy-band {
+  background-color: var(--navy-band);
+}
+@utility text-navy-band-foreground {
+  color: var(--navy-band-foreground);
+}
+@utility text-navy-band-muted {
+  color: var(--navy-band-muted);
+}
+@utility border-navy-band-border {
+  border-color: var(--navy-band-border);
+}
+
 @layer components {
   .page-shell { width: 100%; margin-inline: auto; max-width: 80rem; padding: 3rem 1.25rem 5rem; }
   .page-header { margin-bottom: 2.5rem; max-width: 48rem; }
@@ -251,6 +277,8 @@
   .surface { border: 1px solid var(--border); border-radius: 1rem; background: var(--card); }
   .route-enter { animation: route-enter 260ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
   @keyframes route-enter { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; } }
+  .section-fade-up { animation: section-fade-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes section-fade-up { from { opacity: 0; transform: translateY(0.75rem); } to { opacity: 1; transform: translateY(0); } }
   .booking-step-enter { animation: booking-step-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
   @keyframes booking-step-enter { from { opacity: 0; transform: translateX(1.75rem); } to { opacity: 1; transform: translateX(0); } }
   .site-nav-link::after { position: absolute; inset-inline: .75rem; bottom: .35rem; height: 2px; content: ""; border-radius: 9999px; background: var(--brand-primary); transform: scaleX(0); transform-origin: left; transition: transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1); }
