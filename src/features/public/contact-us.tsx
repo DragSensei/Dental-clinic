@@ -166,7 +166,7 @@ export function ContactUs() {
                 <button
                   type="button"
                   onClick={() => setSubmitted(false)}
-                  className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-primary px-6 text-sm font-semibold text-primary-foreground"
+                  className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-primary px-6 text-sm font-semibold text-white dark:text-primary-foreground"
                 >
                   Send another message
                 </button>
@@ -259,9 +259,9 @@ export function ContactUs() {
           </div>
 
           {/* Quick Direct Book Banner */}
-          <div className="rounded-3xl border border-brand-border bg-brand-primary p-6 sm:p-8 text-primary-foreground shadow-sm">
+          <div className="rounded-3xl border border-brand-border bg-brand-primary p-6 sm:p-8 text-white dark:text-primary-foreground shadow-sm">
             <h3 className="text-xl font-bold">Ready to schedule now?</h3>
-            <p className="mt-2 text-sm text-primary-foreground/80">
+            <p className="mt-2 text-sm text-white/85 dark:text-primary-foreground/80">
               Skip the inquiry and pick your preferred doctor and time slot instantly through our online scheduling system.
             </p>
             <Link

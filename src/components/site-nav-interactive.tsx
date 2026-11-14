@@ -327,13 +327,21 @@ export function SiteNavInteractive() {
                 <span>{t.nav.openDashboard}</span>
               </Link>
             ) : (
-              <Link
-                href="/book"
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-105 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span className="sm:hidden">{locale === "en" ? "Book" : "احجز"}</span>
-                <span className="hidden sm:inline">{t.landing.hero.bookAppointment}</span>
-              </Link>
+              <>
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-background/80 px-4 py-2 text-xs sm:text-sm font-semibold text-foreground hover:bg-secondary transition-colors whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {t.nav.login}
+                </Link>
+                <Link
+                  href="/book"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-105 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="sm:hidden">{locale === "en" ? "Book" : "احجز"}</span>
+                  <span className="hidden sm:inline">{t.landing.hero.bookAppointment}</span>
+                </Link>
+              </>
             )}
 
             {/* Mobile Hamburger Drawer Trigger */}
@@ -423,15 +431,35 @@ export function SiteNavInteractive() {
                       </div>
                     </div>
 
-                    {/* Mobile Book CTA */}
+                    {/* Mobile Book & Auth CTA */}
                     <div className="mt-8 grid gap-3">
-                      <Link
-                        href="/book"
-                        onClick={() => setMobileOpen(false)}
-                        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-105"
-                      >
-                        {t.landing.hero.bookAppointment}
-                      </Link>
+                      {isLoggedIn ? (
+                        <Link
+                          href={dashboardRoute}
+                          onClick={() => setMobileOpen(false)}
+                          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-105"
+                        >
+                          <LayoutDashboard className="size-4 shrink-0" />
+                          <span>{t.nav.openDashboard}</span>
+                        </Link>
+                      ) : (
+                        <>
+                          <Link
+                            href="/book"
+                            onClick={() => setMobileOpen(false)}
+                            className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-105"
+                          >
+                            {t.landing.hero.bookAppointment}
+                          </Link>
+                          <Link
+                            href="/login"
+                            onClick={() => setMobileOpen(false)}
+                            className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-border bg-background px-6 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+                          >
+                            {t.nav.login}
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </Dialog.Popup>
                 </Dialog.Portal>

@@ -9,6 +9,20 @@ import { ExpandableCard } from "@/components/shared/expandable-card";
 import { useI18n } from "@/i18n/locale-provider";
 import { Sparkles, CalendarCheck } from "lucide-react";
 
+const CATEGORY_NAMES: Record<string, { en: string; ar: string }> = {
+  all: { en: "All Specialties", ar: "جميع التخصصات" },
+  "Preventive Care": { en: "Preventive Care", ar: "رعاية وقائية" },
+  "Restorative Dentistry": { en: "Restorative Dentistry", ar: "طب الأسنان الترميمي" },
+  "Cosmetic Dentistry": { en: "Cosmetic Dentistry", ar: "طب الأسنان التجميلي" },
+  "Orthodontics": { en: "Orthodontics", ar: "تقويم الأسنان" },
+  "Pediatric Dentistry": { en: "Pediatric Dentistry", ar: "طب أسنان الأطفال" },
+  "Oral Surgery & Endodontics": { en: "Oral Surgery & Endodontics", ar: "جراحة الفم وعلاج الجذور" },
+};
+
+function getCategoryLabel(category: string, locale: string) {
+  return CATEGORY_NAMES[category]?.[locale === "ar" ? "ar" : "en"] || category;
+}
+
 function ServiceDirectoryContent() {
   const { services } = useClinic();
   const { locale, t } = useI18n();
@@ -59,11 +73,11 @@ function ServiceDirectoryContent() {
             onClick={() => setSelectedCategory(cat)}
             className={`min-h-11 rounded-full px-4 text-sm font-medium transition-all ${
               selectedCategory === cat
-                ? "bg-brand-primary text-primary-foreground shadow-sm"
+                ? "bg-brand-primary text-white dark:text-primary-foreground shadow-sm font-semibold"
                 : "bg-brand-subtle text-muted-foreground hover:bg-brand-border/60 hover:text-foreground"
             }`}
           >
-            {cat === "all" ? "All Specialties" : cat}
+            {getCategoryLabel(cat, locale)}
           </button>
         ))}
       </div>
@@ -79,7 +93,7 @@ function ServiceDirectoryContent() {
                 title={copy.title}
                 src={service.image || "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80"}
                 description={copy.description}
-                category={service.category || "Preventive Care"}
+                category={getCategoryLabel(service.category || "Preventive Care", locale)}
                 duration={service.durationMinutes}
                 initiallyOpen={initialServiceId === service.id}
                 classNameExpanded="[&_h4]:text-foreground [&_h4]:font-semibold [&_h4]:text-base [&_h4]:mt-3.5 [&_h4:first-child]:mt-0 [&_h4]:mb-1 [&_p]:text-muted-foreground [&_p]:text-sm [&_p]:leading-relaxed"

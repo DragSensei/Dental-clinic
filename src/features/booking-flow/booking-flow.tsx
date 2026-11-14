@@ -384,7 +384,7 @@ function Choice({ selected, onClick, title, detail }: { selected: boolean; onCli
           {title}
         </span>
         {selected ? (
-          <span className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-primary text-primary-foreground shadow-xs">
+          <span className="grid size-5 shrink-0 place-items-center rounded-full bg-brand-primary text-white dark:text-primary-foreground shadow-xs">
             <Check aria-hidden="true" className="size-3 stroke-[2.5]" />
           </span>
         ) : (

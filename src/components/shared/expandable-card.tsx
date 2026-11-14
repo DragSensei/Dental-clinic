@@ -15,6 +15,7 @@ export interface ExpandableCardProps {
   children?: React.ReactNode;
   className?: string;
   classNameExpanded?: string;
+  imageAspect?: string;
   initiallyOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   [key: string]: unknown;
@@ -40,6 +41,7 @@ export function ExpandableCard({
   children,
   className,
   classNameExpanded,
+  imageAspect = "aspect-[16/10]",
   initiallyOpen = false,
   onOpenChange,
   ...props
@@ -143,7 +145,7 @@ export function ExpandableCard({
                   role="dialog"
                   aria-modal="true"
                   aria-label={title}
-                  layoutId={`card-${title}-${id}`}
+                  layoutId={`card-${id}`}
                   ref={cardRef}
                   transition={springTransition}
                   style={{ borderRadius: 24 }}
@@ -154,7 +156,7 @@ export function ExpandableCard({
                   {...props}
                 >
                   <motion.div
-                    layoutId={`image-${title}-${id}`}
+                    layoutId={`image-${id}`}
                     transition={springTransition}
                     className="relative aspect-[2/1] w-full shrink-0 overflow-hidden bg-muted before:pointer-events-none before:absolute before:inset-x-0 before:bottom-0 before:z-10 before:h-14 before:bg-gradient-to-t before:from-card/90 before:to-transparent"
                   >
@@ -166,7 +168,7 @@ export function ExpandableCard({
                     {category && (
                       <motion.span
                         layout="position"
-                        layoutId={`category-${title}-${id}`}
+                        layoutId={`category-${id}`}
                         transition={springTransition}
                         className="absolute top-3.5 start-3.5 z-20 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-brand-primary shadow-xs backdrop-blur-md"
                       >
@@ -182,7 +184,7 @@ export function ExpandableCard({
                   >
                     <motion.div
                       layout="position"
-                      layoutId={`heading-${title}-${id}`}
+                      layoutId={`heading-${id}`}
                       transition={springTransition}
                       className="min-w-0 flex-1"
                     >
@@ -208,7 +210,7 @@ export function ExpandableCard({
                         e.stopPropagation();
                         handleClose();
                       }}
-                      className="flex size-10 shrink-0 items-center justify-center rounded-full border border-brand-border bg-brand-subtle text-muted-foreground transition-colors duration-200 hover:bg-brand-primary hover:text-primary-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full border border-brand-border bg-brand-subtle text-muted-foreground transition-colors duration-200 hover:bg-brand-primary hover:text-white dark:hover:text-primary-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -250,7 +252,7 @@ export function ExpandableCard({
         tabIndex={0}
         aria-haspopup="dialog"
         aria-expanded={active}
-        layoutId={`card-${title}-${id}`}
+        layoutId={`card-${id}`}
         transition={springTransition}
         onLayoutAnimationComplete={() => {
           if (!active) {
@@ -265,19 +267,19 @@ export function ExpandableCard({
           }
         }}
         style={{
-          borderRadius: 16,
+          borderRadius: 20,
           zIndex: active ? 60 : cardZIndex,
         }}
         className={cn(
-          "group relative flex cursor-pointer flex-col justify-between overflow-hidden border border-brand-border bg-card p-3.5 shadow-sm hover:border-brand-primary/50 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring outline-none",
+          "group relative flex cursor-pointer flex-col justify-between overflow-hidden border border-brand-border bg-card p-5 sm:p-6 shadow-sm hover:border-brand-primary/50 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring outline-none transition-shadow",
           className
         )}
       >
         <motion.div
-          layoutId={`image-${title}-${id}`}
+          layoutId={`image-${id}`}
           transition={springTransition}
-          style={{ borderRadius: 12 }}
-          className="relative aspect-[2/1] w-full shrink-0 overflow-hidden bg-muted"
+          style={{ borderRadius: 16 }}
+          className={cn("relative w-full shrink-0 overflow-hidden bg-muted", imageAspect)}
         >
           <img
             src={src}
@@ -287,9 +289,9 @@ export function ExpandableCard({
           {category && (
             <motion.span
               layout="position"
-              layoutId={`category-${title}-${id}`}
+              layoutId={`category-${id}`}
               transition={springTransition}
-              className="absolute top-2.5 start-2.5 z-10 rounded-full bg-background/90 px-2.5 py-0.5 text-[11px] font-semibold text-brand-primary shadow-xs backdrop-blur-md"
+              className="absolute top-3.5 start-3.5 z-10 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-brand-primary shadow-xs backdrop-blur-md"
             >
               {category}
             </motion.span>
@@ -299,18 +301,18 @@ export function ExpandableCard({
         <motion.div
           layout="position"
           transition={springTransition}
-          className="flex flex-1 items-start justify-between gap-3 pt-3.5"
+          className="flex flex-1 items-start justify-between gap-3 pt-4 sm:pt-5"
         >
           <motion.div
             layout="position"
-            layoutId={`heading-${title}-${id}`}
+            layoutId={`heading-${id}`}
             transition={springTransition}
             className="flex flex-col min-w-0 flex-1"
           >
-            <p className="line-clamp-2 text-xs font-medium leading-relaxed text-muted-foreground">
+            <p className="line-clamp-2 text-xs sm:text-sm font-medium leading-relaxed text-muted-foreground">
               {description}
             </p>
-            <h3 className="mt-1 font-semibold text-base text-foreground transition-colors group-hover:text-brand-primary">
+            <h3 className="mt-1.5 font-bold text-base sm:text-lg lg:text-xl text-foreground transition-colors group-hover:text-brand-primary">
               {title}
             </h3>
           </motion.div>

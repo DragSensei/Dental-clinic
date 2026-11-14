@@ -65,7 +65,7 @@ export function Services({ services }: { services: readonly Service[] }) {
             onClick={() => setSelectedCategory(cat)}
             className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
               selectedCategory === cat
-                ? "bg-brand-primary text-primary-foreground shadow-xs"
+                ? "bg-brand-primary text-white dark:text-primary-foreground shadow-xs font-semibold"
                 : "bg-muted text-muted-foreground hover:bg-brand-subtle hover:text-foreground"
             }`}
           >

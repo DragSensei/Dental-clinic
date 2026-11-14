@@ -1,22 +1,5 @@
 # Project state
 
-## Landing Page Redesign (Calm Luxury) — Step 2: Signature Treatments & Smile Showcase (2026-11-05)
-- Branch: `redesign/calm-luxury`
-- Signature treatments (`CareGuide`, DESIGN.md section 8.3):
-  - Replaced uniform repetitive cards with an asymmetric editorial composition: one large featured signature treatment with clinic interior photography (`public/images/demo/interior.jpg`), "from" price anchor, duration, and dual CTAs ("Book this treatment", "Clinical details").
-  - Paired with a refined list of other treatments (category tag, service name, single-line description, starting price, "Expand", and "Book" actions).
-  - Preserved all existing care-guide behaviors and expandable full clinical procedures/benefits/aftercare via accessible modal dialog (`@base-ui/react/dialog`).
-  - Fully localized category tags in Arabic ("رعاية وقائية", "طب الأسنان الترميمي", "تقويم الأسنان", "طب الأسنان التجميلي").
-- Smile showcase (`BeforeAfterComparison`, DESIGN.md section 8.4):
-  - High-contrast dark navy band (`bg-navy-band text-navy-band-foreground py-20 sm:py-24`) calibrated in OKLCH (`oklch(0.20 0.04 250)` light / `oklch(0.14 0.03 250)` dark) with zero hex and zero default palette classes.
-  - Architectural arch frame (`rounded-t-[140px] sm:rounded-t-[200px] lg:rounded-t-[240px] rounded-b-3xl`) acting as the single dominant anchor.
-  - Interactive comparison slider with draggable handle, accessible range input, and seamless tab selector between cases.
-  - Mandatory disclaimer: "Illustrative demo, not a patient result."
-- Verification:
-  - TypeScript `tsc --noEmit`: 0 errors.
-  - Full unit and i18n test suites: 26/26 passing (matches pre-redesign baseline count).
-  - Visual audit across 12 combinations (1440, 768, 375; light & dark; EN & AR): 0px horizontal spill, 44/44 touch targets compliant.
-
 ## Landing Page Redesign (Calm Luxury) — Step 1: Hero & Trust Strip (2026-11-05)
 - Branch: `redesign/calm-luxury`
 - Feature inventory recorded in `docs/redesign-feature-inventory.md` covering all 10 sections and bidirectional features.
