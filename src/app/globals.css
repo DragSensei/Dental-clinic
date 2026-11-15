@@ -363,6 +363,22 @@
     border-radius: 9999px;
     background: transparent;
   }
+
+  .smile-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: smile-marquee-rtl 50s linear infinite;
+    will-change: transform;
+  }
+
+  .smile-marquee-track[data-paused="true"] {
+    animation-play-state: paused;
+  }
+
+  @keyframes smile-marquee-rtl {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
 }
 
 /* Reduced motion ergonomics: section 6 */
@@ -381,6 +397,7 @@
   .booking-step-enter { animation: none !important; }
   .site-nav-link-0, .site-nav-link-1, .site-nav-link-2, .site-nav-link-3, .site-nav-link-4 { animation: none !important; }
   .site-nav-link::after { transition: none !important; }
+  .smile-marquee-track { animation: none !important; }
 }
 
 html[lang="ar"] * {
