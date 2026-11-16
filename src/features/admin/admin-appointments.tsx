@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Search, X } from "lucide-react";
 import { getAvailableDates, getAvailableSlots } from "@/data/clinic-repository";
 import type { Appointment } from "@/data/mock/catalog";
 import { useClinic } from "@/data/use-clinic";
@@ -41,8 +42,19 @@ export function AppointmentRows({
   return (
     <>
       <div className="grid min-w-0 gap-3 xl:hidden">
-        {appointments.map((item) => (
-          <article key={item.id} className="min-w-0 rounded-xl border border-border p-4">
+        {appointments.map((item, index) => (
+          <motion.article
+            key={item.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.18,
+              delay: Math.min(index * 0.025, 0.15),
+              ease: "easeOut",
+            }}
+            whileHover={{ y: -2 }}
+            className="group min-w-0 rounded-xl border border-border bg-card/60 p-4 transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-sm"
+          >
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="min-w-0 font-semibold [overflow-wrap:anywhere]">{item.patientName}</h3>
@@ -82,12 +94,13 @@ export function AppointmentRows({
             </dl>
 
             <Link
-              className="mt-3 inline-flex min-h-11 min-w-11 items-center font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="group/link mt-3 inline-flex min-h-11 min-w-11 items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               href={`/admin/appointments/${item.id}`}
             >
-              {t.admin.appointments.viewAppointment}
+              <span>{t.admin.appointments.viewAppointment}</span>
+              <ArrowRight aria-hidden="true" className="size-3.5 transition-transform duration-200 group-hover/link:translate-x-0.5 rtl:rotate-180 rtl:group-hover/link:-translate-x-0.5" />
             </Link>
-          </article>
+          </motion.article>
         ))}
       </div>
 
@@ -108,8 +121,18 @@ export function AppointmentRows({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {appointments.map((item) => (
-              <tr key={item.id} className="align-middle">
+            {appointments.map((item, index) => (
+              <motion.tr
+                key={item.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.16,
+                  delay: Math.min(index * 0.02, 0.14),
+                  ease: "easeOut",
+                }}
+                className="align-middle transition-colors hover:bg-muted/35"
+              >
                 <td className="break-words px-3 py-4 font-medium">
                   <div>{item.patientName}</div>
                   {item.attendanceConfirmed && (
@@ -133,13 +156,14 @@ export function AppointmentRows({
                 </td>
                 <td className="px-3 py-4">
                   <Link
-                    className="inline-flex min-h-11 min-w-11 items-center font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                    className="group/link inline-flex min-h-11 min-w-11 items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                     href={`/admin/appointments/${item.id}`}
                   >
-                    {t.admin.appointments.view}
+                    <span>{t.admin.appointments.view}</span>
+                    <ArrowRight aria-hidden="true" className="size-3.5 transition-transform duration-200 group-hover/link:translate-x-0.5 rtl:rotate-180 rtl:group-hover/link:-translate-x-0.5" />
                   </Link>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -157,7 +181,7 @@ export function Appointments({
   serviceFor: (id: string) => string;
   doctorFor: (id: string) => string;
 }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [sort, setSort] = useState("date");
@@ -180,18 +204,40 @@ export function Appointments({
     );
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <PageTitle title={t.admin.appointments.title} description={t.admin.appointments.description} />
       <Panel>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_220px_220px] xl:gap-x-6">
           <label className={labelClass}>
             {t.admin.appointments.search}
-            <input
-              className={field}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t.admin.appointments.searchPlaceholder}
-            />
+            <div className="relative">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <input
+                className={`${field} ps-10 pe-11`}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t.admin.appointments.searchPlaceholder}
+              />
+              <AnimatePresence>
+                {query && (
+                  <motion.button
+                    type="button"
+                    aria-label={locale === "ar" ? "مسح البحث" : "Clear search"}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.14 }}
+                    onClick={() => setQuery("")}
+                    className="absolute end-1 top-1/2 grid size-10 min-h-11 min-w-11 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
           </label>
           <AppCombobox
             label={t.admin.appointments.status}
@@ -228,10 +274,20 @@ export function Appointments({
           </div>
         )}
         <div className="mt-5">
-          <AppointmentRows appointments={rows} serviceFor={serviceFor} doctorFor={doctorFor} />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`${status}-${sort}-${rows.length === 0 ? "empty" : "list"}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <AppointmentRows appointments={rows} serviceFor={serviceFor} doctorFor={doctorFor} />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </Panel>
-    </>
+    </MotionConfig>
   );
 }
 
@@ -284,7 +340,7 @@ export function AppointmentDetail({
   ];
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <PageTitle
         title={t.admin.detail.title}
         description={t.admin.detail.body}
@@ -296,32 +352,66 @@ export function AppointmentDetail({
       />
 
       {/* Workflow #3 Step 5 System Sync: Medical Alert Banner */}
-      {hasMedicalAlert && (
-        <Alert variant="destructive" className="mb-6 border-destructive/50 bg-destructive/10 text-destructive dark:border-destructive">
-          <AlertTriangle className="size-5 shrink-0" />
-          <div>
-            <AlertTitle className="font-bold text-destructive">
-              Medical Alert: High-Risk Clinical Factors
-            </AlertTitle>
-            <AlertDescription className="mt-1 text-sm font-medium">
-              {intake.allergies.length > 0 && (
-                <span className="me-3">
-                  <strong>Allergies:</strong> {intake.allergies.join(", ")}
-                </span>
-              )}
-              {intake.conditions.length > 0 && (
-                <span>
-                  <strong>Conditions:</strong> {intake.conditions.join(", ")}
-                </span>
-              )}
-            </AlertDescription>
-          </div>
-        </Alert>
-      )}
+      <AnimatePresence initial={false}>
+        {hasMedicalAlert && (
+          <motion.div
+            key="medical-alert"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <Alert variant="destructive" className="mb-6 border-destructive/50 bg-destructive/10 text-destructive dark:border-destructive">
+              <AlertTriangle className="size-5 shrink-0" />
+              <div>
+                <AlertTitle className="font-bold text-destructive">
+                  Medical Alert: High-Risk Clinical Factors
+                </AlertTitle>
+                <AlertDescription className="mt-1 text-sm font-medium">
+                  {intake.allergies.length > 0 && (
+                    <span className="me-3">
+                      <strong>Allergies:</strong> {intake.allergies.join(", ")}
+                    </span>
+                  )}
+                  {intake.conditions.length > 0 && (
+                    <span>
+                      <strong>Conditions:</strong> {intake.conditions.join(", ")}
+                    </span>
+                  )}
+                </AlertDescription>
+              </div>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div aria-live="polite">
-        {error && <p className="mb-4 text-sm text-destructive">{t.errors[error]}</p>}
-        {notice && <p className="mb-4 rounded-lg bg-brand-subtle p-3 text-sm">{t.admin.detail[notice]}</p>}
+        <AnimatePresence initial={false}>
+          {error && (
+            <motion.p
+              key="detail-error"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="mb-4 text-sm text-destructive"
+            >
+              {t.errors[error]}
+            </motion.p>
+          )}
+          {notice && (
+            <motion.p
+              key="detail-notice"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="mb-4 rounded-lg border border-brand-border bg-brand-subtle p-3 text-sm font-medium"
+            >
+              {t.admin.detail[notice]}
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="grid min-w-0 gap-5 lg:grid-cols-[1.2fr_0.8fr]">
@@ -354,7 +444,7 @@ export function AppointmentDetail({
           {item.status === "confirmed" && (
             <Button
               type="button"
-              className="mt-6 min-h-11"
+              className="mt-6 min-h-11 transition-transform active:scale-[0.98]"
               variant="destructive"
               disabled={pending}
               onClick={() => setCancelDialogOpen(true)}
@@ -477,7 +567,7 @@ export function AppointmentDetail({
               <Button
                 type="submit"
                 variant="accent"
-                className="min-h-11 font-semibold"
+                className="min-h-11 font-semibold transition-transform active:scale-[0.98]"
                 disabled={pending || !date || !time || !dates.includes(date) || !slots.includes(time)}
               >
                 {t.admin.detail.saveTime}
@@ -486,6 +576,6 @@ export function AppointmentDetail({
           )}
         </Panel>
       </div>
-    </>
+    </MotionConfig>
   );
 }

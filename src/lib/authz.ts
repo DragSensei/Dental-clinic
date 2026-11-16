@@ -9,11 +9,18 @@ export class HttpError extends Error {
 
 const ROLES: readonly Role[] = ["admin", "doctor", "patient"];
 
-/** Throws HttpError(401) when there is no valid, unbanned session. */
+/** Returns true when a Better Auth session user record is present, unbanned, and active. */
+export function isActiveSessionUser(
+  u: Record<string, unknown> | undefined | null
+): u is Record<string, unknown> {
+  return Boolean(u && u.banned !== true && u.status !== "inactive");
+}
+
+/** Throws HttpError(401) when there is no valid, active, unbanned session. */
 export async function requireSession(request: Request): Promise<AuthedUser> {
   const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
   const u = session?.user as (Record<string, unknown> | undefined);
-  if (!u || u.banned === true) throw new HttpError(401, "unauthenticated");
+  if (!u || !isActiveSessionUser(u)) throw new HttpError(401, "unauthenticated");
   const role = ROLES.includes(u.role as Role) ? (u.role as Role) : "patient";
   return { id: String(u.id), email: String(u.email).trim().toLowerCase(), role, name: String(u.name ?? "") };
 }

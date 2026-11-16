@@ -33,6 +33,13 @@ export class ClinicError extends Error {
   }
 }
 
+export class ClinicForbiddenError extends Error {
+  constructor(message = "forbidden") {
+    super(message);
+    this.name = "ClinicForbiddenError";
+  }
+}
+
 const slotStarts = ["09:00", "09:45", "10:30", "11:15", "13:00", "13:45", "14:30", "15:15", "16:00"];
 
 export const minutes = (time: string) => {
@@ -95,18 +102,35 @@ export async function getServices() {
 
 export async function createService(input: {
   id?: string;
-  title: string;
-  description: string;
+  title?: string;
+  titleAr?: string | null;
+  description?: string;
+  descriptionAr?: string | null;
+  defaultLocale?: "bilingual" | "en" | "ar";
   durationMinutes: number;
   category: string;
   image: string;
-  overview?: string;
-  procedure?: string;
-  benefits?: string;
-  aftercare?: string;
+  overview?: string | null;
+  overviewAr?: string | null;
+  procedure?: string | null;
+  procedureAr?: string | null;
+  benefits?: string | null;
+  benefitsAr?: string | null;
+  aftercare?: string | null;
+  aftercareAr?: string | null;
 }) {
-  const title = input.title.trim();
-  const description = input.description.trim();
+  const defaultLocale = input.defaultLocale ?? "bilingual";
+  const rawTitle = (input.title ?? "").trim();
+  const rawTitleAr = (input.titleAr ?? "").trim();
+  const rawDescription = (input.description ?? "").trim();
+  const rawDescriptionAr = (input.descriptionAr ?? "").trim();
+
+  const title = defaultLocale === "ar" ? rawTitleAr || rawTitle : rawTitle;
+  const description = defaultLocale === "ar" ? rawDescriptionAr || rawDescription : rawDescription;
+  const titleAr = defaultLocale === "en" ? null : rawTitleAr || (defaultLocale === "ar" ? title : null);
+  const descriptionAr =
+    defaultLocale === "en" ? null : rawDescriptionAr || (defaultLocale === "ar" ? description : null);
+
   const durationMinutes = Number(input.durationMinutes);
   if (!title || !description || !Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 180) {
     throw new ClinicError("invalid_service");
@@ -115,14 +139,21 @@ export async function createService(input: {
     data: {
       id: input.id?.trim() || undefined,
       title,
+      titleAr,
       description,
+      descriptionAr,
+      defaultLocale,
       durationMinutes,
       category: input.category.trim() || "Preventive Care",
       image: input.image.trim(),
-      overview: input.overview,
-      procedure: input.procedure,
-      benefits: input.benefits,
-      aftercare: input.aftercare,
+      overview: defaultLocale === "ar" ? input.overviewAr ?? input.overview ?? null : input.overview ?? null,
+      overviewAr: defaultLocale === "en" ? null : input.overviewAr ?? null,
+      procedure: defaultLocale === "ar" ? input.procedureAr ?? input.procedure ?? null : input.procedure ?? null,
+      procedureAr: defaultLocale === "en" ? null : input.procedureAr ?? null,
+      benefits: defaultLocale === "ar" ? input.benefitsAr ?? input.benefits ?? null : input.benefits ?? null,
+      benefitsAr: defaultLocale === "en" ? null : input.benefitsAr ?? null,
+      aftercare: defaultLocale === "ar" ? input.aftercareAr ?? input.aftercare ?? null : input.aftercare ?? null,
+      aftercareAr: defaultLocale === "en" ? null : input.aftercareAr ?? null,
     },
   });
 }
@@ -130,31 +161,67 @@ export async function createService(input: {
 export async function updateService(
   id: string,
   input: {
-    title: string;
-    description: string;
-    durationMinutes: number;
+    title?: string;
+    titleAr?: string | null;
+    description?: string;
+    descriptionAr?: string | null;
+    defaultLocale?: "bilingual" | "en" | "ar";
+    durationMinutes?: number;
     category?: string;
     image?: string;
-    overview?: string;
-    procedure?: string;
-    benefits?: string;
-    aftercare?: string;
+    overview?: string | null;
+    overviewAr?: string | null;
+    procedure?: string | null;
+    procedureAr?: string | null;
+    benefits?: string | null;
+    benefitsAr?: string | null;
+    aftercare?: string | null;
+    aftercareAr?: string | null;
   }
 ) {
   const existing = await prisma.service.findUnique({ where: { id } });
   if (!existing) throw new ClinicError("service_not_found");
+
+  const nextLocale =
+    input.defaultLocale ??
+    (existing.defaultLocale === "en" || existing.defaultLocale === "ar" ? existing.defaultLocale : "bilingual");
+
+  const resolvedTitleAr =
+    nextLocale === "en"
+      ? null
+      : input.titleAr !== undefined
+      ? input.titleAr?.trim() || null
+      : existing.titleAr;
+  const resolvedDescriptionAr =
+    nextLocale === "en"
+      ? null
+      : input.descriptionAr !== undefined
+      ? input.descriptionAr?.trim() || null
+      : existing.descriptionAr;
+
+  const nextTitle =
+    nextLocale === "ar"
+      ? (resolvedTitleAr || input.title || existing.title).trim()
+      : (input.title ?? existing.title).trim();
+  const nextDescription =
+    nextLocale === "ar"
+      ? (resolvedDescriptionAr || input.description || existing.description).trim()
+      : (input.description ?? existing.description).trim();
+
+  const nextDuration = input.durationMinutes ?? existing.durationMinutes;
   if (
-    !input.title.trim() ||
-    !input.description.trim() ||
-    !Number.isInteger(input.durationMinutes) ||
-    input.durationMinutes < 15 ||
-    input.durationMinutes > 180
+    !nextTitle ||
+    !nextDescription ||
+    (nextLocale === "ar" && (!resolvedTitleAr || !resolvedDescriptionAr)) ||
+    !Number.isInteger(nextDuration) ||
+    nextDuration < 15 ||
+    nextDuration > 180
   ) {
     throw new ClinicError("invalid_service");
   }
 
   // Duration overlap check with existing active appointments
-  if (existing.durationMinutes !== input.durationMinutes) {
+  if (existing.durationMinutes !== nextDuration) {
     const affected = await prisma.appointment.findMany({
       where: { serviceId: id, status: "confirmed" },
       include: { service: true },
@@ -175,13 +242,14 @@ export async function updateService(
 
       for (const app of affected) {
         const start = minutes(app.time);
-        const end = start + input.durationMinutes;
+        const end = start + nextDuration;
         const otherApps = allDoctorAppointments.filter(
           (o) => o.id !== app.id && o.doctorId === app.doctorId && o.date === app.date
         );
         const conflict = otherApps.some((other) => {
           const otherStart = minutes(other.time);
-          const otherDuration = other.serviceId === id ? input.durationMinutes : other.service.durationMinutes;
+          const otherDuration =
+            other.serviceId === id ? nextDuration : other.durationMinutes || other.service.durationMinutes;
           const otherEnd = otherStart + otherDuration;
           return start < otherEnd && otherStart < end;
         });
@@ -190,18 +258,59 @@ export async function updateService(
     }
   }
 
+  const nextOverviewAr =
+    nextLocale === "en" ? null : input.overviewAr !== undefined ? input.overviewAr : existing.overviewAr;
+  const nextProcedureAr =
+    nextLocale === "en" ? null : input.procedureAr !== undefined ? input.procedureAr : existing.procedureAr;
+  const nextBenefitsAr =
+    nextLocale === "en" ? null : input.benefitsAr !== undefined ? input.benefitsAr : existing.benefitsAr;
+  const nextAftercareAr =
+    nextLocale === "en" ? null : input.aftercareAr !== undefined ? input.aftercareAr : existing.aftercareAr;
+
+  const nextOverview =
+    nextLocale === "ar"
+      ? nextOverviewAr ?? null
+      : input.overview !== undefined
+      ? input.overview
+      : existing.overview;
+  const nextProcedure =
+    nextLocale === "ar"
+      ? nextProcedureAr ?? null
+      : input.procedure !== undefined
+      ? input.procedure
+      : existing.procedure;
+  const nextBenefits =
+    nextLocale === "ar"
+      ? nextBenefitsAr ?? null
+      : input.benefits !== undefined
+      ? input.benefits
+      : existing.benefits;
+  const nextAftercare =
+    nextLocale === "ar"
+      ? nextAftercareAr ?? null
+      : input.aftercare !== undefined
+      ? input.aftercare
+      : existing.aftercare;
+
   return await prisma.service.update({
     where: { id },
     data: {
-      title: input.title.trim(),
-      description: input.description.trim(),
-      durationMinutes: input.durationMinutes,
+      title: nextTitle,
+      titleAr: resolvedTitleAr,
+      description: nextDescription,
+      descriptionAr: resolvedDescriptionAr,
+      defaultLocale: nextLocale,
+      durationMinutes: nextDuration,
       category: input.category?.trim() || existing.category,
       image: input.image?.trim() || existing.image,
-      overview: input.overview ?? existing.overview,
-      procedure: input.procedure ?? existing.procedure,
-      benefits: input.benefits ?? existing.benefits,
-      aftercare: input.aftercare ?? existing.aftercare,
+      overview: nextOverview,
+      overviewAr: nextOverviewAr,
+      procedure: nextProcedure,
+      procedureAr: nextProcedureAr,
+      benefits: nextBenefits,
+      benefitsAr: nextBenefitsAr,
+      aftercare: nextAftercare,
+      aftercareAr: nextAftercareAr,
     },
   });
 }
@@ -230,10 +339,10 @@ export async function getDoctors() {
 export async function updateDoctor(
   id: string,
   input: {
-    name: string;
-    specialty: string;
-    bio: string;
-    serviceIds: string[];
+    name?: string;
+    specialty?: string;
+    bio?: string;
+    serviceIds?: string[];
     status?: string;
   }
 ) {
@@ -243,12 +352,15 @@ export async function updateDoctor(
   });
   if (!existing) throw new ClinicError("doctor_not_found");
 
-  const services = await prisma.service.findMany({
-    where: { id: { in: input.serviceIds } },
-    take: 100,
-  });
-  if (services.length !== input.serviceIds.length) {
-    throw new ClinicError("invalid_reference");
+  const nextServiceIds = input.serviceIds ?? existing.services.map((s) => s.serviceId);
+  if (nextServiceIds.length > 0) {
+    const services = await prisma.service.findMany({
+      where: { id: { in: nextServiceIds } },
+      take: 100,
+    });
+    if (services.length !== nextServiceIds.length) {
+      throw new ClinicError("invalid_reference");
+    }
   }
 
   // Active appointment guard: doctor cannot remove a service for which they have confirmed future appointments
@@ -256,7 +368,7 @@ export async function updateDoctor(
     where: {
       doctorId: id,
       status: "confirmed",
-      serviceId: { notIn: input.serviceIds },
+      serviceId: { notIn: nextServiceIds },
     },
   });
   if (activeBlocked) {
@@ -265,32 +377,29 @@ export async function updateDoctor(
 
   return await prisma.$transaction(async (tx) => {
     await tx.doctorService.deleteMany({ where: { doctorId: id } });
-    await tx.doctorService.createMany({
-      data: input.serviceIds.map((serviceId) => ({ doctorId: id, serviceId })),
-    });
+    if (nextServiceIds.length > 0) {
+      await tx.doctorService.createMany({
+        data: nextServiceIds.map((serviceId) => ({ doctorId: id, serviceId })),
+      });
+    }
     return await tx.doctor.update({
       where: { id },
       data: {
-        name: input.name.trim(),
-        specialty: input.specialty.trim(),
-        bio: input.bio.trim(),
+        name: (input.name ?? existing.name).trim(),
+        specialty: (input.specialty ?? existing.specialty).trim(),
+        bio: (input.bio ?? existing.bio).trim(),
         status: input.status || existing.status,
       },
-      include: { services: true },
+      include: { services: true, workingHours: true },
     });
   });
 }
 
 // 3. Availability & Scheduling Engine
-export async function getAvailableDates(serviceId: string, doctorId: string): Promise<string[]> {
-  const doctor = await prisma.doctor.findUnique({
-    where: { id: doctorId },
-    include: { services: true, workingHours: true },
-  });
-  const service = await prisma.service.findUnique({ where: { id: serviceId } });
-  if (!service || !doctor || !doctor.services.some((s) => s.serviceId === serviceId)) return [];
-
-  const clinicHours = await prisma.clinicWorkingHours.findMany({ take: 7 });
+function computeOpenDates(
+  doctorWorkingHours: Array<{ dayOfWeek: number; isOff: boolean }>,
+  clinicHours: Array<{ dayOfWeek: number; isClosed: boolean }>
+): string[] {
   const closedDays = new Set(clinicHours.filter((h) => h.isClosed).map((h) => h.dayOfWeek));
   // Default Friday closed if no records
   if (clinicHours.length === 0) closedDays.add(5);
@@ -306,7 +415,7 @@ export async function getAvailableDates(serviceId: string, doctorId: string): Pr
 
     // Check clinic and doctor day off
     if (closedDays.has(dayOfWeek)) continue;
-    const docDay = doctor.workingHours.find((h) => h.dayOfWeek === dayOfWeek);
+    const docDay = doctorWorkingHours.find((h) => h.dayOfWeek === dayOfWeek);
     if (docDay?.isOff) continue;
 
     dates.push(toUtcDate(day));
@@ -314,23 +423,73 @@ export async function getAvailableDates(serviceId: string, doctorId: string): Pr
   return dates;
 }
 
+export async function getAvailableDates(serviceId: string, doctorId: string): Promise<string[]> {
+  const [doctor, service, clinicHours] = await Promise.all([
+    prisma.doctor.findUnique({
+      where: { id: doctorId },
+      include: { services: true, workingHours: true },
+    }),
+    prisma.service.findUnique({ where: { id: serviceId } }),
+    prisma.clinicWorkingHours.findMany({ take: 7 }),
+  ]);
+  if (
+    !service ||
+    !doctor ||
+    doctor.status === "inactive" ||
+    !doctor.services.some((s) => s.serviceId === serviceId)
+  ) {
+    return [];
+  }
+
+  return computeOpenDates(doctor.workingHours, clinicHours);
+}
+
 export async function getAvailableSlots(serviceId: string, doctorId: string, date: string, excludeId?: string): Promise<string[]> {
-  const dates = await getAvailableDates(serviceId, doctorId);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+
+  const cursor = new Date();
+  cursor.setUTCHours(0, 0, 0, 0);
+  const targetMs = Date.parse(`${date}T00:00:00Z`);
+  const diffDays = Math.round((targetMs - cursor.getTime()) / 86_400_000);
+  if (diffDays < 1 || diffDays > 21) return [];
+
+  const dayOfWeek = new Date(targetMs).getUTCDay();
+  const [doctor, service, clinicHours, active] = await Promise.all([
+    prisma.doctor.findUnique({
+      where: { id: doctorId },
+      include: { services: true, workingHours: true },
+    }),
+    prisma.service.findUnique({ where: { id: serviceId } }),
+    prisma.clinicWorkingHours.findMany({ take: 7 }),
+    prisma.appointment.findMany({
+      where: {
+        doctorId,
+        date,
+        status: "confirmed",
+        id: excludeId ? { not: excludeId } : undefined,
+      },
+      take: 100,
+    }),
+  ]);
+  if (
+    !service ||
+    !doctor ||
+    doctor.status === "inactive" ||
+    !doctor.services.some((s) => s.serviceId === serviceId)
+  ) {
+    return [];
+  }
+
+  const dates = computeOpenDates(doctor.workingHours, clinicHours);
   if (!dates.includes(date)) return [];
 
-  const service = await prisma.service.findUnique({ where: { id: serviceId } });
-  if (!service) return [];
+  const docDay = doctor.workingHours.find((h) => h.dayOfWeek === dayOfWeek);
+  const clinicDay = clinicHours.find((h) => h.dayOfWeek === dayOfWeek);
+  if (docDay?.isOff || clinicDay?.isClosed) return [];
 
-  const active = await prisma.appointment.findMany({
-    where: {
-      doctorId,
-      date,
-      status: "confirmed",
-      id: excludeId ? { not: excludeId } : undefined,
-    },
-    take: 100,
-  });
-
+  const startBound = minutes(docDay?.startTime || clinicDay?.startTime || "09:00");
+  const endBound = minutes(docDay?.endTime || clinicDay?.endTime || "16:45");
+  const slotStep = Math.min(service.durationMinutes, 45);
   const now = Date.now();
 
   return slotStarts.filter((time) => {
@@ -339,6 +498,9 @@ export async function getAvailableSlots(serviceId: string, doctorId: string, dat
       return false;
     }
     const start = minutes(time);
+    if (start < startBound || start + slotStep > endBound) {
+      return false;
+    }
     const end = start + service.durationMinutes;
     return !active.some((item) => {
       const otherStart = minutes(item.time);
@@ -436,9 +598,12 @@ export function canCancelAppointment(dateStr: string, timeStr: string): { allowe
   }
 }
 
-export async function cancelAppointment(id: string, isStaff: boolean = false) {
+export async function cancelAppointment(id: string, isStaff: boolean = false, ownerEmail?: string) {
   const appointment = await prisma.appointment.findUnique({ where: { id } });
   if (!appointment) throw new ClinicError("appointment_not_found");
+  if (!isStaff && ownerEmail && appointment.email.toLowerCase() !== ownerEmail.toLowerCase()) {
+    throw new ClinicError("appointment_not_found");
+  }
 
   if (appointment.status !== "confirmed") {
     throw new ClinicError("invalid_transition");
@@ -464,12 +629,16 @@ export async function rescheduleAppointment(
   id: string,
   date: string,
   time: string,
-  isStaff: boolean = false
+  isStaff: boolean = false,
+  ownerEmail?: string
 ) {
   const appointment = await prisma.appointment.findUnique({
     where: { id },
   });
   if (!appointment) throw new ClinicError("appointment_not_found");
+  if (!isStaff && ownerEmail && appointment.email.toLowerCase() !== ownerEmail.toLowerCase()) {
+    throw new ClinicError("appointment_not_found");
+  }
 
   if (appointment.status !== "confirmed") {
     throw new ClinicError("invalid_transition");
@@ -532,9 +701,18 @@ export async function rescheduleAppointment(
   });
 }
 
-export async function confirmAppointmentAttendance(id: string) {
+export async function confirmAppointmentAttendance(
+  id: string,
+  caller?: { email: string; isStaff: boolean }
+) {
   const appointment = await prisma.appointment.findUnique({ where: { id } });
   if (!appointment) throw new ClinicError("appointment_not_found");
+  if (caller && appointment.email.toLowerCase() !== caller.email.toLowerCase()) {
+    if (caller.isStaff) {
+      throw new ClinicForbiddenError();
+    }
+    throw new ClinicError("appointment_not_found");
+  }
 
   if (appointment.status !== "confirmed") {
     throw new ClinicError("invalid_transition");
@@ -576,7 +754,7 @@ export async function getAppointments(filter?: {
 
   const boundedTake = Math.min(Math.max(1, filter?.take ?? 200), 200);
 
-  return await prisma.appointment.findMany({
+  const rows = await prisma.appointment.findMany({
     where: {
       email: filter?.email ? filter.email.toLowerCase() : undefined,
       doctorId: filter?.doctorId,
@@ -584,9 +762,10 @@ export async function getAppointments(filter?: {
       status: filter?.status,
     },
     include: { service: true, doctor: true },
-    take: boundedTake,
+    take: 200,
     orderBy: [{ date: "asc" }, { time: "asc" }],
   });
+  return boundedTake < 200 ? rows.slice(0, boundedTake) : rows;
 }
 
 // 5. Patient Portal: Digital Intake & e-Consent
@@ -777,52 +956,4 @@ export async function getAccounts() {
     serviceIds: u.doctorProfile?.services.map((s) => s.serviceId) || [],
     createdAt: u.createdAt.toISOString().slice(0, 10),
   }));
-}
-
-export async function createAccount(input: {
-  name: string;
-  email: string;
-  phone?: string;
-  role: "admin" | "doctor" | "patient";
-  status?: string;
-  specialty?: string;
-  bio?: string;
-  serviceIds?: string[];
-}) {
-  const name = input.name.trim();
-  const email = input.email.trim().toLowerCase();
-  if (!name || !email) throw new ClinicError("invalid_contact");
-
-  return await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        name,
-        email,
-        phone: input.phone?.trim() || null,
-        role: input.role,
-        status: input.status || "active",
-      },
-    });
-
-    if (input.role === "doctor") {
-      const doctor = await tx.doctor.create({
-        data: {
-          userId: user.id,
-          name,
-          specialty: input.specialty?.trim() || "General dentistry",
-          bio: input.bio?.trim() || "",
-          status: "active",
-        },
-      });
-      if (input.serviceIds && input.serviceIds.length > 0) {
-        await tx.doctorService.createMany({
-          data: input.serviceIds.map((serviceId) => ({
-            doctorId: doctor.id,
-            serviceId,
-          })),
-        });
-      }
-    }
-    return user;
-  });
 }

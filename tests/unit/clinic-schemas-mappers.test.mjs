@@ -4,10 +4,12 @@ import {
   isoDateSchema,
   hhmmSchema,
   signatureDataUrlSchema,
+  createServiceSchema,
 } from "../../src/lib/clinic-schemas.ts";
 import {
   toServiceDTO,
   fromServiceInput,
+  toDoctorDTO,
   toIntakeDTO,
   fromIntakeInput,
   toAppointmentDTO,
@@ -138,4 +140,72 @@ test("DTO mappers convert null to undefined for optional fields", () => {
   assert.equal(invDto.receiptNumber, undefined);
   assert.equal(invDto.paidAt, undefined);
   assert.equal(invDto.items[0].tooth, undefined);
+});
+
+test("Service DTO mappers round-trip bilingual fields and defaultLocale", () => {
+  const row = {
+    id: "s-bilingual",
+    title: "Whitening",
+    titleAr: "تبييض الأسنان",
+    description: "Safe whitening",
+    descriptionAr: "تبييض آمن للأسنان",
+    defaultLocale: "bilingual",
+    durationMinutes: 45,
+    category: "Cosmetic Dentistry",
+    image: "/img.png",
+    overview: "EN overview",
+    procedure: "EN procedure",
+    benefits: "EN benefits",
+    aftercare: "EN aftercare",
+    overviewAr: "نظرة عامة",
+    procedureAr: "الإجراء",
+    benefitsAr: "الفوائد",
+    aftercareAr: "العناية اللاحقة",
+  };
+
+  const dto = toServiceDTO(row);
+  assert.equal(dto.titleAr, "تبييض الأسنان");
+  assert.equal(dto.descriptionAr, "تبييض آمن للأسنان");
+  assert.equal(dto.defaultLocale, "bilingual");
+  assert.deepEqual(dto.extendedDetailsAr, {
+    overview: "نظرة عامة",
+    procedure: "الإجراء",
+    benefits: "الفوائد",
+    aftercare: "العناية اللاحقة",
+  });
+
+  const flattened = fromServiceInput(dto);
+  assert.equal(flattened.titleAr, "تبييض الأسنان");
+  assert.equal(flattened.defaultLocale, "bilingual");
+  assert.equal(flattened.overviewAr, "نظرة عامة");
+  assert.equal(flattened.aftercareAr, "العناية اللاحقة");
+
+  const arabicOnly = createServiceSchema.parse({
+    titleAr: "خدمة عربية فقط",
+    descriptionAr: "وصف عربي فقط",
+    defaultLocale: "ar",
+    durationMinutes: 30,
+    image: "/img.png",
+  });
+  assert.equal(arabicOnly.defaultLocale, "ar");
+  assert.equal(arabicOnly.titleAr, "خدمة عربية فقط");
+});
+
+test("toDoctorDTO maps workingHours and strips null startTime/endTime overrides", () => {
+  const dto = toDoctorDTO({
+    id: "doctor-3",
+    name: "Dr. Nour Samir",
+    specialty: "Orthodontics",
+    bio: "Bio",
+    services: [{ serviceId: "service-3" }],
+    workingHours: [
+      { dayOfWeek: 0, isOff: false, startTime: "09:00", endTime: "14:30" },
+      { dayOfWeek: 2, isOff: true, startTime: null, endTime: null },
+    ],
+  });
+  assert.deepEqual(dto.serviceIds, ["service-3"]);
+  assert.deepEqual(dto.workingHours, [
+    { dayOfWeek: 0, isOff: false, startTime: "09:00", endTime: "14:30" },
+    { dayOfWeek: 2, isOff: true },
+  ]);
 });

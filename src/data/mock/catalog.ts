@@ -1,3 +1,5 @@
+export type ServiceLanguageMode = "bilingual" | "en" | "ar";
+
 export type ServiceExtendedDetails = {
   overview: string;
   procedure: string;
@@ -8,11 +10,68 @@ export type ServiceExtendedDetails = {
 export type Service = {
   id: string;
   title: string;
+  titleAr?: string;
   description: string;
+  descriptionAr?: string;
+  defaultLocale?: ServiceLanguageMode;
   durationMinutes: number;
   category: string;
   image: string;
   extendedDetails?: ServiceExtendedDetails;
+  extendedDetailsAr?: ServiceExtendedDetails;
+};
+
+export const SERVICE_CATEGORIES = Object.freeze([
+  Object.freeze({ value: "Preventive Care", en: "Preventive Care", ar: "رعاية وقائية" }),
+  Object.freeze({ value: "Restorative Dentistry", en: "Restorative Dentistry", ar: "طب الأسنان الترميمي" }),
+  Object.freeze({ value: "Cosmetic Dentistry", en: "Cosmetic Dentistry", ar: "طب الأسنان التجميلي" }),
+  Object.freeze({ value: "Orthodontics", en: "Orthodontics", ar: "تقويم الأسنان" }),
+  Object.freeze({ value: "Pediatric Dentistry", en: "Pediatric Dentistry", ar: "طب أسنان الأطفال" }),
+  Object.freeze({ value: "Oral Surgery & Endodontics", en: "Oral Surgery & Endodontics", ar: "جراحة الفم وعلاج الجذور" }),
+  Object.freeze({ value: "General Dental Care", en: "General Dental Care", ar: "رعاية الأسنان العامة" }),
+]);
+
+export const DEFAULT_SERVICE_IMAGE =
+  "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80";
+
+export const SERVICE_IMAGE_PRESETS = Object.freeze([
+  Object.freeze({
+    labelEn: "Consultation Suite",
+    labelAr: "غرفة الفحص والاستشارة",
+    url: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+  }),
+  Object.freeze({
+    labelEn: "Restorative Studio",
+    labelAr: "عيادة الترميم والزراعة",
+    url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80",
+  }),
+  Object.freeze({
+    labelEn: "Cosmetic & Smile Care",
+    labelAr: "العناية التجميلية بالابتسامة",
+    url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
+  }),
+  Object.freeze({
+    labelEn: "Orthodontic Precision",
+    labelAr: "تقويم الأسنان الدقيق",
+    url: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80",
+  }),
+  Object.freeze({
+    labelEn: "Digital Diagnostics",
+    labelAr: "التشخيص والأشعة الرقمية",
+    url: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+  }),
+  Object.freeze({
+    labelEn: "Hygiene & Gum Care",
+    labelAr: "العناية باللثة والنظافة",
+    url: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=800&q=80",
+  }),
+]);
+
+export type DoctorWorkingHour = {
+  dayOfWeek: number;
+  isOff: boolean;
+  startTime?: string;
+  endTime?: string;
 };
 
 export type Doctor = {
@@ -21,6 +80,7 @@ export type Doctor = {
   specialty: string;
   bio: string;
   serviceIds: readonly string[];
+  workingHours?: readonly DoctorWorkingHour[];
 };
 
 export type VisitReasonCategory = "new-exam" | "emergency" | "cleaning" | "follow-up";
@@ -216,7 +276,9 @@ export type Account = {
 const landingServices = [
   {
     title: "Dental check-ups",
+    titleAr: "الفحوصات الدورية",
     description: "A conversation and examination to understand your oral health and next steps.",
+    descriptionAr: "محادثة وفحص لفهم صحة فمك والخطوات التالية.",
     category: "Preventive Care",
     image: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -225,10 +287,18 @@ const landingServices = [
       benefits: "Catches minor issues before they become painful or expensive, preserves natural teeth, and guarantees fresh breath.",
       aftercare: "Brush twice daily for two full minutes with fluoridated toothpaste, floss daily, and schedule regular evaluations every 6 months.",
     },
+    extendedDetailsAr: {
+      overview: "فحص شامل للأسنان واللثة والأنسجة الرخوة للكشف المبكر عن أي تآكل أو تسوس أو تغيرات في اللثة.",
+      procedure: "تخطيط رقمي، وفحص لطيف للثة، وتصوير عالي الدقة داخل الفم، وأشعة رقمية منخفضة الجرعة عند الحاجة.",
+      benefits: "يكتشف المشكلات البسيطة قبل تفاقمها، ويحافظ على الأسنان الطبيعية، ويدعم انتعاش النفس.",
+      aftercare: "اغسل أسنانك مرتين يوميًا لمدة دقيقتين بمعجون يحتوي على الفلورايد، واستخدم الخيط يوميًا مع المتابعة كل 6 أشهر.",
+    },
   },
   {
     title: "Dental implants",
+    titleAr: "زراعة الأسنان",
     description: "Explore options for replacing missing teeth with implant-supported restorations.",
+    descriptionAr: "استكشف خيارات تعويض الأسنان المفقودة بتعويضات مدعومة بالزراعة.",
     category: "Restorative Dentistry",
     image: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -237,10 +307,18 @@ const landingServices = [
       benefits: "Prevents bone resorption in the jaw, does not harm neighboring healthy teeth, and delivers a lifetime of confident chewing.",
       aftercare: "Practice gentle brushing around the implant site, use interdental floss or water flossers, and attend bi-annual implant check-ups.",
     },
+    extendedDetailsAr: {
+      overview: "المعيار الذهبي لتعويض الأسنان المفقودة بشكل دائم، لاستعادة الوظيفة الكاملة وقوة المضغ والمظهر الطبيعي.",
+      procedure: "وضع غرسات التيتانيوم الجراحية بتوجيه حاسوبي داخل عظم الفك، يليها تركيب تاج خزفي مخصص بعد الالتحام العظمي.",
+      benefits: "يمنع ذوبان عظم الفك، ولا يؤثر على الأسنان المجاورة السليمة، ويمنحك ثقة طويلة الأمد أثناء المضغ.",
+      aftercare: "نظّف حول الزرعة بلطف باستخدام فرشاة ناعمة وخيط مخصص أو جهاز الخيط المائي مع مراجعة دورية كل 6 أشهر.",
+    },
   },
   {
     title: "Braces & alignment",
+    titleAr: "تقويم الأسنان وترتيبها",
     description: "Discuss ways to improve tooth alignment and how your teeth meet.",
+    descriptionAr: "ناقش طرق تحسين انتظام الأسنان وطريقة إطباق الأسنان معًا.",
     category: "Orthodontics",
     image: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -249,10 +327,18 @@ const landingServices = [
       benefits: "Alleviates jaw joint tension, makes brushing significantly easier, prevents uneven tooth wear, and boosts smile confidence.",
       aftercare: "Wear aligners 20–22 hours per day, rinse trays with lukewarm water, and wear your custom retainer nightly following alignment.",
     },
+    extendedDetailsAr: {
+      overview: "علاجات تقويم مخصصة باستخدام التقويم الشفاف أو الخزفي الدقيق لترتيب الأسنان وتحقيق توازن الإطباق.",
+      procedure: "مسح رقمي ثلاثي الأبعاد لمحاكاة مراحل حركة الأسنان، ثم تجهيز قوالب التقويم المخصصة وتبديلها دوريًا.",
+      benefits: "يخفف شد مفصل الفك، ويسهّل تنظيف الأسنان، ويمنع التآكل غير المتساوي، ويعزز ثقتك بابتسامتك.",
+      aftercare: "ارتدِ القوالب 20–22 ساعة يوميًا، واشطفها بماء فاتر، والتزم بالمثبت الليلي بعد انتهاء مرحلة التقويم.",
+    },
   },
   {
     title: "Teeth whitening",
+    titleAr: "تبييض الأسنان",
     description: "Learn about dentist-supervised options for lightening the colour of teeth.",
+    descriptionAr: "تعرّف على خيارات تبييض لون الأسنان تحت إشراف طبيب الأسنان.",
     category: "Cosmetic Dentistry",
     image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -261,10 +347,18 @@ const landingServices = [
       benefits: "Brightens teeth up to 8 shades in a single appointment, eliminates coffee/tea discoloration, and delivers instant visible results.",
       aftercare: "Follow the 'white diet' (avoid coffee, dark sauces, red wine, and smoking) for 48 hours to lock in optimal brightness.",
     },
+    extendedDetailsAr: {
+      overview: "تبييض احترافي داخل العيادة مُصمم لإزالة التصبغات العميقة مع حماية طبقة المينا وتقليل الحساسية.",
+      procedure: "حماية اللثة بعازل لطيف، ثم وضع جل تبييض متوازن الحموضة وتفعيله بضوء LED بارد لمدة 45 دقيقة.",
+      benefits: "يفتح لون الأسنان حتى 8 درجات في جلسة واحدة، ويزيل آثار القهوة والشاي بنتائج فورية واضحة.",
+      aftercare: "تجنب القهوة والمشروبات والأطعمة الداكنة والتدخين لمدة 48 ساعة بعد الجلسة للحفاظ على ثبات النتيجة.",
+    },
   },
   {
     title: "Gum care",
+    titleAr: "العناية باللثة",
     description: "Talk about gum health, cleaning, and everyday oral care.",
+    descriptionAr: "ناقش صحة اللثة وتنظيفها والعناية اليومية بالفم.",
     category: "Preventive Care",
     image: "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -273,10 +367,18 @@ const landingServices = [
       benefits: "Stops bleeding and tender gums, resolves persistent halitosis, and protects the biological foundation anchoring your teeth.",
       aftercare: "Use soft-bristled brushes angled at 45 degrees, rinse with prescribed antiseptic wash for 7 days, and maintain 3-month cleanings.",
     },
+    extendedDetailsAr: {
+      overview: "علاج متخصص للثة وتنظيف عميق بالموجات فوق الصوتية لإيقاف الالتهاب وحماية العظم الداعم للأسنان.",
+      procedure: "إزالة الجير واللويحات تحت خط اللثة برؤوس دقيقة ولطيفة مع غسول مهدئ ومضاد للبكتيريا.",
+      benefits: "يوقف نزيف اللثة وحساسيتها، ويعالج رائحة الفم غير المرغوبة، ويحافظ على ثبات الأسنان.",
+      aftercare: "استخدم فرشاة ناعمة بزاوية 45 درجة مع الغسول الموصوف لمدة 7 أيام ومتابعة التنظيف كل 3 أشهر.",
+    },
   },
   {
     title: "Root canal treatment",
+    titleAr: "علاج قناة الجذر",
     description: "Discuss treatment for infection inside a tooth and restoring it afterward.",
+    descriptionAr: "ناقش علاج العدوى داخل السن وترميمه بعد ذلك.",
     category: "Oral Surgery & Endodontics",
     image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -285,10 +387,18 @@ const landingServices = [
       benefits: "Prevents tooth loss and extraction, eradicates severe throbbing pain, and preserves the natural tooth structure in your arch.",
       aftercare: "Avoid biting down on hard foods on the treated side until the permanent protective crown is placed by your dentist.",
     },
+    extendedDetailsAr: {
+      overview: "إجراء علاجي يحافظ على السن الطبيعي عبر إزالة الالتهاب العميق وتعقيم قنوات الجذر وتسكين الألم الحاد.",
+      procedure: "تخدير موضعي كامل لتجربة مريحة، ثم تنظيف القنوات بدقة مجهرية وتعقيمها وحشوها بمواد حيوية متوافقة.",
+      benefits: "ينقذ السن من الخلع، ويقضي على الألم النابض، ويحافظ على بنية السن الطبيعية.",
+      aftercare: "تجنب المضغ القوي على الجهة المعالجة حتى يتم تركيب التاج الدائم لحماية السن.",
+    },
   },
   {
     title: "Children’s dentistry",
+    titleAr: "طب أسنان الأطفال",
     description: "Friendly visits that help children get familiar with dental care.",
+    descriptionAr: "زيارات ودية تساعد الأطفال على التعرّف على رعاية الأسنان.",
     category: "Pediatric Dentistry",
     image: "https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -297,10 +407,18 @@ const landingServices = [
       benefits: "Protects against early childhood cavities, monitors eruption patterns, and ensures kids look forward to dental appointments.",
       aftercare: "Supervise tooth brushing until age 8, encourage healthy hydration over sugary drinks, and keep dental visits cheerful and routine.",
     },
+    extendedDetailsAr: {
+      overview: "رعاية أسنان لطيفة وخالية من القلق مصممة لأسنان الأطفال النامية مع بناء الثقة وعادات العناية الإيجابية.",
+      procedure: "أسلوب تعريفي ودود خطوة بخطوة، مع تنظيف لطيف وتطبيق الفلورايد الواقي وسدادات الشقوق الآمنة.",
+      benefits: "يحمي من تسوس الطفولة المبكر، ويتابع بزوغ الأسنان، ويجعل الطفل يعتاد الزيارات الدورية بارتياح.",
+      aftercare: "راقب تفريش أسنان طفلك حتى سن الثامنة، وشجع شرب الماء وتقليل السكريات مع انتظام الفحوصات.",
+    },
   },
   {
     title: "Tooth-coloured fillings",
+    titleAr: "حشوات بلون السن",
     description: "Explore options for restoring teeth affected by cavities or damage.",
+    descriptionAr: "استكشف خيارات ترميم الأسنان المتضررة بالتسوس أو التلف.",
     category: "Restorative Dentistry",
     image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -309,10 +427,18 @@ const landingServices = [
       benefits: "Blends seamlessly with natural enamel, chemically adheres to strengthen the remaining tooth, and allows immediate eating.",
       aftercare: "Maintain everyday oral hygiene. Mild sensitivity to cold may occur for 24–48 hours as the tooth recovers.",
     },
+    extendedDetailsAr: {
+      overview: "حشوات تجميلية خالية من الزئبق مطابقة بدقة للون أسنانك الطبيعي لاستعادة القوة والمظهر.",
+      procedure: "إزالة التسوس بأقل تدخل ممكن، ثم تهيئة السن ووضع طبقات الكومبوزيت وتصليبها ضوئيًا فورًا.",
+      benefits: "تندمج بسلاسة مع مينا الأسنان، وتلتصق لتقوية بنية السن، وتتيح لك الأكل فور الانتهاء.",
+      aftercare: "حافظ على روتين التفريش والخيط اليومي، وقد تظهر حساسية خفيفة للبرودة لمدة 24–48 ساعة وتزول تلقائيًا.",
+    },
   },
   {
     title: "Dental imaging",
+    titleAr: "تصوير الأسنان بالأشعة",
     description: "Understand when dental images may help assess your care needs.",
+    descriptionAr: "تعرّف على الحالات التي قد تساعد فيها صور الأسنان في تقييم احتياجاتك.",
     category: "Preventive Care",
     image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -321,10 +447,18 @@ const landingServices = [
       benefits: "Detects hidden cysts, impactions, sinus proximity, and bone density with crystal-clear millimeter precision.",
       aftercare: "No recovery or downtime needed. Images are instantly available on high-definition operatory screens for collaborative review.",
     },
+    extendedDetailsAr: {
+      overview: "تصوير تشخيصي رقمي عالي الدقة يشمل الأشعة البانورامية والأشعة المقطعية ثلاثية الأبعاد بجرعة إشعاع أقل بنسبة 90%.",
+      procedure: "مسح سريع ومريح بوضعية الوقوف خلال أقل من 15 ثانية دون أي حساسات مزعجة داخل الفم.",
+      benefits: "يكشف الأكياس الخفية والأسنان المطمورة وكثافة العظم بدقة ملليمترية واضحة.",
+      aftercare: "لا يتطلب أي فترة تعافٍ، وتظهر الصور فورًا على شاشات العيادة لمراجعتها وشرحها معك.",
+    },
   },
   {
     title: "Crowns & bridges",
+    titleAr: "التيجان والجسور",
     description: "Learn about covering damaged teeth or replacing missing ones.",
+    descriptionAr: "تعرّف على تغطية الأسنان التالفة أو تعويض الأسنان المفقودة.",
     category: "Restorative Dentistry",
     image: "https://images.unsplash.com/photo-1571772996211-2f02c9727629?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -333,10 +467,18 @@ const landingServices = [
       benefits: "Restores full chewing power, protects weakened root-canal-treated teeth from catastrophic fractures, and looks stunning.",
       aftercare: "Floss daily around margins and under bridge pontics using specialized floss threaders to maintain healthy surrounding gums.",
     },
+    extendedDetailsAr: {
+      overview: "تيجان وجسور ثابتة من الزيركون والسيراميك المصنوعة بدقة لتدعيم الأسنان المتشققة أو تعويض الفراغات.",
+      procedure: "مسح بصري ثلاثي الأبعاد للسن المجهز، مع تركيب مؤقت ثم تثبيت التركيبة الخزفية المخصصة بدقة.",
+      benefits: "يستعيد قوة المضغ الكاملة، ويحمي الأسنان المعالجة عصبيًا من الكسر، ويمنح مظهرًا طبيعيًا أنيقًا.",
+      aftercare: "نظّف الحواف وأسفل الجسر يوميًا باستخدام الخيط الطبي المخصص للحفاظ على صحة اللثة المحيطة.",
+    },
   },
   {
     title: "Wisdom tooth care",
+    titleAr: "عناية ضرس العقل",
     description: "Discuss assessment and next steps for wisdom teeth that cause problems.",
+    descriptionAr: "ناقش تقييم ضروس العقل التي تسبب مشكلات والخطوات التالية.",
     category: "Oral Surgery & Endodontics",
     image: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -345,10 +487,18 @@ const landingServices = [
       benefits: "Stops recurrent gum infections, prevents orthodontic crowding relapse, and protects adjacent second molars from decay.",
       aftercare: "Bite gently on sterile gauze for 45 minutes, consume chilled soft foods, avoid hot liquids or straws for 72 hours.",
     },
+    extendedDetailsAr: {
+      overview: "تقييم جراحي متخصص وخلع مريح لضروس العقل المطمورة جزئيًا أو المسببة للألم والالتهاب.",
+      procedure: "تحديد مسار العصب بالأشعة ثلاثية الأبعاد، مع تخدير عميق وإزالة لطيفة بأقل تأثير على الأنسجة.",
+      benefits: "يوقف التهابات اللثة المتكررة، ويمنع تزاحم الأسنان، ويحمي الأضراس المجاورة من التسوس.",
+      aftercare: "اضغط بلطف على الشاش المعقم لمدة 45 دقيقة، وتناول أطعمة باردة ولينة، وتجنب المشروبات الساخنة والشفاط لمدة 72 ساعة.",
+    },
   },
   {
     title: "Dental veneers",
+    titleAr: "قشور الأسنان",
     description: "Explore thin facings used to change the appearance of teeth.",
+    descriptionAr: "استكشف الطبقات الرقيقة المستخدمة لتغيير مظهر الأسنان.",
     category: "Cosmetic Dentistry",
     image: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&w=800&q=80",
     extendedDetails: {
@@ -357,17 +507,27 @@ const landingServices = [
       benefits: "Permanently stain-resistant, closes gaps, fixes chipped edges, and delivers a radiant, camera-ready smile.",
       aftercare: "Wear a nightguard if you clench or grind, and avoid using teeth to open packaging or crack hard items.",
     },
+    extendedDetailsAr: {
+      overview: "عدسات بورسلين فائقة الرقة مصنوعة يدويًا لتحسين تناسق الابتسامة ولونها وتناسب أبعاد الأسنان.",
+      procedure: "معاينة رقمية لتصميم الابتسامة، وتحضير محافظ جدًا للمينا، ثم تثبيت القشور الخزفية بدقة عالية.",
+      benefits: "مقاومة دائمة للتصبغات، وتغلق الفراغات، وتصلح الحواف المكسورة لتمنحك ابتسامة متألقة.",
+      aftercare: "استخدم واقيًا ليليًا إذا كنت تعاني من الجز على الأسنان، وتجنب كسر الأشياء الصلبة بالأسنان.",
+    },
   },
 ] as const;
 
 export const services: readonly Service[] = Object.freeze(landingServices.map((item, index) => Object.freeze({
   id: `service-${index + 1}`,
   title: item.title,
+  titleAr: item.titleAr,
   description: item.description,
+  descriptionAr: item.descriptionAr,
+  defaultLocale: "bilingual" as const,
   durationMinutes: index === 0 ? 30 : 45,
   category: item.category,
   image: item.image,
   extendedDetails: item.extendedDetails,
+  extendedDetailsAr: item.extendedDetailsAr,
 })));
 
 export const demoServices = services;
@@ -389,26 +549,46 @@ export const demoClinic = Object.freeze({
   search: Object.freeze({ area: "Nasr City, Cairo", visit: "Routine check-up", time: "Monday, 10:30 AM" }),
 });
 
+const buildWeeklySchedule = (
+  offDays: readonly number[],
+  startTime: string,
+  endTime: string
+): readonly DoctorWorkingHour[] =>
+  Object.freeze(
+    [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) =>
+      Object.freeze({
+        dayOfWeek,
+        isOff: offDays.includes(dayOfWeek),
+        startTime,
+        endTime,
+      })
+    )
+  );
+
 const doctorProfiles = [
   {
     specialty: "General dentistry",
     bio: "Layla focuses on check-ups, gum care, fillings, and practical next steps for everyday dental health.",
     serviceIndexes: [0, 4, 7, 8, 10],
+    workingHours: buildWeeklySchedule([5], "09:00", "16:45"),
   },
   {
     specialty: "Implant and restorative dentistry",
     bio: "Omar discusses implant care, root canal treatment, and options for restoring or replacing teeth.",
     serviceIndexes: [1, 5, 7, 8, 9],
+    workingHours: buildWeeklySchedule([5], "09:00", "16:45"),
   },
   {
     specialty: "Orthodontics and cosmetic dentistry",
     bio: "Nour helps patients explore alignment, whitening, and veneer options in a consultation.",
     serviceIndexes: [2, 3, 11],
+    workingHours: buildWeeklySchedule([2, 5], "09:00", "14:30"),
   },
   {
     specialty: "Family dentistry",
     bio: "Adam welcomes children and families for check-ups, gum care, and restorative conversations.",
     serviceIndexes: [0, 4, 6, 7],
+    workingHours: buildWeeklySchedule([3, 5], "10:30", "16:45"),
   },
 ] as const;
 
@@ -420,6 +600,7 @@ export const doctors: readonly Doctor[] = Object.freeze(demoClinic.team.map((nam
     specialty: profile.specialty,
     bio: profile.bio,
     serviceIds: Object.freeze(profile.serviceIndexes.map((serviceIndex) => services[serviceIndex].id)),
+    workingHours: profile.workingHours,
   });
 }));
 

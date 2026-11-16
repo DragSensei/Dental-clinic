@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPatientInvoices, payPatientInvoice } from "@/lib/clinic-db";
-import { requireSession, resolvePatientEmail, HttpError } from "@/lib/authz";
+import { ClinicError, getPatientInvoices, payPatientInvoice } from "@/lib/clinic-db";
+import { requireSession, resolvePatientEmail } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
-import prisma from "@/lib/prisma";
 import { payInvoiceSchema } from "@/lib/clinic-schemas";
 import { toInvoiceDTO } from "@/lib/clinic-mappers";
 
@@ -25,20 +24,9 @@ export async function POST(request: Request | NextRequest) {
     const body = await request.json();
     const parsed = payInvoiceSchema.parse(body);
 
-    const invoice = await prisma.patientInvoice.findUnique({
-      where: { id: parsed.invoiceId },
-    });
-    if (!invoice) {
-      throw new HttpError(404, "not_found");
-    }
-
-    if (invoice.patientEmail !== user.email) {
-      throw new HttpError(404, "not_found");
-    }
-
     const updatedInvoice = await payPatientInvoice(parsed.invoiceId, parsed.paymentMethod, user.email);
     if (!updatedInvoice) {
-      throw new HttpError(404, "not_found");
+      throw new ClinicError("invoice_not_found");
     }
     return NextResponse.json({ invoice: toInvoiceDTO(updatedInvoice) });
   } catch (error: unknown) {

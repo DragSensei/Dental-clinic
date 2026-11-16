@@ -3,6 +3,8 @@ import { getServices, getDoctors, getClinicWorkingHours } from "@/lib/clinic-db"
 import { toErrorResponse } from "@/lib/http";
 import { toServiceDTO, toDoctorDTO } from "@/lib/clinic-mappers";
 
+export const PUBLIC_ROUTE = "public clinic catalog (services, doctors, working hours) for landing and booking pages";
+
 export async function GET() {
   try {
     const [services, doctors, workingHours] = await Promise.all([

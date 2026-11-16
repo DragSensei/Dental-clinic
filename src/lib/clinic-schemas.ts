@@ -71,27 +71,56 @@ export const updateDoctorSchema = z.object({
   status: z.enum(["active", "inactive"]).optional(),
 });
 
-export const createServiceSchema = z.object({
-  title: z.string().trim().min(1).max(120),
-  description: z.string().trim().min(1).max(1000),
+export const serviceLanguageModeSchema = z.enum(["bilingual", "en", "ar"]);
+
+const extendedDetailsInputSchema = z.object({
+  overview: z.string().max(2000).nullish(),
+  procedure: z.string().max(2000).nullish(),
+  benefits: z.string().max(2000).nullish(),
+  aftercare: z.string().max(2000).nullish(),
+});
+
+const baseServiceSchema = z.object({
+  title: z.string().trim().max(120).optional(),
+  titleAr: z.string().trim().max(120).nullish(),
+  description: z.string().trim().max(1000).optional(),
+  descriptionAr: z.string().trim().max(1000).nullish(),
+  defaultLocale: serviceLanguageModeSchema.optional(),
   durationMinutes: z.number().int().min(15).max(180).default(45),
   category: z.string().trim().max(100).default("Preventive Care"),
   image: z.string().trim().min(1).max(1000),
-  extendedDetails: z
-    .object({
-      overview: z.string().max(2000).optional(),
-      procedure: z.string().max(2000).optional(),
-      benefits: z.string().max(2000).optional(),
-      aftercare: z.string().max(2000).optional(),
-    })
-    .optional(),
-  overview: z.string().max(2000).optional(),
-  procedure: z.string().max(2000).optional(),
-  benefits: z.string().max(2000).optional(),
-  aftercare: z.string().max(2000).optional(),
+  extendedDetails: extendedDetailsInputSchema.nullish(),
+  extendedDetailsAr: extendedDetailsInputSchema.nullish(),
+  overview: z.string().max(2000).nullish(),
+  overviewAr: z.string().max(2000).nullish(),
+  procedure: z.string().max(2000).nullish(),
+  procedureAr: z.string().max(2000).nullish(),
+  benefits: z.string().max(2000).nullish(),
+  benefitsAr: z.string().max(2000).nullish(),
+  aftercare: z.string().max(2000).nullish(),
+  aftercareAr: z.string().max(2000).nullish(),
 });
 
-export const updateServiceSchema = createServiceSchema.partial();
+export const createServiceSchema = baseServiceSchema.superRefine((data, ctx) => {
+  const mode = data.defaultLocale ?? "bilingual";
+  if (mode === "ar") {
+    if (!data.titleAr?.trim() && !data.title?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["titleAr"], message: "Arabic title is required" });
+    }
+    if (!data.descriptionAr?.trim() && !data.description?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["descriptionAr"], message: "Arabic description is required" });
+    }
+    return;
+  }
+  if (!data.title?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["title"], message: "Title is required" });
+  }
+  if (!data.description?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["description"], message: "Description is required" });
+  }
+});
+
+export const updateServiceSchema = baseServiceSchema.partial();
 
 export const workingHourItemSchema = z
   .object({

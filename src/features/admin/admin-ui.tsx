@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { motion } from "motion/react";
 import type { Appointment } from "@/data/mock/catalog";
 import { useI18n } from "@/i18n/locale-provider";
 
@@ -15,9 +16,37 @@ export function useDateLabel() {
 
 export function PageTitle({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   const { t } = useI18n();
-  return <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.admin.ui.workspace}</p><h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p></div>{action}</header>;
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between"
+    >
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {t.admin.ui.workspace}
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+      </div>
+      {action}
+    </motion.header>
+  );
 }
-export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) { return <section className={`rounded-2xl border border-border bg-card p-5 sm:p-6 ${className}`}>{children}</section>; }
+
+export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      className={`rounded-2xl border border-border bg-card p-5 sm:p-6 ${className}`}
+    >
+      {children}
+    </motion.section>
+  );
+}
 export function Empty({ children }: { children: ReactNode }) { return <p className="py-8 text-center text-sm text-muted-foreground">{children}</p>; }
 export function Status({ status }: { status: Appointment["status"] }) {
   const { t } = useI18n();

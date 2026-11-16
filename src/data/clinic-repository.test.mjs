@@ -212,3 +212,33 @@ test("successful rescheduling is atomic, and reset restores the shared catalog b
   assert.equal(repository.getSnapshot().services[0].title, service.title);
   assert.equal(repository.getSnapshot().appointments.length, 0);
 });
+
+test("per-doctor workingHours filter off-days and shift bounds while any-doctor slots aggregate eligible clinicians", () => {
+  repository.resetDemo();
+  // doctor-3 (Nour) is off on Tuesday (2) and works 09:00–14:30
+  const doc3 = doctors[2];
+  const doc3ServiceId = doc3.serviceIds[0];
+  const doc3Dates = repository.getAvailableDates(doc3ServiceId, doc3.id);
+  assert.ok(doc3Dates.length > 0);
+  assert.ok(doc3Dates.every((d) => ![2, 5].includes(new Date(`${d}T00:00:00Z`).getUTCDay())));
+  const doc3Slots = repository.getAvailableSlots(doc3ServiceId, doc3.id, doc3Dates[doc3Dates.length - 1]);
+  assert.ok(doc3Slots.includes("09:00"));
+  assert.ok(!doc3Slots.includes("14:30"));
+  assert.ok(!doc3Slots.includes("16:00"));
+
+  // doctor-4 (Adam) is off on Wednesday (3) and works 10:30–16:45
+  const doc4 = doctors[3];
+  const doc4ServiceId = doc4.serviceIds[0];
+  const doc4Dates = repository.getAvailableDates(doc4ServiceId, doc4.id);
+  assert.ok(doc4Dates.every((d) => ![3, 5].includes(new Date(`${d}T00:00:00Z`).getUTCDay())));
+  const doc4Slots = repository.getAvailableSlots(doc4ServiceId, doc4.id, doc4Dates[doc4Dates.length - 1]);
+  assert.ok(!doc4Slots.includes("09:00"));
+  assert.ok(!doc4Slots.includes("09:45"));
+  assert.ok(doc4Slots.includes("10:30"));
+  assert.ok(doc4Slots.includes("16:00"));
+
+  const anyDates = repository.getAvailableDatesForAnyDoctor(doc4ServiceId);
+  assert.ok(anyDates.length > 0);
+  const anySlots = repository.getAvailableSlotsForAnyDoctor(doc4ServiceId, anyDates[0]);
+  assert.ok(anySlots.some((s) => s.doctorId));
+});

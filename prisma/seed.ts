@@ -48,33 +48,51 @@ async function main() {
       where: { id: s.id },
       update: {
         title: s.title,
+        titleAr: s.titleAr ?? null,
         description: s.description,
+        descriptionAr: s.descriptionAr ?? null,
+        defaultLocale: s.defaultLocale ?? "bilingual",
         durationMinutes: s.durationMinutes,
         category: s.category,
         image: s.image,
         overview: s.extendedDetails?.overview,
+        overviewAr: s.extendedDetailsAr?.overview ?? null,
         procedure: s.extendedDetails?.procedure,
+        procedureAr: s.extendedDetailsAr?.procedure ?? null,
         benefits: s.extendedDetails?.benefits,
+        benefitsAr: s.extendedDetailsAr?.benefits ?? null,
         aftercare: s.extendedDetails?.aftercare,
+        aftercareAr: s.extendedDetailsAr?.aftercare ?? null,
       },
       create: {
         id: s.id,
         title: s.title,
+        titleAr: s.titleAr ?? null,
         description: s.description,
+        descriptionAr: s.descriptionAr ?? null,
+        defaultLocale: s.defaultLocale ?? "bilingual",
         durationMinutes: s.durationMinutes,
         category: s.category,
         image: s.image,
         overview: s.extendedDetails?.overview,
+        overviewAr: s.extendedDetailsAr?.overview ?? null,
         procedure: s.extendedDetails?.procedure,
+        procedureAr: s.extendedDetailsAr?.procedure ?? null,
         benefits: s.extendedDetails?.benefits,
+        benefitsAr: s.extendedDetailsAr?.benefits ?? null,
         aftercare: s.extendedDetails?.aftercare,
+        aftercareAr: s.extendedDetailsAr?.aftercare ?? null,
       },
     });
   }
 
   // 3. Seed Users, Doctors & Credentials
   console.log("Seeding users & demo accounts...");
-  const seedPassword = process.env.SEED_DEMO_PASSWORD || "DemoPass123!";
+  const configuredSeedPassword = process.env.SEED_DEMO_PASSWORD?.trim();
+  if (process.env.NODE_ENV === "production" && !configuredSeedPassword) {
+    throw new Error("SEED_DEMO_PASSWORD is required when seeding in production.");
+  }
+  const seedPassword = configuredSeedPassword || "DemoPass123!";
 
   for (const acc of demoAccounts) {
     const normalizedEmail = acc.email.trim().toLowerCase();
@@ -153,6 +171,38 @@ async function main() {
             serviceId,
           })),
         });
+
+        // DoctorWorkingHours relations
+        const schedule =
+          docFixture.workingHours ??
+          [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+            dayOfWeek,
+            isOff: dayOfWeek === 5,
+            startTime: "09:00",
+            endTime: "16:45",
+          }));
+        for (const wh of schedule) {
+          await prisma.doctorWorkingHours.upsert({
+            where: {
+              doctorId_dayOfWeek: {
+                doctorId: doctor.id,
+                dayOfWeek: wh.dayOfWeek,
+              },
+            },
+            update: {
+              isOff: wh.isOff,
+              startTime: wh.startTime ?? null,
+              endTime: wh.endTime ?? null,
+            },
+            create: {
+              doctorId: doctor.id,
+              dayOfWeek: wh.dayOfWeek,
+              isOff: wh.isOff,
+              startTime: wh.startTime ?? null,
+              endTime: wh.endTime ?? null,
+            },
+          });
+        }
       }
     }
   }

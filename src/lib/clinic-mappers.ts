@@ -1,5 +1,6 @@
 import type {
   Service,
+  ServiceLanguageMode,
   Doctor,
   PatientIntakeForm,
   TreatmentPlan,
@@ -17,25 +18,50 @@ import type {
 // 1. Service Mappers
 // ==========================================
 
+function toLanguageMode(value?: string | null): ServiceLanguageMode {
+  if (value === "en" || value === "ar" || value === "bilingual") return value;
+  return "bilingual";
+}
+
+function cleanOptionalText(value?: string | null): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
 export function toServiceDTO(row: {
   id: string;
   title: string;
+  titleAr?: string | null;
   description: string;
+  descriptionAr?: string | null;
+  defaultLocale?: string | null;
   durationMinutes: number;
   category: string;
   image: string;
   overview?: string | null;
+  overviewAr?: string | null;
   procedure?: string | null;
+  procedureAr?: string | null;
   benefits?: string | null;
+  benefitsAr?: string | null;
   aftercare?: string | null;
+  aftercareAr?: string | null;
 }): Service {
   const hasExtended = Boolean(
     row.overview || row.procedure || row.benefits || row.aftercare
   );
+  const hasExtendedAr = Boolean(
+    row.overviewAr || row.procedureAr || row.benefitsAr || row.aftercareAr
+  );
   return {
     id: row.id,
     title: row.title,
+    ...(row.titleAr ? { titleAr: row.titleAr } : {}),
     description: row.description,
+    ...(row.descriptionAr ? { descriptionAr: row.descriptionAr } : {}),
+    defaultLocale: toLanguageMode(row.defaultLocale),
     durationMinutes: row.durationMinutes,
     category: row.category,
     image: row.image,
@@ -47,36 +73,102 @@ export function toServiceDTO(row: {
           aftercare: row.aftercare ?? "",
         }
       : undefined,
+    ...(hasExtendedAr
+      ? {
+          extendedDetailsAr: {
+            overview: row.overviewAr ?? "",
+            procedure: row.procedureAr ?? "",
+            benefits: row.benefitsAr ?? "",
+            aftercare: row.aftercareAr ?? "",
+          },
+        }
+      : {}),
   };
 }
 
 export function fromServiceInput(body: {
   title?: string;
+  titleAr?: string | null;
   description?: string;
+  descriptionAr?: string | null;
+  defaultLocale?: ServiceLanguageMode;
   durationMinutes?: number;
   category?: string;
   image?: string;
   extendedDetails?: {
-    overview?: string;
-    procedure?: string;
-    benefits?: string;
-    aftercare?: string;
-  };
-  overview?: string;
-  procedure?: string;
-  benefits?: string;
-  aftercare?: string;
+    overview?: string | null;
+    procedure?: string | null;
+    benefits?: string | null;
+    aftercare?: string | null;
+  } | null;
+  extendedDetailsAr?: {
+    overview?: string | null;
+    procedure?: string | null;
+    benefits?: string | null;
+    aftercare?: string | null;
+  } | null;
+  overview?: string | null;
+  overviewAr?: string | null;
+  procedure?: string | null;
+  procedureAr?: string | null;
+  benefits?: string | null;
+  benefitsAr?: string | null;
+  aftercare?: string | null;
+  aftercareAr?: string | null;
 }) {
+  const overview =
+    body.extendedDetails !== undefined
+      ? cleanOptionalText(body.extendedDetails?.overview ?? null)
+      : cleanOptionalText(body.overview);
+  const procedure =
+    body.extendedDetails !== undefined
+      ? cleanOptionalText(body.extendedDetails?.procedure ?? null)
+      : cleanOptionalText(body.procedure);
+  const benefits =
+    body.extendedDetails !== undefined
+      ? cleanOptionalText(body.extendedDetails?.benefits ?? null)
+      : cleanOptionalText(body.benefits);
+  const aftercare =
+    body.extendedDetails !== undefined
+      ? cleanOptionalText(body.extendedDetails?.aftercare ?? null)
+      : cleanOptionalText(body.aftercare);
+
+  const overviewAr =
+    body.extendedDetailsAr !== undefined
+      ? cleanOptionalText(body.extendedDetailsAr?.overview ?? null)
+      : cleanOptionalText(body.overviewAr);
+  const procedureAr =
+    body.extendedDetailsAr !== undefined
+      ? cleanOptionalText(body.extendedDetailsAr?.procedure ?? null)
+      : cleanOptionalText(body.procedureAr);
+  const benefitsAr =
+    body.extendedDetailsAr !== undefined
+      ? cleanOptionalText(body.extendedDetailsAr?.benefits ?? null)
+      : cleanOptionalText(body.benefitsAr);
+  const aftercareAr =
+    body.extendedDetailsAr !== undefined
+      ? cleanOptionalText(body.extendedDetailsAr?.aftercare ?? null)
+      : cleanOptionalText(body.aftercareAr);
+
   return {
     ...(body.title !== undefined ? { title: body.title } : {}),
+    ...(body.titleAr !== undefined ? { titleAr: cleanOptionalText(body.titleAr) } : {}),
     ...(body.description !== undefined ? { description: body.description } : {}),
+    ...(body.descriptionAr !== undefined
+      ? { descriptionAr: cleanOptionalText(body.descriptionAr) }
+      : {}),
+    ...(body.defaultLocale !== undefined ? { defaultLocale: body.defaultLocale } : {}),
     ...(body.durationMinutes !== undefined ? { durationMinutes: body.durationMinutes } : {}),
     ...(body.category !== undefined ? { category: body.category } : {}),
     ...(body.image !== undefined ? { image: body.image } : {}),
-    overview: body.extendedDetails?.overview ?? body.overview ?? null,
-    procedure: body.extendedDetails?.procedure ?? body.procedure ?? null,
-    benefits: body.extendedDetails?.benefits ?? body.benefits ?? null,
-    aftercare: body.extendedDetails?.aftercare ?? body.aftercare ?? null,
+    ...(overview !== undefined ? { overview } : {}),
+    ...(procedure !== undefined ? { procedure } : {}),
+    ...(benefits !== undefined ? { benefits } : {}),
+    ...(aftercare !== undefined ? { aftercare } : {}),
+    ...(overviewAr !== undefined ? { overviewAr } : {}),
+    ...(procedureAr !== undefined ? { procedureAr } : {}),
+    ...(benefitsAr !== undefined ? { benefitsAr } : {}),
+    ...(aftercareAr !== undefined ? { aftercareAr } : {}),
   };
 }
 
@@ -91,6 +183,12 @@ export function toDoctorDTO(row: {
   bio: string;
   services?: Array<{ serviceId: string }> | null;
   serviceIds?: string[] | null;
+  workingHours?: Array<{
+    dayOfWeek: number;
+    isOff: boolean;
+    startTime?: string | null;
+    endTime?: string | null;
+  }> | null;
 }): Doctor {
   return {
     id: row.id,
@@ -99,6 +197,16 @@ export function toDoctorDTO(row: {
     bio: row.bio,
     serviceIds:
       row.serviceIds ?? (row.services ? row.services.map((s) => s.serviceId) : []),
+    ...(row.workingHours
+      ? {
+          workingHours: row.workingHours.map((h) => ({
+            dayOfWeek: h.dayOfWeek,
+            isOff: Boolean(h.isOff),
+            ...(h.startTime ? { startTime: h.startTime } : {}),
+            ...(h.endTime ? { endTime: h.endTime } : {}),
+          })),
+        }
+      : {}),
   };
 }
 

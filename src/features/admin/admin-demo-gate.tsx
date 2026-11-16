@@ -53,7 +53,8 @@ export function AdminDemoGate({
     try {
       const res = await authClient.signIn.email({ email, password });
       if (res?.error) {
-        setError("login_invalid");
+        const status = (res.error as { status?: number }).status;
+        setError(status && status >= 500 ? "submit_failed" : "login_invalid");
         return;
       }
       router.refresh();
@@ -62,7 +63,7 @@ export function AdminDemoGate({
       onSignIn?.(email, role);
       router.replace(getDashboardRoute(role));
     } catch {
-      setError("login_invalid");
+      setError("submit_failed");
     }
   }
 
@@ -87,14 +88,15 @@ export function AdminDemoGate({
         name: name || "Clinic User",
       });
       if (res?.error) {
-        setError("signup_duplicate");
+        const status = (res.error as { status?: number }).status;
+        setError(status && status >= 500 ? "submit_failed" : "signup_duplicate");
         return;
       }
       router.refresh();
       onSignUp?.({ email, role: "patient", ...(name ? { name } : {}) });
       router.replace(getDashboardRoute("patient"));
     } catch {
-      setError("signup_duplicate");
+      setError("submit_failed");
     }
   }
 
@@ -107,12 +109,12 @@ export function AdminDemoGate({
         body: JSON.stringify({ role }),
       });
       if (!res.ok) {
-        setError("login_invalid");
+        setError(res.status >= 500 ? "submit_failed" : "login_invalid");
         return;
       }
       window.location.href = getDashboardRoute(role);
     } catch {
-      setError("login_invalid");
+      setError("submit_failed");
     }
   }
 

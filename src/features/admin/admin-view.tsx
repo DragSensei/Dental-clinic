@@ -35,9 +35,9 @@ export function AdminView({ view, id }: { view: View; id?: string }) {
     case "account-create": return <AccountCreator/>;
     case "doctors": return <Accounts initialRole="doctor"/>;
     case "doctor": return <DoctorEditor id={id ?? ""} doctors={doctors} services={services} save={(doctor) => clinic.updateDoctor(doctor)}/>;
-    case "services": return <Services services={services}/>;
+    case "services": return <Services services={services} doctors={doctors}/>;
     case "service-create": return <ServiceCreator save={(service) => clinic.createService(service)}/>;
-    case "service": return <ServiceEditor id={id ?? ""} services={services} save={(service) => clinic.updateService(service)}/>;
+    case "service": return <ServiceEditor id={id ?? ""} services={services} doctors={doctors} save={(service) => clinic.updateService(service)}/>;
     case "patients": return <Accounts initialRole="patient"/>;
     case "settings": return <AdminSettings clinic={clinic}/>;
   }

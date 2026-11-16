@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import type { Role } from "@/lib/authz";
+import { isActiveSessionUser, type Role } from "@/lib/authz";
 
 // There is no ?next= parameter and no other redirect,
 // so no redirect loop and no open-redirect surface.
@@ -26,7 +26,7 @@ export function decideGate(pathname: string, role: Role | null): Gate {
 export async function proxy(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
   const u = session?.user as (Record<string, unknown> | undefined);
-  const role = (u?.role as Role) || null;
+  const role = isActiveSessionUser(u) ? ((u?.role as Role) || "patient") : null;
 
   const pathname = request.nextUrl.pathname;
   const decision = decideGate(pathname, role);

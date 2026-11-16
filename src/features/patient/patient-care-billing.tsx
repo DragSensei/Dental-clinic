@@ -2,6 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { MotionConfig, motion } from "motion/react";
 import {
   Calendar,
   Check,
@@ -93,209 +94,228 @@ export function PatientCareView() {
   };
 
   return (
-    <div className="max-w-4xl space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t.patient.care.title}
-        </h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          {t.patient.care.subtitle}
-        </p>
-      </div>
-
-      {visitSummaries.length === 0 ? (
-        <Card className="border-border bg-card p-8 text-center text-muted-foreground">
-          <Stethoscope className="mx-auto size-10 text-brand-primary opacity-60 mb-3" />
-          <p className="text-base font-semibold text-foreground">No Visit Summaries On File</p>
-          <p className="text-xs sm:text-sm mt-1">
-            Clinical summaries and doctor post-op recovery notes appear here immediately following your appointments.
+    <MotionConfig reducedMotion="user">
+      <div className="max-w-4xl space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="space-y-2"
+        >
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            {t.patient.care.title}
+          </h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            {t.patient.care.subtitle}
           </p>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {visitSummaries.map((visit) => {
-            const doctor = clinic.doctors.find((d) => d.id === visit.doctorId);
-            const doctorName = doctor ? localizedDoctor(doctor, locale).name : "Dr. Clinician";
-            const doctorSpecialty = doctor ? localizedDoctor(doctor, locale).specialty : "General Dentistry";
-            const service = clinic.services.find((s) => s.id === visit.serviceId);
-            const serviceTitle = service ? localizedService(service, locale).title : "Comprehensive Clinical Visit";
+        </motion.div>
 
-            const hasPrescriptions = visit.prescriptions && visit.prescriptions.length > 0;
+        {visitSummaries.length === 0 ? (
+          <Card className="border-border bg-card p-8 text-center text-muted-foreground">
+            <Stethoscope className="mx-auto size-10 text-brand-primary opacity-60 mb-3" />
+            <p className="text-base font-semibold text-foreground">No Visit Summaries On File</p>
+            <p className="text-xs sm:text-sm mt-1">
+              Clinical summaries and doctor post-op recovery notes appear here immediately following your appointments.
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {visitSummaries.map((visit, index) => {
+              const doctor = clinic.doctors.find((d) => d.id === visit.doctorId);
+              const doctorName = doctor ? localizedDoctor(doctor, locale).name : "Dr. Clinician";
+              const doctorSpecialty = doctor ? localizedDoctor(doctor, locale).specialty : "General Dentistry";
+              const service = clinic.services.find((s) => s.id === visit.serviceId);
+              const serviceTitle = service ? localizedService(service, locale).title : "Comprehensive Clinical Visit";
 
-            return (
-              <Card key={visit.id} className="border-border bg-card shadow-xs overflow-hidden">
-                <CardHeader className="bg-muted/30 border-b border-border pb-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs font-semibold">
-                          Visit Summary #{visit.id.slice(-6).toUpperCase()}
-                        </Badge>
-                        <Badge variant="success" className="text-xs">
-                          Completed Visit ✓
-                        </Badge>
+              const hasPrescriptions = visit.prescriptions && visit.prescriptions.length > 0;
+
+              return (
+                <motion.div
+                  key={visit.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.22,
+                    delay: Math.min(index * 0.05, 0.18),
+                    ease: "easeOut",
+                  }}
+                  whileHover={{ y: -3 }}
+                >
+                <Card className="border-border bg-card shadow-xs overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+                  <CardHeader className="bg-muted/30 border-b border-border pb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-semibold">
+                            Visit Summary #{visit.id.slice(-6).toUpperCase()}
+                          </Badge>
+                          <Badge variant="success" className="text-xs">
+                            Completed Visit ✓
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-lg sm:text-xl font-bold pt-1">
+                          {serviceTitle}
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span>
+                            {formatDate(visit.visitDate, defaultDateOpts)}
+                          </span>
+                          <span>•</span>
+                          <span className="font-medium text-foreground">
+                            {t.patient.care.doctorSigned.replace("{name}", `${doctorName} (${doctorSpecialty})`)}
+                          </span>
+                        </CardDescription>
                       </div>
-                      <CardTitle className="text-lg sm:text-xl font-bold pt-1">
-                        {serviceTitle}
-                      </CardTitle>
-                      <CardDescription className="text-xs sm:text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <span>
-                          {formatDate(visit.visitDate, defaultDateOpts)}
-                        </span>
-                        <span>•</span>
-                        <span className="font-medium text-foreground">
-                          {t.patient.care.doctorSigned.replace("{name}", `${doctorName} (${doctorSpecialty})`)}
-                        </span>
-                      </CardDescription>
-                    </div>
 
-                    {hasPrescriptions && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActivePrescriptionVisit(visit)}
-                        className="font-medium"
-                      >
-                        <Printer className="size-3.5 mr-1.5" />
-                        {t.patient.care.printSummary}
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-6 pt-5">
-                  {/* What Was Done */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <FileText className="size-4 text-brand-primary" />
-                      <span>{t.patient.care.whatWasDone}</span>
-                    </div>
-                    <div className="rounded-xl bg-muted/40 p-4 text-xs sm:text-sm leading-relaxed text-foreground">
-                      {visit.whatWasDone}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Post-Op Instructions Checklist */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <ShieldCheck className="size-4 text-brand-primary" />
-                        <span>{t.patient.care.postOpRules}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        Click rule to check off during recovery
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      {visit.postOpInstructions.map((rule, idx) => {
-                        const ruleKey = `${visit.id}-rule-${idx}`;
-                        const isChecked = Boolean(checkedRules[ruleKey]);
-
-                        return (
-                          <button
-                            key={ruleKey}
-                            type="button"
-                            onClick={() => toggleRule(ruleKey)}
-                            className={cn(
-                              "w-full text-left flex items-start gap-3 rounded-lg p-3 text-xs sm:text-sm transition-colors cursor-pointer",
-                              isChecked
-                                ? "bg-muted/20 text-muted-foreground line-through"
-                                : "bg-muted/40 text-foreground hover:bg-muted/70"
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "flex size-5 shrink-0 items-center justify-center rounded-md border mt-0.5",
-                                isChecked
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-muted-foreground/40 bg-background"
-                              )}
-                            >
-                              {isChecked && <Check className="size-3.5" />}
-                            </div>
-                            <span className="leading-snug">{rule}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* e-Prescriptions */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Pill className="size-4 text-brand-primary" />
-                        <span>{t.patient.care.prescriptions}</span>
-                      </div>
                       {hasPrescriptions && (
-                        <Badge variant="secondary" className="text-xs">
-                          {visit.prescriptions.length} Active Rx
-                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setActivePrescriptionVisit(visit)}
+                          className="min-h-11 font-medium"
+                        >
+                          <Printer className="size-3.5 mr-1.5" />
+                          {t.patient.care.printSummary}
+                        </Button>
                       )}
                     </div>
+                  </CardHeader>
 
-                    {hasPrescriptions ? (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {visit.prescriptions.map((rx) => (
-                          <div
-                            key={rx.id}
-                            className="rounded-xl bg-muted/40 p-4 space-y-2"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-sm text-foreground">
-                                {rx.medication}
-                              </span>
-                              <Badge variant="outline" className="text-xs">
-                                {t.patient.care.duration.replace("{days}", String(rx.durationDays))}
-                              </Badge>
-                            </div>
-                            <div className="space-y-1 text-xs text-muted-foreground">
-                              <p className="text-foreground">
-                                <strong>{t.patient.care.dosage.replace("{dosage}", rx.dosage)}</strong> •{" "}
-                                {t.patient.care.frequency.replace("{frequency}", rx.frequency)}
-                              </p>
-                              <p className="italic text-muted-foreground pt-0.5">
-                                {t.patient.care.instructions.replace("{instructions}", rx.instructions)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                  <CardContent className="space-y-6 pt-5">
+                    {/* What Was Done */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <FileText className="size-4 text-brand-primary" />
+                        <span>{t.patient.care.whatWasDone}</span>
                       </div>
-                    ) : (
-                      <div className="rounded-lg bg-muted/20 p-4 text-center text-xs text-muted-foreground">
-                        No prescription medications were required for this visit.
+                      <div className="rounded-xl bg-muted/40 p-4 text-xs sm:text-sm leading-relaxed text-foreground">
+                        {visit.whatWasDone}
                       </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Post-Op Instructions Checklist */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                          <ShieldCheck className="size-4 text-brand-primary" />
+                          <span>{t.patient.care.postOpRules}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          Click rule to check off during recovery
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {visit.postOpInstructions.map((rule, idx) => {
+                          const ruleKey = `${visit.id}-rule-${idx}`;
+                          const isChecked = Boolean(checkedRules[ruleKey]);
+
+                          return (
+                            <motion.button
+                              key={ruleKey}
+                              type="button"
+                              whileTap={{ scale: 0.99 }}
+                              onClick={() => toggleRule(ruleKey)}
+                              className={cn(
+                                "min-h-11 w-full text-left flex items-start gap-3 rounded-lg p-3 text-xs sm:text-sm transition-colors cursor-pointer",
+                                isChecked
+                                  ? "bg-muted/20 text-muted-foreground line-through"
+                                  : "bg-muted/40 text-foreground hover:bg-muted/70"
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  "flex size-5 shrink-0 items-center justify-center rounded-md border mt-0.5 transition-colors",
+                                  isChecked
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-muted-foreground/40 bg-background"
+                                )}
+                              >
+                                {isChecked && <Check className="size-3.5" />}
+                              </div>
+                              <span className="leading-snug">{rule}</span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* e-Prescriptions */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                          <Pill className="size-4 text-brand-primary" />
+                          <span>{t.patient.care.prescriptions}</span>
+                        </div>
+                        {hasPrescriptions && (
+                          <Badge variant="secondary" className="text-xs">
+                            {visit.prescriptions.length} Active Rx
+                          </Badge>
+                        )}
+                      </div>
+
+                      {hasPrescriptions ? (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          {visit.prescriptions.map((rx) => (
+                            <div
+                              key={rx.id}
+                              className="rounded-xl bg-muted/40 p-4 space-y-2 transition-colors hover:bg-muted/55"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-sm text-foreground">
+                                  {rx.medication}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {t.patient.care.duration.replace("{days}", String(rx.durationDays))}
+                                </Badge>
+                              </div>
+                              <div className="space-y-1 text-xs text-muted-foreground">
+                                <p className="text-foreground">
+                                  <strong>{t.patient.care.dosage.replace("{dosage}", rx.dosage)}</strong> •{" "}
+                                  {t.patient.care.frequency.replace("{frequency}", rx.frequency)}
+                                </p>
+                                <p className="italic text-muted-foreground pt-0.5">
+                                  {t.patient.care.instructions.replace("{instructions}", rx.instructions)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg bg-muted/20 p-4 text-center text-xs text-muted-foreground">
+                          No prescription medications were required for this visit.
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="bg-muted/20 border-t border-border py-3 px-6 flex justify-between items-center text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="size-3.5" />
+                      Chart signed &amp; archived in clinic repository
+                    </span>
+                    {hasPrescriptions && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setActivePrescriptionVisit(visit)}
+                        className="min-h-11 text-xs font-semibold text-brand-primary hover:text-brand-hover"
+                      >
+                        Print e-Prescription →
+                      </Button>
                     )}
-                  </div>
-                </CardContent>
-
-                <CardFooter className="bg-muted/20 border-t border-border py-3 px-6 flex justify-between items-center text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="size-3.5" />
-                    Chart signed &amp; archived in clinic repository
-                  </span>
-                  {hasPrescriptions && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setActivePrescriptionVisit(visit)}
-                      className="text-xs font-semibold text-brand-primary hover:text-brand-hover"
-                    >
-                      Print e-Prescription →
-                    </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </CardFooter>
+                </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
 
       {/* Printable Clinical Prescription Dialog */}
       <Dialog
@@ -422,7 +442,8 @@ export function PatientCareView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }
 
@@ -432,15 +453,17 @@ export function PatientCareView() {
 
 export function PatientBillingView() {
   return (
-    <Suspense
-      fallback={
-        <div className="max-w-4xl p-6 text-sm text-muted-foreground animate-pulse">
-          Loading billing records and invoices...
-        </div>
-      }
-    >
-      <PatientBillingViewContent />
-    </Suspense>
+    <MotionConfig reducedMotion="user">
+      <Suspense
+        fallback={
+          <div className="max-w-4xl p-6 text-sm text-muted-foreground animate-pulse">
+            Loading billing records and invoices...
+          </div>
+        }
+      >
+        <PatientBillingViewContent />
+      </Suspense>
+    </MotionConfig>
   );
 }
 
@@ -520,76 +543,113 @@ function PatientBillingViewContent() {
   return (
     <div className="max-w-7xl space-y-8">
       {/* Header */}
-      <div className="space-y-2">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="space-y-2"
+      >
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           {t.patient.billing.title}
         </h1>
         <p className="text-sm text-muted-foreground sm:text-base">
           {t.patient.billing.subtitle}
         </p>
-      </div>
+      </motion.div>
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Billed */}
-        <Card className="border-border bg-card shadow-xs">
-          <CardContent className="p-4 sm:p-5">
-            <span className="text-xs text-muted-foreground uppercase font-medium">
-              Total Billed
-            </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
-              {kpis.totalBilled} EGP
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All clinical services to date
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.03, ease: "easeOut" }}
+          whileHover={{ y: -3 }}
+          className="h-full"
+        >
+          <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+            <CardContent className="p-4 sm:p-5">
+              <span className="text-xs text-muted-foreground uppercase font-medium">
+                Total Billed
+              </span>
+              <div className="text-2xl font-bold text-foreground mt-1 tabular-nums">
+                {kpis.totalBilled} EGP
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                All clinical services to date
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Paid to Date */}
-        <Card className="border-border bg-card shadow-xs">
-          <CardContent className="p-4 sm:p-5">
-            <span className="text-xs text-muted-foreground uppercase font-medium">
-              Paid to Date
-            </span>
-            <div className="text-2xl font-bold text-brand-primary mt-1">
-              {kpis.paidToDate} EGP
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Verified received receipts
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.06, ease: "easeOut" }}
+          whileHover={{ y: -3 }}
+          className="h-full"
+        >
+          <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+            <CardContent className="p-4 sm:p-5">
+              <span className="text-xs text-muted-foreground uppercase font-medium">
+                Paid to Date
+              </span>
+              <div className="text-2xl font-bold text-brand-primary mt-1 tabular-nums">
+                {kpis.paidToDate} EGP
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Verified received receipts
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Balance Due */}
-        <Card className="border-border bg-card shadow-xs">
-          <CardContent className="p-4 sm:p-5">
-            <span className="text-xs text-muted-foreground uppercase font-medium">
-              Remaining Balance Due
-            </span>
-            <div className={cn("text-2xl font-bold mt-1", kpis.remainingBalance > 0 ? "text-destructive" : "text-foreground")}>
-              {kpis.remainingBalance} EGP
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {kpis.remainingBalance > 0 ? "Payment pending" : "All accounts current ✓"}
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.09, ease: "easeOut" }}
+          whileHover={{ y: -3 }}
+          className="h-full"
+        >
+          <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+            <CardContent className="p-4 sm:p-5">
+              <span className="text-xs text-muted-foreground uppercase font-medium">
+                Remaining Balance Due
+              </span>
+              <div className={cn("text-2xl font-bold mt-1 tabular-nums", kpis.remainingBalance > 0 ? "text-destructive" : "text-foreground")}>
+                {kpis.remainingBalance} EGP
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {kpis.remainingBalance > 0 ? "Payment pending" : "All accounts current ✓"}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Next Installment */}
-        <Card className="border-border bg-card shadow-xs">
-          <CardContent className="p-4 sm:p-5">
-            <span className="text-xs text-muted-foreground uppercase font-medium">
-              Next Installment Date
-            </span>
-            <div className="text-lg font-bold text-foreground mt-1 truncate">
-              {kpis.nextInstallment ? formatDate(kpis.nextInstallment, shortDateOpts) : "None Due"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Phased treatment plan billing
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.12, ease: "easeOut" }}
+          whileHover={{ y: -3 }}
+          className="h-full"
+        >
+          <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+            <CardContent className="p-4 sm:p-5">
+              <span className="text-xs text-muted-foreground uppercase font-medium">
+                Next Installment Date
+              </span>
+              <div className="text-lg font-bold text-foreground mt-1 truncate tabular-nums">
+                {kpis.nextInstallment ? formatDate(kpis.nextInstallment, shortDateOpts) : "None Due"}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Phased treatment plan billing
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Invoices List */}
@@ -598,13 +658,24 @@ function PatientBillingViewContent() {
           Itemized Dental Invoices
         </h2>
 
-        {invoices.map((inv) => {
+        {invoices.map((inv, index) => {
           const isPaid = inv.status === "paid";
           const doctor = clinic.doctors.find((d) => d.id === inv.doctorId);
           const doctorName = doctor ? localizedDoctor(doctor, locale).name : "Dr. Clinician";
 
           return (
-            <Card key={inv.id} className="border-border bg-card shadow-xs overflow-hidden">
+            <motion.div
+              key={inv.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.22,
+                delay: Math.min(index * 0.05, 0.18),
+                ease: "easeOut",
+              }}
+              whileHover={{ y: -3 }}
+            >
+            <Card className="border-border bg-card shadow-xs overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
               <CardHeader className="bg-muted/30 border-b border-border pb-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
@@ -645,7 +716,7 @@ function PatientBillingViewContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => setReceiptInvoice(inv)}
-                        className="font-medium"
+                        className="min-h-11 font-medium"
                       >
                         <Receipt className="size-3.5 mr-1.5" />
                         {t.patient.billing.downloadReceipt}
@@ -655,7 +726,7 @@ function PatientBillingViewContent() {
                         variant="accent"
                         size="sm"
                         onClick={() => setCheckoutInvoice(inv)}
-                        className="font-semibold"
+                        className="min-h-11 font-semibold"
                       >
                         <CreditCard className="size-3.5 mr-1.5" />
                         Pay Now ({inv.balanceEgp} EGP)
@@ -730,6 +801,7 @@ function PatientBillingViewContent() {
                 )}
               </CardContent>
             </Card>
+            </motion.div>
           );
         })}
       </div>

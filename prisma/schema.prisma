@@ -92,14 +92,21 @@ model Verification {
 model Service {
   id              String          @id @default(uuid())
   title           String
+  titleAr         String?
   description     String
+  descriptionAr   String?
+  defaultLocale   String          @default("bilingual") // "bilingual" | "en" | "ar"
   durationMinutes Int             @default(45)
   category        String          @default("Preventive Care")
   image           String
   overview        String?         @db.Text
+  overviewAr      String?         @db.Text
   procedure       String?         @db.Text
+  procedureAr     String?         @db.Text
   benefits        String?         @db.Text
+  benefitsAr      String?         @db.Text
   aftercare       String?         @db.Text
+  aftercareAr     String?         @db.Text
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 

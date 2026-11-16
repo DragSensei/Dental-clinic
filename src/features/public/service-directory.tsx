@@ -4,24 +4,11 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useClinic } from "@/data/use-clinic";
-import { localizedService } from "@/data/mock/localized-copy";
+import { getServiceCategoryLabel, localizedService } from "@/data/mock/localized-copy";
 import { ExpandableCard } from "@/components/shared/expandable-card";
+import { interpolate } from "@/i18n/format";
 import { useI18n } from "@/i18n/locale-provider";
 import { Sparkles, CalendarCheck } from "lucide-react";
-
-const CATEGORY_NAMES: Record<string, { en: string; ar: string }> = {
-  all: { en: "All Specialties", ar: "جميع التخصصات" },
-  "Preventive Care": { en: "Preventive Care", ar: "رعاية وقائية" },
-  "Restorative Dentistry": { en: "Restorative Dentistry", ar: "طب الأسنان الترميمي" },
-  "Cosmetic Dentistry": { en: "Cosmetic Dentistry", ar: "طب الأسنان التجميلي" },
-  "Orthodontics": { en: "Orthodontics", ar: "تقويم الأسنان" },
-  "Pediatric Dentistry": { en: "Pediatric Dentistry", ar: "طب أسنان الأطفال" },
-  "Oral Surgery & Endodontics": { en: "Oral Surgery & Endodontics", ar: "جراحة الفم وعلاج الجذور" },
-};
-
-function getCategoryLabel(category: string, locale: string) {
-  return CATEGORY_NAMES[category]?.[locale === "ar" ? "ar" : "en"] || category;
-}
 
 function ServiceDirectoryContent() {
   const { services } = useClinic();
@@ -60,7 +47,9 @@ function ServiceDirectoryContent() {
           {t.services.directory.lead}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Click any card below to explore treatment procedures, clinical expectations, and aftercare guides.
+          {locale === "ar"
+            ? "انقر على أي بطاقة أدناه لاستكشاف خطوات العلاج والتفاصيل السريرية وإرشادات ما بعد الزيارة."
+            : "Click any card below to explore treatment procedures, clinical expectations, and aftercare guides."}
         </p>
       </header>
 
@@ -77,7 +66,7 @@ function ServiceDirectoryContent() {
                 : "bg-brand-subtle text-muted-foreground hover:bg-brand-border/60 hover:text-foreground"
             }`}
           >
-            {getCategoryLabel(cat, locale)}
+            {getServiceCategoryLabel(cat, locale)}
           </button>
         ))}
       </div>
@@ -93,32 +82,36 @@ function ServiceDirectoryContent() {
                 title={copy.title}
                 src={service.image || "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80"}
                 description={copy.description}
-                category={getCategoryLabel(service.category || "Preventive Care", locale)}
+                category={copy.categoryLabel}
                 duration={service.durationMinutes}
                 initiallyOpen={initialServiceId === service.id}
                 classNameExpanded="[&_h4]:text-foreground [&_h4]:font-semibold [&_h4]:text-base [&_h4]:mt-3.5 [&_h4:first-child]:mt-0 [&_h4]:mb-1 [&_p]:text-muted-foreground [&_p]:text-sm [&_p]:leading-relaxed"
               >
-                <h4>Treatment Overview</h4>
+                <h4>{t.services.card.overviewHeading}</h4>
+                <p>{copy.extendedDetails?.overview || copy.description}</p>
+
+                <h4>{t.services.card.procedureHeading}</h4>
                 <p>
-                  {service.extendedDetails?.overview || copy.description}
+                  {copy.extendedDetails?.procedure ||
+                    (locale === "ar"
+                      ? "يستخدم فريقنا الطبي أحدث تقنيات التصوير التشخيصي والبروتوكولات اللطيفة لضمان راحتك الكاملة طوال الزيارة."
+                      : "Our experienced clinical team utilizes modern diagnostic imaging, gentle dental protocols, and sterile instrumentation to ensure complete comfort throughout your visit.")}
                 </p>
 
-                <h4>Clinical Procedure & What to Expect</h4>
+                <h4>{t.services.card.benefitsHeading}</h4>
                 <p>
-                  {service.extendedDetails?.procedure ||
-                    "Our experienced clinical team utilizes modern diagnostic imaging, gentle dental protocols, and sterile instrumentation to ensure complete comfort throughout your visit."}
+                  {copy.extendedDetails?.benefits ||
+                    (locale === "ar"
+                      ? "يحافظ على صحة الفم، ويستعيد الوظيفة الطبيعية والمظهر المتناسق، ويدعم صحة الأسنان على المدى الطويل."
+                      : "Preserves your oral health, restores full biting function, enhances smile aesthetics, and supports lasting dental wellness.")}
                 </p>
 
-                <h4>Key Treatment Benefits</h4>
+                <h4>{t.services.card.aftercareHeading}</h4>
                 <p>
-                  {service.extendedDetails?.benefits ||
-                    "Preserves your oral health, restores full biting function, enhances smile aesthetics, and supports lasting dental wellness."}
-                </p>
-
-                <h4>Aftercare & Maintenance</h4>
-                <p>
-                  {service.extendedDetails?.aftercare ||
-                    "Maintain everyday brushing and flossing, follow personalized home-care recommendations, and attend routine examinations."}
+                  {copy.extendedDetails?.aftercare ||
+                    (locale === "ar"
+                      ? "حافظ على التفريش والخيط يوميًا، واتبع إرشادات العناية المنزلية الموصى بها، والتزم بالمتابعة الدورية."
+                      : "Maintain everyday brushing and flossing, follow personalized home-care recommendations, and attend routine examinations.")}
                 </p>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-brand-border pt-3.5 w-full">
@@ -127,10 +120,10 @@ function ServiceDirectoryContent() {
                     className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 text-sm font-semibold text-action-foreground hover:bg-action-hover shadow-sm transition-all"
                   >
                     <CalendarCheck className="size-4" />
-                    {locale === "ar" ? "احجز الآن" : "Book now"}
+                    {t.services.card.bookNow}
                   </Link>
                   <span className="text-xs text-muted-foreground">
-                    Consultation duration: {service.durationMinutes} minutes
+                    {interpolate(t.services.card.consultationDuration, { count: service.durationMinutes })}
                   </span>
                 </div>
               </ExpandableCard>

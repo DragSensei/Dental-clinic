@@ -4,21 +4,9 @@ import Link from "next/link";
 import { ExpandableCard } from "@/components/shared/expandable-card";
 import { localizedService } from "@/data/mock/localized-copy";
 import { useClinic } from "@/data/use-clinic";
+import { interpolate } from "@/i18n/format";
 import { useI18n } from "@/i18n/locale-provider";
 import { ArrowRight, CalendarCheck } from "lucide-react";
-
-const CATEGORY_NAMES: Record<string, { en: string; ar: string }> = {
-  "Preventive Care": { en: "Preventive Care", ar: "رعاية وقائية" },
-  "Restorative Dentistry": { en: "Restorative Dentistry", ar: "طب الأسنان الترميمي" },
-  "Cosmetic Dentistry": { en: "Cosmetic Dentistry", ar: "طب الأسنان التجميلي" },
-  "Orthodontics": { en: "Orthodontics", ar: "تقويم الأسنان" },
-  "Pediatric Dentistry": { en: "Pediatric Dentistry", ar: "طب أسنان الأطفال" },
-  "Oral Surgery & Endodontics": { en: "Oral Surgery & Endodontics", ar: "جراحة الفم وعلاج الجذور" },
-};
-
-function getCategoryLabel(category: string, locale: string) {
-  return CATEGORY_NAMES[category]?.[locale === "ar" ? "ar" : "en"] || category;
-}
 
 export function CareGuide() {
   const { services } = useClinic();
@@ -32,7 +20,9 @@ export function CareGuide() {
           <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-[-0.05em] sm:text-5xl" id="care-title">{t.landing.careGuide.title}</h2>
           <p className="mt-4 text-sm leading-7 text-muted-foreground">{t.landing.careGuide.body}</p>
           <p className="mt-2 text-xs leading-6 text-muted-foreground">
-            Click any service to view full clinical procedures, benefits, and aftercare guidance.
+            {locale === "ar"
+              ? "انقر على أي خدمة لعرض الإجراءات السريرية والفوائد وإرشادات ما بعد الزيارة."
+              : "Click any service to view full clinical procedures, benefits, and aftercare guidance."}
           </p>
         </div>
 
@@ -46,21 +36,36 @@ export function CareGuide() {
                   title={copy.title}
                   src={service.image || "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80"}
                   description={copy.description}
-                  category={getCategoryLabel(service.category || "Preventive Care", locale)}
+                  category={copy.categoryLabel}
                   duration={service.durationMinutes}
                   classNameExpanded="[&_h4]:text-foreground [&_h4]:font-semibold [&_h4]:text-base [&_h4]:mt-3.5 [&_h4:first-child]:mt-0 [&_h4]:mb-1 [&_p]:text-muted-foreground [&_p]:text-sm [&_p]:leading-relaxed"
                 >
-                  <h4>Treatment Overview</h4>
-                  <p>{service.extendedDetails?.overview || copy.description}</p>
+                  <h4>{t.services.card.overviewHeading}</h4>
+                  <p>{copy.extendedDetails?.overview || copy.description}</p>
 
-                  <h4>Clinical Procedure & What to Expect</h4>
-                  <p>{service.extendedDetails?.procedure || "Our experienced clinical team utilizes modern diagnostic imaging and gentle dental protocols to ensure complete comfort throughout your visit."}</p>
+                  <h4>{t.services.card.procedureHeading}</h4>
+                  <p>
+                    {copy.extendedDetails?.procedure ||
+                      (locale === "ar"
+                        ? "يستخدم فريقنا الطبي أحدث تقنيات التصوير التشخيصي والبروتوكولات اللطيفة لضمان راحتك الكاملة طوال الزيارة."
+                        : "Our experienced clinical team utilizes modern diagnostic imaging and gentle dental protocols to ensure complete comfort throughout your visit.")}
+                  </p>
 
-                  <h4>Key Treatment Benefits</h4>
-                  <p>{service.extendedDetails?.benefits || "Preserves your oral health, restores full function and aesthetic harmony, and supports lasting dental well-being."}</p>
+                  <h4>{t.services.card.benefitsHeading}</h4>
+                  <p>
+                    {copy.extendedDetails?.benefits ||
+                      (locale === "ar"
+                        ? "يحافظ على صحة الفم، ويستعيد الوظيفة الطبيعية والمظهر المتناسق، ويدعم صحة الأسنان على المدى الطويل."
+                        : "Preserves your oral health, restores full function and aesthetic harmony, and supports lasting dental well-being.")}
+                  </p>
 
-                  <h4>Aftercare & Maintenance</h4>
-                  <p>{service.extendedDetails?.aftercare || "Maintain daily brushing and flossing, follow personalized home-care recommendations, and attend bi-annual examinations."}</p>
+                  <h4>{t.services.card.aftercareHeading}</h4>
+                  <p>
+                    {copy.extendedDetails?.aftercare ||
+                      (locale === "ar"
+                        ? "حافظ على التفريش والخيط يوميًا، واتبع إرشادات العناية المنزلية الموصى بها، والتزم بالمتابعة الدورية."
+                        : "Maintain daily brushing and flossing, follow personalized home-care recommendations, and attend bi-annual examinations.")}
+                  </p>
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-brand-border pt-3.5 w-full">
                     <Link
@@ -68,10 +73,10 @@ export function CareGuide() {
                       className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 text-sm font-semibold text-action-foreground hover:bg-action-hover shadow-sm transition-all"
                     >
                       <CalendarCheck className="size-4" />
-                      {locale === "ar" ? "احجز الآن" : "Book now"}
+                      {t.services.card.bookNow}
                     </Link>
                     <span className="text-xs text-muted-foreground">
-                      {service.durationMinutes} mins consultation
+                      {interpolate(t.services.card.consultationDuration, { count: service.durationMinutes })}
                     </span>
                   </div>
                 </ExpandableCard>

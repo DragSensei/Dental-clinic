@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { MotionConfig, motion } from "motion/react";
 import { LogOut, PanelLeftClose, PanelLeftOpen, User, type LucideIcon } from "lucide-react";
 import { DashboardBottomNav } from "./dashboard-bottom-nav";
 import type { BottomNavItem } from "@/components/ui/bottom-nav-bar";
@@ -59,7 +62,7 @@ export function DashboardSidebar({
     : "A";
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <DashboardBottomNav items={mobileItems} ariaLabel={navAriaLabel} />
 
       <aside
@@ -88,7 +91,7 @@ export function DashboardSidebar({
               aria-expanded={!collapsed}
               aria-label={collapsed ? expandLabel : collapseLabel}
               title={collapsed ? expandTitle : collapseTitle}
-              className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="grid size-10 min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <span className="sr-only">{collapsed ? expandLabel : collapseLabel}</span>
               {collapsed ? (
@@ -109,18 +112,25 @@ export function DashboardSidebar({
                 href={item.href}
                 aria-current={item.active ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
-                className={`group flex min-h-11 items-center text-sm font-medium transition-[background-color,color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                className={`group relative flex min-h-11 items-center overflow-hidden text-sm font-medium transition-[color,background-color] duration-200 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                   collapsed
                     ? "h-11 w-11 justify-center gap-0 px-0 mx-auto rounded-xl"
                     : "w-full gap-3 px-3 py-2.5 rounded-xl"
                 } ${
                   item.active
-                    ? "bg-secondary text-foreground font-semibold"
+                    ? "text-foreground font-semibold"
                     : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                 }`}
               >
+                {item.active ? (
+                  <motion.span
+                    layoutId={`sidebar-active-pill-${navAriaLabel}`}
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    className="pointer-events-none absolute inset-0 rounded-xl bg-secondary ring-1 ring-primary/15"
+                  />
+                ) : null}
                 <span
-                  className={`grid size-9 shrink-0 place-items-center rounded-lg transition-[background-color,color,transform] duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
+                  className={`relative z-10 grid size-9 shrink-0 place-items-center rounded-lg transition-[background-color,color,transform] duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
                     item.active
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground group-hover:text-foreground"
@@ -129,7 +139,7 @@ export function DashboardSidebar({
                   <item.icon aria-hidden="true" className="size-5" />
                 </span>
                 <span
-                  className={`overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 motion-reduce:transition-none ${
+                  className={`relative z-10 overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 ${
                     collapsed ? "max-w-0 opacity-0" : "max-w-40 opacity-100"
                   }`}
                 >
@@ -159,7 +169,7 @@ export function DashboardSidebar({
                     onClick={onSignOut}
                     title={signOutLabel}
                     aria-label={signOutLabel}
-                    className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                    className="grid size-10 min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
                   >
                     <LogOut aria-hidden="true" className="size-4 rtl:-scale-x-100" />
                     <span className="sr-only">{signOutLabel}</span>
@@ -206,7 +216,7 @@ export function DashboardSidebar({
           </div>
         </div>
       </aside>
-    </>
+    </MotionConfig>
   );
 }
 

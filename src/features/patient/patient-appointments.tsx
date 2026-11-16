@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import {
   CalendarCheck2,
   CalendarDays,
@@ -297,520 +298,592 @@ function PatientAppointmentsContent() {
   }, [cancelTarget, simulateUnder24h, clinic]);
 
   return (
-    <div className="max-w-7xl space-y-8">
-      {/* Header */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            {locale === "ar" ? "حجز وإدارة المواعيد" : "Appointments & Booking"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t.patient.booking.subtitle}
-          </p>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "manage" | "book")} className="shrink-0">
-          <TabsList className="rounded-2xl p-1 bg-muted flex-wrap h-auto">
-            <TabsTrigger value="manage" className="rounded-xl text-xs font-semibold px-3 sm:px-4 min-h-11">
-              {locale === "ar" ? "مواعيدي الحالية" : "My Appointments"}
-            </TabsTrigger>
-            <TabsTrigger value="book" className="rounded-xl text-xs font-semibold px-3 sm:px-4 min-h-11">
-              <CalendarPlus className="size-3.5 me-1.5" />
-              {locale === "ar" ? "حجز موعد جديد" : "Book New Visit"}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      {bookingSuccess && (
-        <aside
-          aria-label="Booking Confirmation"
-          className="flex items-center justify-between rounded-3xl border border-primary/40 bg-brand-subtle p-5 text-foreground"
+    <MotionConfig reducedMotion="user">
+      <div className="max-w-7xl space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
         >
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="size-6 text-primary" />
-            <div>
-              <p className="font-bold text-sm">
-                {locale === "ar" ? "تم حجز موعدك بنجاح!" : "Appointment Successfully Booked!"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {formatDate(bookingSuccess.date, { weekday: "short", month: "short", day: "numeric" })} at {formatTime(bookingSuccess.time)} · Ref #{bookingSuccess.id}
-              </p>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setBookingSuccess(null)}
-            className="text-xs"
-          >
-            Dismiss
-          </Button>
-        </aside>
-      )}
-
-      {/* TAB 1: MANAGE APPOINTMENTS */}
-      {activeTab === "manage" && (
-        <div className="space-y-6">
-          {/* Upcoming Visits */}
-          <div>
-            <h2 className="text-lg font-bold text-foreground mb-4">
-              {locale === "ar" ? "المواعيد القادمة المؤكدة" : "Upcoming Confirmed Appointments"}
-            </h2>
-
-            {upcomingAppointments.length === 0 ? (
-              <Card className="rounded-3xl border border-dashed border-border p-10 text-center">
-                <CalendarCheck2 className="size-12 mx-auto text-muted-foreground/60 mb-3" />
-                <p className="font-semibold text-foreground text-sm">
-                  {locale === "ar" ? "لا توجد أي مواعيد قادمة" : "No upcoming appointments"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                  {locale === "ar"
-                    ? "اختر موعدك المفضل الآن مع طبيبك أو احجز في أقرب موعد متاح."
-                    : "Select a visit reason and reserve your next visit with our clinicians."}
-                </p>
-                <Button
-                  type="button"
-                  variant="accent"
-                  onClick={() => setActiveTab("book")}
-                  className="mt-4 min-h-11 rounded-xl text-xs font-semibold"
-                >
-                  <CalendarPlus className="size-4 me-1.5" />
-                  {locale === "ar" ? "حجز موعد الآن" : "Book New Appointment"}
-                </Button>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {upcomingAppointments.map((apt) => {
-                  const s = clinic.services.find((it) => it.id === apt.serviceId);
-                  const d = clinic.doctors.find((it) => it.id === apt.doctorId);
-                  const sTitle = s ? localizedService(s, locale).title : "General Dental Consultation";
-                  const dName = d ? localizedDoctor(d, locale).name : "Dr. Clinician";
-                  const dSpecialty = d ? localizedDoctor(d, locale).specialty : "General Dentistry";
-
-                  return (
-                    <Card key={apt.id} className="rounded-3xl border border-border shadow-xs overflow-hidden">
-                      <div className="p-5 sm:p-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                        {/* Info Column */}
-                        <div className="flex items-start gap-4">
-                          <Avatar className="size-12 border border-border">
-                            <AvatarImage src={`https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80`} />
-                            <AvatarFallback>{dName.slice(3, 5)}</AvatarFallback>
-                          </Avatar>
-                          <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="font-bold text-base text-foreground">{sTitle}</h3>
-                              {apt.attendanceConfirmed ? (
-                                <Badge variant="success" className="text-[11px] gap-1">
-                                  <Check className="size-3" />
-                                  Confirmed by Patient ✓
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-[11px] text-primary border-primary/40">
-                                  Action Required: Confirm
-                                </Badge>
-                              )}
-                              {apt.calendarSynced && (
-                                <Badge variant="secondary" className="text-[11px]">
-                                  Calendar Synced
-                                </Badge>
-                              )}
-                            </div>
-
-                            <p className="text-xs text-muted-foreground">
-                              {dName} · {dSpecialty}
-                            </p>
-
-                            <p className="text-sm font-semibold text-foreground pt-1 tabular-nums">
-                              {formatDate(apt.date, { weekday: "short", month: "short", day: "numeric" })} at {formatTime(apt.time)}
-                            </p>
-
-                            {apt.note && (
-                              <p className="text-xs italic text-muted-foreground pt-0.5">
-                                Note: &ldquo;{apt.note}&rdquo;
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Action Bar Column */}
-                        <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0">
-                          {!apt.attendanceConfirmed && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="accent"
-                              onClick={() => clinic.confirmAppointmentAttendance(apt.id)}
-                              className="min-h-11 rounded-xl text-xs font-semibold shadow-xs"
-                            >
-                              <CheckCircle2 className="size-4 me-1.5" />
-                              {locale === "ar" ? "تأكيد الحضور" : "Confirm Attendance"}
-                            </Button>
-                          )}
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            disabled={syncingId === apt.id}
-                            onClick={() => handleCalendarSync(apt)}
-                            className="min-h-11 rounded-xl text-xs font-medium"
-                          >
-                            <ExternalLink className="size-3.5 me-1 text-primary" />
-                            {apt.calendarSynced ? "Resync Google" : "Sync Google"}
-                          </Button>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => downloadIcsFile(apt, sTitle, dName)}
-                            className="min-h-11 rounded-xl text-xs font-medium"
-                          >
-                            <Download className="size-3.5 me-1 text-primary" />
-                            .ics
-                          </Button>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setRescheduleTarget(apt);
-                              setRescheduleDate(apt.date);
-                              setRescheduleTime(apt.time);
-                            }}
-                            className="min-h-11 rounded-xl text-xs font-medium"
-                          >
-                            <RefreshCw className="size-3.5 me-1" />
-                            {locale === "ar" ? "تعديل" : "Reschedule"}
-                          </Button>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setCancelTarget(apt);
-                              setSimulateUnder24h(false);
-                            }}
-                            className="min-h-11 rounded-xl text-xs font-medium text-destructive hover:bg-destructive/10"
-                          >
-                            <XCircle className="size-3.5 me-1" />
-                            {locale === "ar" ? "إلغاء" : "Cancel"}
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              {locale === "ar" ? "حجز وإدارة المواعيد" : "Appointments & Booking"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t.patient.booking.subtitle}
+            </p>
           </div>
 
-          {/* Past / Cancelled Visits */}
-          {pastAppointments.length > 0 && (
-            <div className="pt-6">
-              <h2 className="text-sm font-semibold text-muted-foreground mb-3">
-                {locale === "ar" ? "المواعيد الملغاة / السابقة" : "Cancelled / Past Appointments"}
-              </h2>
-              <div className="divide-y divide-border/60 rounded-2xl border border-border bg-card p-4">
-                {pastAppointments.map((apt) => {
-                  const s = clinic.services.find((it) => it.id === apt.serviceId);
-                  return (
-                    <div key={apt.id} className="py-2.5 flex items-center justify-between text-xs text-muted-foreground">
-                      <div>
-                        <span className="font-medium text-foreground">{s?.title || "Consultation"}</span>
-                        <span> · {formatDate(apt.date, { month: "short", day: "numeric" })} at {apt.time}</span>
-                      </div>
-                      <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40">
-                        Cancelled
-                      </Badge>
-                    </div>
-                  );
-                })}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "manage" | "book")} className="shrink-0">
+            <TabsList className="rounded-2xl p-1 bg-muted flex-wrap h-auto">
+              <TabsTrigger value="manage" className="rounded-xl text-xs font-semibold px-3 sm:px-4 min-h-11">
+                {locale === "ar" ? "مواعيدي الحالية" : "My Appointments"}
+              </TabsTrigger>
+              <TabsTrigger value="book" className="rounded-xl text-xs font-semibold px-3 sm:px-4 min-h-11">
+                <CalendarPlus className="size-3.5 me-1.5" />
+                {locale === "ar" ? "حجز موعد جديد" : "Book New Visit"}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </motion.div>
+
+        <AnimatePresence initial={false}>
+          {bookingSuccess && (
+            <motion.aside
+              key="booking-success"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              aria-label="Booking Confirmation"
+              className="flex items-center justify-between rounded-3xl border border-primary/40 bg-brand-subtle p-5 text-foreground"
+            >
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="size-6 text-primary" />
+                <div>
+                  <p className="font-bold text-sm">
+                    {locale === "ar" ? "تم حجز موعدك بنجاح!" : "Appointment Successfully Booked!"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate(bookingSuccess.date, { weekday: "short", month: "short", day: "numeric" })} at {formatTime(bookingSuccess.time)} · Ref #{bookingSuccess.id}
+                  </p>
+                </div>
               </div>
-            </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setBookingSuccess(null)}
+                className="min-h-11 text-xs"
+              >
+                Dismiss
+              </Button>
+            </motion.aside>
           )}
-        </div>
-      )}
+        </AnimatePresence>
 
-      {/* TAB 2: BOOKING WIZARD */}
-      {activeTab === "book" && (
-        <Card className="rounded-3xl border border-border shadow-md overflow-hidden">
-          <CardHeader className="border-b border-border/70 bg-muted/30 p-6 sm:p-8">
-            <span className="eyebrow">{locale === "ar" ? "حجز مباشر وسريع" : "Express Self-Service Booking"}</span>
-            <CardTitle className="text-2xl font-bold mt-1">
-              {locale === "ar" ? "اختر سبب الزيارة وتوقيت الحجز" : "Select Visit Reason & Schedule Slot"}
-            </CardTitle>
-            <CardDescription className="text-xs">
-              {locale === "ar"
-                ? "حدد سبب الزيارة وسيقوم النظام تلقائيًا بضبط مدة الجلسة وعرض أقرب المواعيد الشاغرة."
-                : "Choose your primary reason for visiting. Slot durations and available doctor timings adjust automatically."}
-            </CardDescription>
-          </CardHeader>
+        <AnimatePresence mode="wait" initial={false}>
+          {/* TAB 1: MANAGE APPOINTMENTS */}
+          {activeTab === "manage" ? (
+            <motion.div
+              key="tab-manage"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="space-y-6"
+            >
+              {/* Upcoming Visits */}
+              <div>
+                <h2 className="text-lg font-bold text-foreground mb-4">
+                  {locale === "ar" ? "المواعيد القادمة المؤكدة" : "Upcoming Confirmed Appointments"}
+                </h2>
 
-          <CardContent className="p-6 sm:p-8 space-y-8">
-            {/* STEP 1: VISIT REASON CATEGORIES */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                  1. {locale === "ar" ? "سبب الزيارة" : "Reason for Visit"}
-                </h3>
-                <Badge variant="outline" className="text-xs">
-                  {matchedReason.durationMinutes} mins
-                </Badge>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                {visitReasonCategories.map((cat) => {
-                  const isSelected = selectedReasonCategory === cat.id;
-                  const label = locale === "ar" ? cat.labelAr : cat.labelEn;
-                  const desc = locale === "ar" ? cat.descAr : cat.descEn;
-
-                  return (
-                    <button
-                      key={cat.id}
+                {upcomingAppointments.length === 0 ? (
+                  <Card className="rounded-3xl border border-dashed border-border p-10 text-center">
+                    <CalendarCheck2 className="size-12 mx-auto text-muted-foreground/60 mb-3" />
+                    <p className="font-semibold text-foreground text-sm">
+                      {locale === "ar" ? "لا توجد أي مواعيد قادمة" : "No upcoming appointments"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                      {locale === "ar"
+                        ? "اختر موعدك المفضل الآن مع طبيبك أو احجز في أقرب موعد متاح."
+                        : "Select a visit reason and reserve your next visit with our clinicians."}
+                    </p>
+                    <Button
                       type="button"
-                      onClick={() => handleCategoryChange(cat.id)}
-                      className={`flex flex-col justify-between rounded-2xl border p-4 text-start transition-all ${
-                        isSelected
-                          ? "border-primary bg-primary/5 ring-2 ring-primary/40 shadow-xs"
-                          : "border-border hover:bg-muted/60"
-                      }`}
+                      variant="accent"
+                      onClick={() => setActiveTab("book")}
+                      className="mt-4 min-h-11 rounded-xl text-xs font-semibold"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-semibold text-sm text-foreground">{label}</span>
-                        {isSelected && (
-                          <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-                            <Check className="size-3" />
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{desc}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* STEP 2: CLINICIAN & OPEN SLOTS */}
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                  2. {locale === "ar" ? "اختيار الطبيب والتوقيت" : "Clinician & Live Slot Picker"}
-                </h3>
-
-                {/* "Any Available Doctor" Switch */}
-                <div className="flex items-center gap-2.5 rounded-2xl border border-border/80 bg-muted/40 px-3.5 py-2">
-                  <Switch
-                    id="any-doctor-switch"
-                    checked={anyAvailableDoctor}
-                    onCheckedChange={(checked) => {
-                      setAnyAvailableDoctor(checked);
-                      if (!checked) {
-                        const eligible = clinic.doctors.filter((d) => d.serviceIds.includes(selectedServiceId));
-                        if (eligible.length > 0) {
-                          setSelectedDoctorId(eligible[0].id);
-                        }
-                      }
-                      setSelectedDate("");
-                      setSelectedTime("");
-                    }}
-                  />
-                  <label htmlFor="any-doctor-switch" className="cursor-pointer text-xs font-semibold text-foreground">
-                    {t.patient.booking.anyAvailable}
-                  </label>
-                </div>
-              </div>
-
-              {/* Specific Doctor Selection if Switch is OFF */}
-              {!anyAvailableDoctor && (
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {clinic.doctors
-                    .filter((doc) => doc.serviceIds.includes(selectedServiceId))
-                    .map((doc) => {
-                    const isSelected = selectedDoctorId === doc.id;
-                    const dLoc = localizedDoctor(doc, locale);
-                    return (
-                      <button
-                        key={doc.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedDoctorId(doc.id);
-                          setSelectedDate("");
-                          setSelectedTime("");
-                        }}
-                        className={`flex items-center gap-3 rounded-2xl border p-3 text-start transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary/5 ring-1 ring-primary"
-                            : "border-border hover:bg-muted/50"
-                        }`}
-                      >
-                        <Avatar className="size-10 border border-border">
-                          <AvatarFallback>{dLoc.name.slice(3, 5)}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-semibold text-foreground">{dLoc.name}</p>
-                          <p className="truncate text-[11px] text-muted-foreground">{dLoc.specialty}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Live Dates Picker */}
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground">
-                  {locale === "ar" ? "اختر اليوم المناسب:" : "Select Date:"}
-                </p>
-                {availableDates.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No available dates found for this service.</p>
+                      <CalendarPlus className="size-4 me-1.5" />
+                      {locale === "ar" ? "حجز موعد الآن" : "Book New Appointment"}
+                    </Button>
+                  </Card>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {availableDates.map((dateStr) => {
-                      const isSelected = selectedDate === dateStr;
+                  <div className="grid gap-4">
+                    {upcomingAppointments.map((apt, index) => {
+                      const s = clinic.services.find((it) => it.id === apt.serviceId);
+                      const d = clinic.doctors.find((it) => it.id === apt.doctorId);
+                      const sTitle = s ? localizedService(s, locale).title : "General Dental Consultation";
+                      const dName = d ? localizedDoctor(d, locale).name : "Dr. Clinician";
+                      const dSpecialty = d ? localizedDoctor(d, locale).specialty : "General Dentistry";
+
                       return (
-                        <Button
-                          key={dateStr}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => {
-                            setSelectedDate(dateStr);
-                            setSelectedTime("");
+                        <motion.div
+                          key={apt.id}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.2,
+                            delay: Math.min(index * 0.04, 0.16),
+                            ease: "easeOut",
                           }}
-                          className={`min-h-11 rounded-xl px-3.5 text-xs font-medium ${
-                            isSelected ? "shadow-sm" : ""
-                          }`}
+                          whileHover={{ y: -3 }}
                         >
-                          <CalendarDays className="size-3.5 me-1.5" />
-                          {formatDate(dateStr, { weekday: "short", month: "short", day: "numeric" })}
-                        </Button>
+                          <Card className="rounded-3xl border border-border shadow-xs overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+                            <div className="p-5 sm:p-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                              {/* Info Column */}
+                              <div className="flex items-start gap-4">
+                                <Avatar className="size-12 border border-border">
+                                  <AvatarImage src={`https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80`} />
+                                  <AvatarFallback>{dName.slice(3, 5)}</AvatarFallback>
+                                </Avatar>
+                                <div className="space-y-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h3 className="font-bold text-base text-foreground">{sTitle}</h3>
+                                    {apt.attendanceConfirmed ? (
+                                      <Badge variant="success" className="text-[11px] gap-1">
+                                        <Check className="size-3" />
+                                        Confirmed by Patient ✓
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-[11px] text-primary border-primary/40">
+                                        Action Required: Confirm
+                                      </Badge>
+                                    )}
+                                    {apt.calendarSynced && (
+                                      <Badge variant="secondary" className="text-[11px]">
+                                        Calendar Synced
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                  <p className="text-xs text-muted-foreground">
+                                    {dName} · {dSpecialty}
+                                  </p>
+
+                                  <p className="text-sm font-semibold text-foreground pt-1 tabular-nums">
+                                    {formatDate(apt.date, { weekday: "short", month: "short", day: "numeric" })} at {formatTime(apt.time)}
+                                  </p>
+
+                                  {apt.note && (
+                                    <p className="text-xs italic text-muted-foreground pt-0.5">
+                                      Note: &ldquo;{apt.note}&rdquo;
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Action Bar Column */}
+                              <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0">
+                                {!apt.attendanceConfirmed && (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="accent"
+                                    onClick={() => clinic.confirmAppointmentAttendance(apt.id)}
+                                    className="min-h-11 rounded-xl text-xs font-semibold shadow-xs"
+                                  >
+                                    <CheckCircle2 className="size-4 me-1.5" />
+                                    {locale === "ar" ? "تأكيد الحضور" : "Confirm Attendance"}
+                                  </Button>
+                                )}
+
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={syncingId === apt.id}
+                                  onClick={() => handleCalendarSync(apt)}
+                                  className="min-h-11 rounded-xl text-xs font-medium"
+                                >
+                                  <ExternalLink className="size-3.5 me-1 text-primary" />
+                                  {apt.calendarSynced ? "Resync Google" : "Sync Google"}
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => downloadIcsFile(apt, sTitle, dName)}
+                                  className="min-h-11 rounded-xl text-xs font-medium"
+                                >
+                                  <Download className="size-3.5 me-1 text-primary" />
+                                  .ics
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setRescheduleTarget(apt);
+                                    setRescheduleDate(apt.date);
+                                    setRescheduleTime(apt.time);
+                                  }}
+                                  className="min-h-11 rounded-xl text-xs font-medium"
+                                >
+                                  <RefreshCw className="size-3.5 me-1" />
+                                  {locale === "ar" ? "تعديل" : "Reschedule"}
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setCancelTarget(apt);
+                                    setSimulateUnder24h(false);
+                                  }}
+                                  className="min-h-11 rounded-xl text-xs font-medium text-destructive hover:bg-destructive/10"
+                                >
+                                  <XCircle className="size-3.5 me-1" />
+                                  {locale === "ar" ? "إلغاء" : "Cancel"}
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        </motion.div>
                       );
                     })}
                   </div>
                 )}
               </div>
 
-              {/* Live Time Slots Picker */}
-              {selectedDate && (
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-muted-foreground">
-                      {locale === "ar" ? "اختر التوقيت المتاح (بتوقيت العيادة):" : "Select Open Time Slot (clinic time):"}
-                    </p>
-                    <span className="text-[11px] text-muted-foreground">
-                      {availableSlotsForDate.length} {locale === "ar" ? "مواعيد متاحة" : "slots open"}
-                    </span>
+              {/* Past / Cancelled Visits */}
+              {pastAppointments.length > 0 && (
+                <div className="pt-6">
+                  <h2 className="text-sm font-semibold text-muted-foreground mb-3">
+                    {locale === "ar" ? "المواعيد الملغاة / السابقة" : "Cancelled / Past Appointments"}
+                  </h2>
+                  <div className="divide-y divide-border/60 rounded-2xl border border-border bg-card p-4">
+                    {pastAppointments.map((apt) => {
+                      const s = clinic.services.find((it) => it.id === apt.serviceId);
+                      return (
+                        <div key={apt.id} className="py-2.5 flex items-center justify-between text-xs text-muted-foreground">
+                          <div>
+                            <span className="font-medium text-foreground">{s?.title || "Consultation"}</span>
+                            <span> · {formatDate(apt.date, { month: "short", day: "numeric" })} at {apt.time}</span>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40">
+                            Cancelled
+                          </Badge>
+                        </div>
+                      );
+                    })}
                   </div>
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="tab-book"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              {/* TAB 2: BOOKING WIZARD */}
+              <Card className="rounded-3xl border border-border shadow-md overflow-hidden">
+                <CardHeader className="border-b border-border/70 bg-muted/30 p-6 sm:p-8">
+                  <span className="eyebrow">{locale === "ar" ? "حجز مباشر وسريع" : "Express Self-Service Booking"}</span>
+                  <CardTitle className="text-2xl font-bold mt-1">
+                    {locale === "ar" ? "اختر سبب الزيارة وتوقيت الحجز" : "Select Visit Reason & Schedule Slot"}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {locale === "ar"
+                      ? "حدد سبب الزيارة وسيقوم النظام تلقائيًا بضبط مدة الجلسة وعرض أقرب المواعيد الشاغرة."
+                      : "Choose your primary reason for visiting. Slot durations and available doctor timings adjust automatically."}
+                  </CardDescription>
+                </CardHeader>
 
-                  {availableSlotsForDate.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">
-                      {locale === "ar" ? "لا توجد خانات شاغرة في هذا اليوم" : "No open slots on this date. Please choose another date."}
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-                      {availableSlotsForDate.map((slot) => {
-                        const isSelected = selectedTime === slot.time;
-                        const docObj = clinic.doctors.find((d) => d.id === slot.doctorId);
-                        const docDisplay = docObj ? localizedDoctor(docObj, locale).name : slot.doctorName;
+                <CardContent className="p-6 sm:p-8 space-y-8">
+                  {/* STEP 1: VISIT REASON CATEGORIES */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                        1. {locale === "ar" ? "سبب الزيارة" : "Reason for Visit"}
+                      </h3>
+                      <Badge variant="outline" className="text-xs">
+                        {matchedReason.durationMinutes} mins
+                      </Badge>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {visitReasonCategories.map((cat) => {
+                        const isSelected = selectedReasonCategory === cat.id;
+                        const label = locale === "ar" ? cat.labelAr : cat.labelEn;
+                        const desc = locale === "ar" ? cat.descAr : cat.descEn;
+
                         return (
-                          <Button
-                            key={slot.time}
+                          <motion.button
+                            key={cat.id}
                             type="button"
-                            variant={isSelected ? "default" : "outline"}
-                            onClick={() => setSelectedTime(slot.time)}
-                            className={cn(
-                              "min-h-14 h-auto flex-col items-center justify-center rounded-xl py-2 px-2 text-xs font-semibold whitespace-normal text-center gap-1",
-                              isSelected ? "shadow-sm" : ""
-                            )}
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.99 }}
+                            onClick={() => handleCategoryChange(cat.id)}
+                            className={`flex min-h-11 flex-col justify-between rounded-2xl border p-4 text-start transition-colors ${
+                              isSelected
+                                ? "border-primary bg-primary/5 ring-2 ring-primary/40 shadow-xs"
+                                : "border-border hover:border-primary/40 hover:bg-muted/60"
+                            }`}
                           >
-                            <span className="tabular-nums font-bold leading-none">{formatTime(slot.time)}</span>
-                            {anyAvailableDoctor && (
-                              <span className="text-[11px] font-normal leading-tight opacity-90 text-center break-words max-w-full">
-                                {docDisplay}
-                              </span>
-                            )}
-                          </Button>
+                            <div className="flex w-full items-start justify-between gap-2">
+                              <span className="font-semibold text-sm text-foreground">{label}</span>
+                              {isSelected && (
+                                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                                  <Check className="size-3" />
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                          </motion.button>
                         );
                       })}
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
+                  </div>
 
-            <Separator />
+                  <Separator />
 
-            {/* STEP 3: OPTIONAL SYMPTOM NOTE & CONTACT AUTO-FILL */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                3. {locale === "ar" ? "ملاحظات إضافية وتأكيد الحجز" : "Optional Symptom Note & Confirmation"}
-              </h3>
+                  {/* STEP 2: CLINICIAN & OPEN SLOTS */}
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                        2. {locale === "ar" ? "اختيار الطبيب والتوقيت" : "Clinician & Live Slot Picker"}
+                      </h3>
 
-              <div className="space-y-2">
-                <label htmlFor="symptom-note" className="text-xs font-medium text-muted-foreground">
-                  {locale === "ar"
-                    ? "هل تشعر بأي ألم أو أعراض محددة؟ (اختياري):"
-                    : "Describe any specific symptoms, tooth pain, or concerns (Optional):"}
-                </label>
-                <Textarea
-                  id="symptom-note"
-                  value={symptomNote}
-                  onChange={(e) => setSymptomNote(e.target.value)}
-                  placeholder={
-                    locale === "ar"
-                      ? "مثال: ألم حاد عند تناول المشروبات الباردة في الضرس السفلي الأيسر..."
-                      : "e.g. Throbbing ache in lower left molar when drinking cold water..."
-                  }
-                  className="rounded-2xl min-h-[90px] text-sm"
-                />
-              </div>
+                      {/* "Any Available Doctor" Switch */}
+                      <div className="flex items-center gap-2.5 rounded-2xl border border-border/80 bg-muted/40 px-3.5 py-2">
+                        <Switch
+                          id="any-doctor-switch"
+                          checked={anyAvailableDoctor}
+                          onCheckedChange={(checked) => {
+                            setAnyAvailableDoctor(checked);
+                            if (!checked) {
+                              const eligible = clinic.doctors.filter((d) => d.serviceIds.includes(selectedServiceId));
+                              if (eligible.length > 0) {
+                                setSelectedDoctorId(eligible[0].id);
+                              }
+                            }
+                            setSelectedDate("");
+                            setSelectedTime("");
+                          }}
+                        />
+                        <label htmlFor="any-doctor-switch" className="cursor-pointer text-xs font-semibold text-foreground">
+                          {t.patient.booking.anyAvailable}
+                        </label>
+                      </div>
+                    </div>
 
-              {/* Signed-in patient auto-fill info */}
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs">
-                <div className="space-y-0.5">
-                  <p className="font-semibold text-foreground">
-                    Booking for: {name || "Mariam Ahmed"}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {email} · {patientPhone}
-                  </p>
-                </div>
-                <Badge variant="outline" className="text-[11px] gap-1">
-                  <UserCheck className="size-3" />
-                  Auto-populated
-                </Badge>
-              </div>
-            </div>
+                    {/* Specific Doctor Selection if Switch is OFF */}
+                    <AnimatePresence initial={false}>
+                      {!anyAvailableDoctor && (
+                        <motion.div
+                          key="doctor-select-grid"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.16, ease: "easeOut" }}
+                          className="grid gap-3 sm:grid-cols-3"
+                        >
+                          {clinic.doctors
+                            .filter((doc) => doc.serviceIds.includes(selectedServiceId))
+                            .map((doc) => {
+                            const isSelected = selectedDoctorId === doc.id;
+                            const dLoc = localizedDoctor(doc, locale);
+                            return (
+                              <motion.button
+                                key={doc.id}
+                                type="button"
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.99 }}
+                                onClick={() => {
+                                  setSelectedDoctorId(doc.id);
+                                  setSelectedDate("");
+                                  setSelectedTime("");
+                                }}
+                                className={`flex min-h-11 items-center gap-3 rounded-2xl border p-3 text-start transition-colors ${
+                                  isSelected
+                                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                    : "border-border hover:border-primary/40 hover:bg-muted/50"
+                                }`}
+                              >
+                                <Avatar className="size-10 border border-border">
+                                  <AvatarFallback>{dLoc.name.slice(3, 5)}</AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs font-semibold text-foreground">{dLoc.name}</p>
+                                  <p className="truncate text-[11px] text-muted-foreground">{dLoc.specialty}</p>
+                                </div>
+                              </motion.button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-            {/* Book Button */}
-            <div className="pt-2">
-              <Button
-                type="button"
-                variant="accent"
-                disabled={bookingPending || !selectedServiceId || !selectedDate || !selectedTime}
-                onClick={handleBookAppointment}
-                className="min-h-12 w-full rounded-2xl text-sm font-bold shadow-md"
-              >
-                {bookingPending ? (
-                  locale === "ar" ? "جاري تأكيد الحجز..." : "Booking Appointment..."
-                ) : (
-                  <>
-                    <CalendarCheck2 className="size-4 me-2" />
-                    {locale === "ar" ? "تأكيد حجز الموعد الآن" : "Confirm & Book Appointment"}
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                    {/* Live Dates Picker */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground">
+                        {locale === "ar" ? "اختر اليوم المناسب:" : "Select Date:"}
+                      </p>
+                      {availableDates.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic">No available dates found for this service.</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {availableDates.map((dateStr) => {
+                            const isSelected = selectedDate === dateStr;
+                            return (
+                              <Button
+                                key={dateStr}
+                                type="button"
+                                variant={isSelected ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedDate(dateStr);
+                                  setSelectedTime("");
+                                }}
+                                className={`min-h-11 rounded-xl px-3.5 text-xs font-medium transition-transform active:scale-[0.98] ${
+                                  isSelected ? "shadow-sm" : ""
+                                }`}
+                              >
+                                <CalendarDays className="size-3.5 me-1.5" />
+                                {formatDate(dateStr, { weekday: "short", month: "short", day: "numeric" })}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Live Time Slots Picker */}
+                    <AnimatePresence mode="wait" initial={false}>
+                      {selectedDate && (
+                        <motion.div
+                          key={`slots-${selectedDate}`}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.16, ease: "easeOut" }}
+                          className="space-y-3 pt-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-semibold text-muted-foreground">
+                              {locale === "ar" ? "اختر التوقيت المتاح (بتوقيت العيادة):" : "Select Open Time Slot (clinic time):"}
+                            </p>
+                            <span className="text-[11px] text-muted-foreground">
+                              {availableSlotsForDate.length} {locale === "ar" ? "مواعيد متاحة" : "slots open"}
+                            </span>
+                          </div>
+
+                          {availableSlotsForDate.length === 0 ? (
+                            <p className="text-xs text-muted-foreground italic">
+                              {locale === "ar" ? "لا توجد خانات شاغرة في هذا اليوم" : "No open slots on this date. Please choose another date."}
+                            </p>
+                          ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                              {availableSlotsForDate.map((slot, index) => {
+                                const isSelected = selectedTime === slot.time;
+                                const docObj = clinic.doctors.find((d) => d.id === slot.doctorId);
+                                const docDisplay = docObj ? localizedDoctor(docObj, locale).name : slot.doctorName;
+                                return (
+                                  <motion.div
+                                    key={slot.time}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{
+                                      duration: 0.15,
+                                      delay: Math.min(index * 0.02, 0.14),
+                                      ease: "easeOut",
+                                    }}
+                                  >
+                                    <Button
+                                      type="button"
+                                      variant={isSelected ? "default" : "outline"}
+                                      onClick={() => setSelectedTime(slot.time)}
+                                      className={cn(
+                                        "min-h-14 h-auto w-full flex-col items-center justify-center rounded-xl py-2 px-2 text-xs font-semibold whitespace-normal text-center gap-1 transition-transform active:scale-[0.98]",
+                                        isSelected ? "shadow-sm" : ""
+                                      )}
+                                    >
+                                      <span className="tabular-nums font-bold leading-none">{formatTime(slot.time)}</span>
+                                      {anyAvailableDoctor && (
+                                        <span className="text-[11px] font-normal leading-tight opacity-90 text-center break-words max-w-full">
+                                          {docDisplay}
+                                        </span>
+                                      )}
+                                    </Button>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <Separator />
+
+                  {/* STEP 3: OPTIONAL SYMPTOM NOTE & CONTACT AUTO-FILL */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      3. {locale === "ar" ? "ملاحظات إضافية وتأكيد الحجز" : "Optional Symptom Note & Confirmation"}
+                    </h3>
+
+                    <div className="space-y-2">
+                      <label htmlFor="symptom-note" className="text-xs font-medium text-muted-foreground">
+                        {locale === "ar"
+                          ? "هل تشعر بأي ألم أو أعراض محددة؟ (اختياري):"
+                          : "Describe any specific symptoms, tooth pain, or concerns (Optional):"}
+                      </label>
+                      <Textarea
+                        id="symptom-note"
+                        value={symptomNote}
+                        onChange={(e) => setSymptomNote(e.target.value)}
+                        placeholder={
+                          locale === "ar"
+                            ? "مثال: ألم حاد عند تناول المشروبات الباردة في الضرس السفلي الأيسر..."
+                            : "e.g. Throbbing ache in lower left molar when drinking cold water..."
+                        }
+                        className="rounded-2xl min-h-[90px] text-sm"
+                      />
+                    </div>
+
+                    {/* Signed-in patient auto-fill info */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs">
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-foreground">
+                          Booking for: {name || "Mariam Ahmed"}
+                        </p>
+                        <p className="text-muted-foreground">
+                          {email} · {patientPhone}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-[11px] gap-1">
+                        <UserCheck className="size-3" />
+                        Auto-populated
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Book Button */}
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      variant="accent"
+                      disabled={bookingPending || !selectedServiceId || !selectedDate || !selectedTime}
+                      onClick={handleBookAppointment}
+                      className="min-h-12 w-full rounded-2xl text-sm font-bold shadow-md transition-transform active:scale-[0.99]"
+                    >
+                      {bookingPending ? (
+                        locale === "ar" ? "جاري تأكيد الحجز..." : "Booking Appointment..."
+                      ) : (
+                        <>
+                          <CalendarCheck2 className="size-4 me-2" />
+                          {locale === "ar" ? "تأكيد حجز الموعد الآن" : "Confirm & Book Appointment"}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {/* RESCHEDULE DIALOG */}
       <Dialog open={Boolean(rescheduleTarget)} onOpenChange={(open) => !open && setRescheduleTarget(null)}>
@@ -990,7 +1063,8 @@ function PatientAppointmentsContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }
 

@@ -266,7 +266,11 @@ export function getAvailableDates(serviceId: string, doctorId: string): string[]
   for (let offset = 1; offset <= 21 && dates.length < 10; offset += 1) {
     const day = new Date(cursor);
     day.setUTCDate(cursor.getUTCDate() + offset);
-    if (!closedDays.has(day.getUTCDay())) dates.push(toUtcDate(day));
+    const dayOfWeek = day.getUTCDay();
+    if (closedDays.has(dayOfWeek)) continue;
+    const docDay = doctor.workingHours?.find((h) => h.dayOfWeek === dayOfWeek);
+    if (docDay?.isOff) continue;
+    dates.push(toUtcDate(day));
   }
   return dates;
 }
@@ -303,6 +307,15 @@ function availableSlots(
   )
     return [];
 
+  const dayOfWeek = new Date(`${date}T00:00:00Z`).getUTCDay();
+  const clinicDay = snapshot.workingHours?.find((h) => h.dayOfWeek === dayOfWeek);
+  const docDay = doctor.workingHours?.find((h) => h.dayOfWeek === dayOfWeek);
+  if (docDay?.isOff || clinicDay?.isClosed) return [];
+
+  const startBound = minutes(docDay?.startTime || clinicDay?.startTime || "09:00");
+  const endBound = minutes(docDay?.endTime || clinicDay?.endTime || "16:45");
+  const slotStep = Math.min(service.durationMinutes, 45);
+
   const active = snapshot.appointments.filter(
     (item) =>
       item.id !== excludeId &&
@@ -318,6 +331,8 @@ function availableSlots(
     if (remaining <= 0) return false;
 
     const start = minutes(time);
+    if (start < startBound || start + slotStep > endBound) return false;
+
     const end = start + service.durationMinutes;
     return !active.some((item) => {
       const otherStart = minutes(item.time);
@@ -368,7 +383,11 @@ function validateBooking(input: BookingDetails) {
   const doctor = snapshot.doctors.find((item) => item.id === input.doctorId);
   if (!service || !doctor || !doctor.serviceIds.includes(input.serviceId))
     throw new ClinicError("service_clinician_mismatch");
-  if (!input.patientName.trim() || !/^\S+@\S+\.\S+$/.test(input.email) || !input.phone.trim())
+  if (
+    !input.patientName.trim() ||
+    !/^\S+@\S+\.\S+$/.test(input.email.trim()) ||
+    !/^[+0-9 ()-]{6,24}$/.test(input.phone.trim())
+  )
     throw new ClinicError("invalid_contact");
   if (!getAvailableSlots(input.serviceId, input.doctorId, input.date).includes(input.time))
     throw new ClinicError("slot_unavailable");
@@ -498,21 +517,61 @@ export async function rescheduleAppointment(
   return data.appointment;
 }
 
+function normalizeServicePayload(serviceInput: Omit<Service, "id"> & { id?: string }) {
+  const defaultLocale = serviceInput.defaultLocale ?? "bilingual";
+  const rawTitle = serviceInput.title.trim();
+  const rawTitleAr = serviceInput.titleAr?.trim() || "";
+  const rawDescription = serviceInput.description.trim();
+  const rawDescriptionAr = serviceInput.descriptionAr?.trim() || "";
+
+  const title = defaultLocale === "ar" ? rawTitleAr || rawTitle : rawTitle;
+  const description = defaultLocale === "ar" ? rawDescriptionAr || rawDescription : rawDescription;
+  const titleAr = defaultLocale === "en" ? undefined : rawTitleAr || (defaultLocale === "ar" ? title : undefined);
+  const descriptionAr =
+    defaultLocale === "en" ? undefined : rawDescriptionAr || (defaultLocale === "ar" ? description : undefined);
+
+  const extendedDetails =
+    defaultLocale === "ar"
+      ? serviceInput.extendedDetailsAr ?? serviceInput.extendedDetails
+      : serviceInput.extendedDetails;
+  const extendedDetailsAr =
+    defaultLocale === "en"
+      ? undefined
+      : serviceInput.extendedDetailsAr ?? (defaultLocale === "ar" ? extendedDetails : undefined);
+
+  return {
+    title,
+    ...(titleAr ? { titleAr } : {}),
+    description,
+    ...(descriptionAr ? { descriptionAr } : {}),
+    defaultLocale,
+    durationMinutes: Number(serviceInput.durationMinutes),
+    category: serviceInput.category?.trim() || "Preventive Care",
+    image:
+      serviceInput.image ||
+      "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+    ...(extendedDetails ? { extendedDetails } : {}),
+    ...(extendedDetailsAr ? { extendedDetailsAr } : {}),
+  };
+}
+
 export async function updateService(service: Service): Promise<Service> {
+  const normalized = normalizeServicePayload(service);
   if (
     !service.id ||
-    !service.title.trim() ||
-    !service.description.trim() ||
-    !Number.isInteger(service.durationMinutes) ||
-    service.durationMinutes < 15 ||
-    service.durationMinutes > 180
+    !normalized.title ||
+    !normalized.description ||
+    (normalized.defaultLocale === "ar" && (!normalized.titleAr || !normalized.descriptionAr)) ||
+    !Number.isInteger(normalized.durationMinutes) ||
+    normalized.durationMinutes < 15 ||
+    normalized.durationMinutes > 180
   )
     throw new ClinicError("invalid_service");
   if (!snapshot.services.some((item) => item.id === service.id))
     throw new ClinicError("service_not_found");
 
   const previous = snapshot.services.find((item) => item.id === service.id);
-  if (previous && previous.durationMinutes !== service.durationMinutes) {
+  if (previous && previous.durationMinutes !== normalized.durationMinutes) {
     for (const appointment of snapshot.appointments) {
       if (appointment.status !== "confirmed" || appointment.serviceId !== service.id) continue;
       const start = minutes(appointment.time);
@@ -526,7 +585,7 @@ export async function updateService(service: Service): Promise<Service> {
         )
           return false;
         const otherStart = minutes(other.time);
-        return otherStart >= start && otherStart < start + service.durationMinutes;
+        return otherStart >= start && otherStart < start + normalized.durationMinutes;
       });
       const externalConflict = snapshot.appointments.some((other) => {
         if (
@@ -541,7 +600,7 @@ export async function updateService(service: Service): Promise<Service> {
         const otherService = snapshot.services.find((item) => item.id === other.serviceId);
         return (
           start < otherStart + (otherService?.durationMinutes ?? 45) &&
-          otherStart < start + service.durationMinutes
+          otherStart < start + normalized.durationMinutes
         );
       });
       if (conflict || externalConflict) throw new ClinicError("duration_overlap");
@@ -550,7 +609,7 @@ export async function updateService(service: Service): Promise<Service> {
 
   const data = await api<{ service: Service }>(`/api/admin/services/${service.id}`, {
     method: "PATCH",
-    body: JSON.stringify(service),
+    body: JSON.stringify({ id: service.id, ...normalized }),
   });
 
   publish({
@@ -598,38 +657,39 @@ export async function updateDoctor(doctor: Doctor): Promise<Doctor> {
 export async function createService(
   serviceInput: Omit<Service, "id"> & { id?: string }
 ): Promise<Service> {
-  const title = serviceInput.title.trim();
-  const description = serviceInput.description.trim();
-  const durationMinutes = Number(serviceInput.durationMinutes);
-  const category = serviceInput.category?.trim() || "Preventive Care";
-  const image =
-    serviceInput.image ||
-    "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80";
+  const normalized = normalizeServicePayload(serviceInput);
   if (
-    !title ||
-    !description ||
-    !Number.isInteger(durationMinutes) ||
-    durationMinutes < 15 ||
-    durationMinutes > 180
+    !normalized.title ||
+    !normalized.description ||
+    (normalized.defaultLocale === "ar" && (!normalized.titleAr || !normalized.descriptionAr)) ||
+    !Number.isInteger(normalized.durationMinutes) ||
+    normalized.durationMinutes < 15 ||
+    normalized.durationMinutes > 180
   ) {
     throw new ClinicError("invalid_service");
   }
   const id = serviceInput.id?.trim() || `service-${Date.now()}`;
+  const defaultExtended =
+    normalized.defaultLocale === "ar"
+      ? {
+          overview: normalized.description,
+          procedure: "تقييم تشخيصي شامل وخطة رعاية سريرية بإشراف فريقنا المتخصص.",
+          benefits: "رعاية أسنان دقيقة وخطط علاج واضحة لصحة فم مستدامة.",
+          aftercare: "الالتزام بتعليمات النظافة اليومية ومراجعات طبيب الأسنان.",
+        }
+      : {
+          overview: normalized.description,
+          procedure:
+            "Comprehensive diagnostic assessment and clinical care plan performed by specialized clinicians.",
+          benefits:
+            "High precision dental care, transparent treatment phases, and lasting oral health.",
+          aftercare: "Follow routine hygiene and dentist recommendations.",
+        };
+
   const servicePayload = {
     id,
-    title,
-    description,
-    durationMinutes,
-    category,
-    image,
-    extendedDetails: serviceInput.extendedDetails || {
-      overview: description,
-      procedure:
-        "Comprehensive diagnostic assessment and clinical care plan performed by specialized clinicians.",
-      benefits:
-        "High precision dental care, transparent treatment phases, and lasting oral health.",
-      aftercare: "Follow routine hygiene and dentist recommendations.",
-    },
+    ...normalized,
+    extendedDetails: normalized.extendedDetails || defaultExtended,
   };
 
   const data = await api<{ service: Service }>("/api/admin/services", {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { MotionConfig, motion } from "motion/react";
 import { CalendarCheck2, CalendarX2, ClipboardList, Stethoscope } from "lucide-react";
 import { getAvailableDates } from "@/data/clinic-repository";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
@@ -24,7 +25,23 @@ function ActivityChart({ appointments, dates }: { appointments: readonly Appoint
     <div className="mb-5 flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-lg font-semibold">{t.admin.overview.activityTitle}</h2><p className="mt-1 text-sm text-muted-foreground">{t.admin.overview.activityBody}</p></div><span className="text-sm tabular-nums text-muted-foreground">{interpolate(t.admin.overview.scheduled, { count: total })}</span></div>
     {activity.length === 0 ? <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">{t.admin.overview.noDates}</p> : <>
       <div role="img" aria-label={interpolate(t.admin.overview.chartLabel, { summary })} className="grid min-h-44 grid-cols-7 items-end gap-2 border-b border-border px-1 pb-0 pt-4 sm:gap-4">
-        {activity.map(({ date, count }) => <div key={date} className="flex h-full min-w-0 flex-col items-center justify-end gap-2"><span className="text-xs tabular-nums text-muted-foreground">{count}</span><div className="flex h-24 w-full items-end"><div className="mx-auto w-full max-w-10 rounded-t-md bg-primary transition-[height] duration-300 motion-reduce:transition-none" style={{ height: `${count === 0 ? 3 : Math.max(10, (count / maximum) * 100)}%` }}/></div><span className="pb-2 text-center text-[11px] leading-tight text-muted-foreground">{formatDate(date, { weekday: "short" })}<span className="block tabular-nums">{new Date(`${date}T12:00:00Z`).getUTCDate()}</span></span></div>)}
+        {activity.map(({ date, count }, index) => (
+          <div key={date} className="group flex h-full min-w-0 flex-col items-center justify-end gap-2 rounded-t-lg transition-colors hover:bg-muted/35">
+            <span className="text-xs tabular-nums text-muted-foreground transition-colors group-hover:text-foreground">{count}</span>
+            <div className="flex h-24 w-full items-end">
+              <motion.div
+                initial={{ height: "0%", opacity: 0.4 }}
+                animate={{ height: `${count === 0 ? 3 : Math.max(10, (count / maximum) * 100)}%`, opacity: 1 }}
+                transition={{ duration: 0.45, delay: 0.06 + index * 0.04, ease: "easeOut" }}
+                className="mx-auto w-full max-w-10 rounded-t-md bg-primary transition-colors group-hover:bg-brand-primary"
+              />
+            </div>
+            <span className="pb-2 text-center text-[11px] leading-tight text-muted-foreground">
+              {formatDate(date, { weekday: "short" })}
+              <span className="block tabular-nums">{new Date(`${date}T12:00:00Z`).getUTCDate()}</span>
+            </span>
+          </div>
+        ))}
       </div>
       {total === 0 && <p className="mt-4 text-sm text-muted-foreground">{t.admin.overview.noneInWindow}</p>}
       <ul className="sr-only">{activity.map(({ date, count }) => <li key={date}>{interpolate(t.admin.overview.utcCount, { date: dateLabel(date), count })}</li>)}</ul>
@@ -55,22 +72,105 @@ export function AdminOverview({ appointments, services, doctors }: OverviewProps
   const serviceTitle = (id: string) => services.find((item) => item.id === id);
   const doctorName = (id: string) => doctors.find((item) => item.id === id);
 
-  return <>
-    <PageTitle title={t.admin.overview.title} description={t.admin.overview.description}/>
-    <p className="mb-6 rounded-xl border border-brand-border bg-brand-subtle p-4 text-sm leading-6">{t.admin.overview.simulation}</p>
-    <section aria-label={t.admin.overview.clinicSummary} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {stats.map(({ label, value, Icon }) => <Panel key={label}><div className="flex items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{label}</p><span className="grid size-10 place-items-center rounded-full bg-secondary text-primary"><Icon aria-hidden="true" className="size-5"/></span></div><p className="mt-4 text-3xl font-semibold tabular-nums">{value}</p></Panel>)}
-    </section>
-    <div className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-      <ActivityChart appointments={appointments} dates={dates}/>
-      <Panel>
-        <div className="mb-4 flex items-center justify-between gap-3"><h2 className="text-lg font-semibold">{t.admin.overview.coverageTitle}</h2><Link className="min-h-11 inline-flex items-center text-sm font-medium text-primary underline-offset-4 hover:underline" href="/admin/services">{t.admin.overview.viewServices}</Link></div>
-        {serviceCoverage.length ? <div className="divide-y divide-border">{serviceCoverage.map(({ service, title, doctorCount, firstDate }) => <div key={service.id} className="flex min-h-16 items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate font-medium">{title}</p><p className="mt-1 text-xs text-muted-foreground">{doctorCount === 1 ? t.admin.overview.eligibleOne : interpolate(t.admin.overview.eligibleMany, { count: doctorCount })}</p></div><span className="shrink-0 text-end text-xs tabular-nums text-muted-foreground">{firstDate ? interpolate(t.admin.overview.nextDate, { date: dateLabel(firstDate) }) : t.admin.overview.noDatesShort}</span></div>)}</div> : <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">{t.admin.overview.noServicesCatalog}</p>}
+  return (
+    <MotionConfig reducedMotion="user">
+      <PageTitle title={t.admin.overview.title} description={t.admin.overview.description} />
+      <motion.p
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="mb-6 rounded-xl border border-brand-border bg-brand-subtle p-4 text-sm leading-6"
+      >
+        {t.admin.overview.simulation}
+      </motion.p>
+      <section aria-label={t.admin.overview.clinicSummary} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map(({ label, value, Icon }, index) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: index * 0.04, ease: "easeOut" }}
+            whileHover={{ y: -3 }}
+            className="h-full"
+          >
+            <Panel className="group h-full transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <span className="grid size-10 place-items-center rounded-full bg-secondary text-primary transition-transform duration-200 group-hover:scale-105">
+                  <Icon aria-hidden="true" className="size-5" />
+                </span>
+              </div>
+              <p className="mt-4 text-3xl font-semibold tabular-nums">{value}</p>
+            </Panel>
+          </motion.div>
+        ))}
+      </section>
+      <div className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <ActivityChart appointments={appointments} dates={dates} />
+        <Panel>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">{t.admin.overview.coverageTitle}</h2>
+            <Link
+              className="min-h-11 inline-flex items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+              href="/admin/services"
+            >
+              {t.admin.overview.viewServices}
+            </Link>
+          </div>
+          {serviceCoverage.length ? (
+            <div className="divide-y divide-border">
+              {serviceCoverage.map(({ service, title, doctorCount, firstDate }, index) => (
+                <motion.div
+                  key={service.id}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.18, delay: 0.08 + index * 0.03, ease: "easeOut" }}
+                  className="-mx-2 flex min-h-16 items-center justify-between gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-muted/40"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {doctorCount === 1
+                        ? t.admin.overview.eligibleOne
+                        : interpolate(t.admin.overview.eligibleMany, { count: doctorCount })}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-end text-xs tabular-nums text-muted-foreground">
+                    {firstDate ? interpolate(t.admin.overview.nextDate, { date: dateLabel(firstDate) }) : t.admin.overview.noDatesShort}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">{t.admin.overview.noServicesCatalog}</p>
+          )}
+        </Panel>
+      </div>
+      <Panel className="mt-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">{t.admin.overview.upcomingTitle}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t.admin.overview.upcomingBody}</p>
+          </div>
+          <Link
+            className="min-h-11 inline-flex items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+            href="/admin/appointments"
+          >
+            {t.admin.overview.viewSchedule}
+          </Link>
+        </div>
+        <AppointmentRows
+          appointments={upcoming}
+          serviceFor={(id) => {
+            const item = serviceTitle(id);
+            return item ? localizedService(item, locale).title : t.admin.unknownService;
+          }}
+          doctorFor={(id) => {
+            const item = doctorName(id);
+            return item ? localizedDoctor(item, locale).name : t.admin.unknownDoctor;
+          }}
+        />
       </Panel>
-    </div>
-    <Panel className="mt-5">
-      <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-lg font-semibold">{t.admin.overview.upcomingTitle}</h2><p className="mt-1 text-sm text-muted-foreground">{t.admin.overview.upcomingBody}</p></div><Link className="min-h-11 inline-flex items-center text-sm font-medium text-primary underline-offset-4 hover:underline" href="/admin/appointments">{t.admin.overview.viewSchedule}</Link></div>
-      <AppointmentRows appointments={upcoming} serviceFor={(id) => { const item = serviceTitle(id); return item ? localizedService(item, locale).title : t.admin.unknownService; }} doctorFor={(id) => { const item = doctorName(id); return item ? localizedDoctor(item, locale).name : t.admin.unknownDoctor; }}/>
-    </Panel>
-  </>;
+    </MotionConfig>
+  );
 }

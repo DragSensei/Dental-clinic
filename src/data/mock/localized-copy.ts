@@ -1,5 +1,13 @@
 import type { Locale } from "@/i18n/locales";
-import { demoClinic, doctors as seedDoctors, services as seedServices, type Doctor, type Service } from "@/data/mock/catalog";
+import {
+  SERVICE_CATEGORIES,
+  demoClinic,
+  doctors as seedDoctors,
+  services as seedServices,
+  type Doctor,
+  type Service,
+  type ServiceExtendedDetails,
+} from "@/data/mock/catalog";
 
 export type ClinicCopy = {
   name: string;
@@ -79,18 +87,108 @@ export function localizedClinic(locale: Locale): ClinicCopy {
   return locale === "ar" ? arabicClinic : demoClinic;
 }
 
+export function getServiceCategoryLabel(category: string, locale: Locale): string {
+  if (category === "all") {
+    return locale === "ar" ? "جميع التخصصات" : "All Categories";
+  }
+  const match = SERVICE_CATEGORIES.find((item) => item.value === category);
+  if (match) return locale === "ar" ? match.ar : match.en;
+  return category;
+}
+
+function mergeExtendedDetails(
+  primary?: ServiceExtendedDetails,
+  fallback?: ServiceExtendedDetails
+): ServiceExtendedDetails | undefined {
+  const overview = primary?.overview?.trim() || fallback?.overview?.trim() || "";
+  const procedure = primary?.procedure?.trim() || fallback?.procedure?.trim() || "";
+  const benefits = primary?.benefits?.trim() || fallback?.benefits?.trim() || "";
+  const aftercare = primary?.aftercare?.trim() || fallback?.aftercare?.trim() || "";
+  if (!overview && !procedure && !benefits && !aftercare) return undefined;
+  return { overview, procedure, benefits, aftercare };
+}
+
 // Seeded text is translated only while it matches its English seed. Staff-edited text is shown exactly as entered.
 function pick(current: string, seed: string | undefined, translated: string | undefined, locale: Locale): string {
   return locale === "ar" && translated !== undefined && current === seed ? translated : current;
 }
 
-export function localizedService(service: Service, locale: Locale): { title: string; description: string; category: string } {
+export function localizedService(
+  service: Service,
+  locale: Locale
+): {
+  title: string;
+  description: string;
+  category: string;
+  categoryLabel: string;
+  extendedDetails?: ServiceExtendedDetails;
+} {
+  const category = service.category || "Preventive Care";
+  const categoryLabel = getServiceCategoryLabel(category, locale);
+  const mode = service.defaultLocale ?? "bilingual";
+
+  if (mode === "en") {
+    return {
+      title: service.title,
+      description: service.description,
+      category,
+      categoryLabel,
+      extendedDetails: service.extendedDetails,
+    };
+  }
+
+  if (mode === "ar") {
+    return {
+      title: service.titleAr?.trim() || service.title,
+      description: service.descriptionAr?.trim() || service.description,
+      category,
+      categoryLabel,
+      extendedDetails: mergeExtendedDetails(service.extendedDetailsAr, service.extendedDetails),
+    };
+  }
+
+  if (locale === "en") {
+    return {
+      title: service.title.trim() || service.titleAr?.trim() || "",
+      description: service.description.trim() || service.descriptionAr?.trim() || "",
+      category,
+      categoryLabel,
+      extendedDetails: mergeExtendedDetails(service.extendedDetails, service.extendedDetailsAr),
+    };
+  }
+
   const seed = seedServices.find((item) => item.id === service.id);
-  const translated = arabicServices[service.id];
+  const legacyFallback = arabicServices[service.id];
+  const resolvedTitle =
+    service.titleAr?.trim() ||
+    (seed && service.title === seed.title ? seed.titleAr ?? legacyFallback?.title : undefined) ||
+    service.title;
+  const resolvedDescription =
+    service.descriptionAr?.trim() ||
+    (seed && service.description === seed.description ? seed.descriptionAr ?? legacyFallback?.description : undefined) ||
+    service.description;
+
+  const seedExtendedAr = seed?.extendedDetailsAr;
+  const extendedFromSeed: ServiceExtendedDetails | undefined = seed && seedExtendedAr
+    ? {
+        overview: service.extendedDetails?.overview === seed.extendedDetails?.overview ? seedExtendedAr.overview : "",
+        procedure: service.extendedDetails?.procedure === seed.extendedDetails?.procedure ? seedExtendedAr.procedure : "",
+        benefits: service.extendedDetails?.benefits === seed.extendedDetails?.benefits ? seedExtendedAr.benefits : "",
+        aftercare: service.extendedDetails?.aftercare === seed.extendedDetails?.aftercare ? seedExtendedAr.aftercare : "",
+      }
+    : undefined;
+
+  const resolvedExtended = mergeExtendedDetails(
+    mergeExtendedDetails(service.extendedDetailsAr, extendedFromSeed),
+    service.extendedDetails
+  );
+
   return {
-    title: pick(service.title, seed?.title, translated?.title, locale),
-    description: pick(service.description, seed?.description, translated?.description, locale),
-    category: service.category || "Preventive Care",
+    title: resolvedTitle,
+    description: resolvedDescription,
+    category,
+    categoryLabel,
+    extendedDetails: resolvedExtended,
   };
 }
 

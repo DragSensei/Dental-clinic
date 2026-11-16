@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
           if (parsed.serviceIds && parsed.serviceIds.length > 0) {
             const services = await tx.service.findMany({
               where: { id: { in: parsed.serviceIds } },
+              take: 100,
             });
             if (services.length !== parsed.serviceIds.length) {
               throw new HttpError(422, "invalid_reference");
@@ -83,6 +84,16 @@ export async function POST(request: NextRequest) {
               })),
             });
           }
+
+          await tx.doctorWorkingHours.createMany({
+            data: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+              doctorId: doctor.id,
+              dayOfWeek,
+              isOff: dayOfWeek === 5,
+              startTime: "09:00",
+              endTime: "16:45",
+            })),
+          });
         });
       } catch (err) {
         await prisma.user.delete({ where: { id: user.id } }).catch(() => null);

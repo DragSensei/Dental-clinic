@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import {
   AlertCircle,
   Calendar,
@@ -209,108 +210,125 @@ export function PatientTreatmentPlan() {
   const isApproved = plan.status === "approved";
 
   return (
-    <div className="max-w-7xl space-y-8">
-      {/* Header and Status */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {t.patient.treatment.title}
-            </h1>
-            <p className="text-sm text-muted-foreground sm:text-base">
-              {t.patient.treatment.subtitle}
-            </p>
-          </div>
-          <div>
-            {isApproved ? (
-              <Badge variant="success" className="gap-1.5 py-1 px-3 text-xs sm:text-sm font-semibold">
-                <ShieldCheck className="size-4" />
-                {t.patient.treatment.planStatusApproved}
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="gap-1.5 py-1 px-3 text-xs sm:text-sm font-semibold">
-                <Clock className="size-4 text-brand-primary" />
-                {t.patient.treatment.planStatusProposed}
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Approval Banner / CTA */}
-        {isApproved ? (
-          <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
-            <CheckCircle2 className="size-5 text-brand-primary" />
-            <AlertTitle className="font-semibold text-foreground">
-              {t.patient.treatment.planApprovedOn
-                .replace("{date}", plan.approvedAt ? formatDate(plan.approvedAt.slice(0, 10), defaultDateOpts) : "Oct 19, 2026")
-                .replace("{name}", plan.signedByName || patientDisplayName)}
-            </AlertTitle>
-            <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
-              Your clinical roadmap is locked. You can now schedule upcoming phases directly in sequence below.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 shadow-xs">
-            <div className="space-y-1">
-              <span className="text-sm font-semibold text-foreground">
-                Action Required: Digital Plan Acceptance
-              </span>
-              <p className="text-xs text-muted-foreground">
-                Review the diagnosed dental chart and phased procedures below, then sign electronically to authorize care.
+    <MotionConfig reducedMotion="user">
+      <div className="max-w-7xl space-y-8">
+        {/* Header and Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="space-y-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                {t.patient.treatment.title}
+              </h1>
+              <p className="text-sm text-muted-foreground sm:text-base">
+                {t.patient.treatment.subtitle}
               </p>
             </div>
-            <Button
-              variant="accent"
-              size="default"
-              onClick={() => {
-                setApprovalError(null);
-                setApproveDialogOpen(true);
-              }}
-              className="font-semibold shrink-0"
-            >
-              <PenTool className="size-4 mr-1.5" />
-              {t.patient.treatment.approvePlan}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Overview Progress Card */}
-      <Card className="border-border bg-card shadow-xs">
-        <CardContent className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                Overall Phased Progress
-              </span>
-              <div className="text-2xl font-bold text-foreground">
-                {pricingTotals.scheduledPhasesCount} of {pricingTotals.totalPhases} Phases
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {pricingTotals.scheduledPhasesCount === pricingTotals.totalPhases
-                  ? "All phases booked into clinical calendar."
-                  : "Next phase awaiting reservation."}
-              </p>
-            </div>
-
-            <div className="space-y-2 sm:col-span-2">
-              <div className="flex justify-between text-xs font-medium">
-                <span className="text-muted-foreground">Roadmap Completion</span>
-                <span className="text-brand-primary">{pricingTotals.progressPercent}%</span>
-              </div>
-              <Progress value={pricingTotals.progressPercent} className="h-3 w-full bg-muted" />
-              <div className="flex justify-between text-xs text-muted-foreground pt-1">
-                <span>Phase 1 (Urgent)</span>
-                <span>Phase 2 (Restorative)</span>
-                <span>Phase 3 (Elective)</span>
-              </div>
+            <div>
+              {isApproved ? (
+                <Badge variant="success" className="gap-1.5 py-1 px-3 text-xs sm:text-sm font-semibold">
+                  <ShieldCheck className="size-4" />
+                  {t.patient.treatment.planStatusApproved}
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="gap-1.5 py-1 px-3 text-xs sm:text-sm font-semibold">
+                  <Clock className="size-4 text-brand-primary" />
+                  {t.patient.treatment.planStatusProposed}
+                </Badge>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Visual FDI 32-Tooth Map */}
-      <Card className="border-border bg-card shadow-xs">
+          {/* Approval Banner / CTA */}
+          {isApproved ? (
+            <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
+              <CheckCircle2 className="size-5 text-brand-primary" />
+              <AlertTitle className="font-semibold text-foreground">
+                {t.patient.treatment.planApprovedOn
+                  .replace("{date}", plan.approvedAt ? formatDate(plan.approvedAt.slice(0, 10), defaultDateOpts) : "Oct 19, 2026")
+                  .replace("{name}", plan.signedByName || patientDisplayName)}
+              </AlertTitle>
+              <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
+                Your clinical roadmap is locked. You can now schedule upcoming phases directly in sequence below.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 shadow-xs">
+              <div className="space-y-1">
+                <span className="text-sm font-semibold text-foreground">
+                  Action Required: Digital Plan Acceptance
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  Review the diagnosed dental chart and phased procedures below, then sign electronically to authorize care.
+                </p>
+              </div>
+              <Button
+                variant="accent"
+                size="default"
+                onClick={() => {
+                  setApprovalError(null);
+                  setApproveDialogOpen(true);
+                }}
+                className="min-h-11 font-semibold shrink-0"
+              >
+                <PenTool className="size-4 mr-1.5" />
+                {t.patient.treatment.approvePlan}
+              </Button>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Overview Progress Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, delay: 0.04, ease: "easeOut" }}
+        >
+          <Card className="border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/35 hover:shadow-md">
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Overall Phased Progress
+                  </span>
+                  <div className="text-2xl font-bold text-foreground">
+                    {pricingTotals.scheduledPhasesCount} of {pricingTotals.totalPhases} Phases
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {pricingTotals.scheduledPhasesCount === pricingTotals.totalPhases
+                      ? "All phases booked into clinical calendar."
+                      : "Next phase awaiting reservation."}
+                  </p>
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="text-muted-foreground">Roadmap Completion</span>
+                    <span className="text-brand-primary">{pricingTotals.progressPercent}%</span>
+                  </div>
+                  <Progress value={pricingTotals.progressPercent} className="h-3 w-full bg-muted" />
+                  <div className="flex justify-between text-xs text-muted-foreground pt-1">
+                    <span>Phase 1 (Urgent)</span>
+                    <span>Phase 2 (Restorative)</span>
+                    <span>Phase 3 (Elective)</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Visual FDI 32-Tooth Map */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, delay: 0.08, ease: "easeOut" }}
+        >
+          <Card className="border-border bg-card shadow-xs">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -374,12 +392,14 @@ export function PatientTreatmentPlan() {
                     };
                     const isSelected = selectedToothNumber === num;
                     return (
-                      <button
+                      <motion.button
                         key={num}
                         type="button"
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => setSelectedToothNumber(num)}
                         className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           toothStatusStyles[tooth.status],
                           isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
                         )}
@@ -389,7 +409,7 @@ export function PatientTreatmentPlan() {
                         {tooth.status !== "healthy" && (
                           <span className="size-1.5 rounded-full bg-current mt-0.5" />
                         )}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -409,12 +429,14 @@ export function PatientTreatmentPlan() {
                     };
                     const isSelected = selectedToothNumber === num;
                     return (
-                      <button
+                      <motion.button
                         key={num}
                         type="button"
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => setSelectedToothNumber(num)}
                         className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           toothStatusStyles[tooth.status],
                           isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
                         )}
@@ -424,7 +446,7 @@ export function PatientTreatmentPlan() {
                         {tooth.status !== "healthy" && (
                           <span className="size-1.5 rounded-full bg-current mt-0.5" />
                         )}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -451,12 +473,14 @@ export function PatientTreatmentPlan() {
                     };
                     const isSelected = selectedToothNumber === num;
                     return (
-                      <button
+                      <motion.button
                         key={num}
                         type="button"
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => setSelectedToothNumber(num)}
                         className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           toothStatusStyles[tooth.status],
                           isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
                         )}
@@ -466,7 +490,7 @@ export function PatientTreatmentPlan() {
                         {tooth.status !== "healthy" && (
                           <span className="size-1.5 rounded-full bg-current mt-0.5" />
                         )}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -486,12 +510,14 @@ export function PatientTreatmentPlan() {
                     };
                     const isSelected = selectedToothNumber === num;
                     return (
-                      <button
+                      <motion.button
                         key={num}
                         type="button"
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => setSelectedToothNumber(num)}
                         className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           toothStatusStyles[tooth.status],
                           isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
                         )}
@@ -501,7 +527,7 @@ export function PatientTreatmentPlan() {
                         {tooth.status !== "healthy" && (
                           <span className="size-1.5 rounded-full bg-current mt-0.5" />
                         )}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -511,66 +537,82 @@ export function PatientTreatmentPlan() {
 
           {/* Interactive Tooth Inspector Card */}
           <div className="rounded-xl bg-brand-subtle/40 p-4 sm:p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-base sm:text-lg font-bold text-foreground">
-                    Tooth #{selectedTooth.toothNumber} — {selectedTooth.label}
-                  </span>
-                  <Badge variant={toothStatusBadgeVariants[selectedTooth.status]}>
-                    {selectedTooth.status.toUpperCase()}
-                  </Badge>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={selectedTooth.toothNumber}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.16, ease: "easeOut" }}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base sm:text-lg font-bold text-foreground">
+                        Tooth #{selectedTooth.toothNumber} — {selectedTooth.label}
+                      </span>
+                      <Badge variant={toothStatusBadgeVariants[selectedTooth.status]}>
+                        {selectedTooth.status.toUpperCase()}
+                      </Badge>
+                      {selectedTooth.phaseOrder && (
+                        <Badge variant="outline" className="text-xs">
+                          Phase {selectedTooth.phaseOrder} Priority
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-foreground font-medium">
+                      {selectedTooth.condition}
+                    </p>
+                  </div>
+
                   {selectedTooth.phaseOrder && (
-                    <Badge variant="outline" className="text-xs">
-                      Phase {selectedTooth.phaseOrder} Priority
-                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const phase = plan.phases.find((p) => p.order === selectedTooth.phaseOrder);
+                        if (phase) handleOpenScheduleModal(phase);
+                      }}
+                      className="min-h-11 text-xs"
+                    >
+                      <Calendar className="size-3.5 mr-1" />
+                      Jump to Phase {selectedTooth.phaseOrder}
+                    </Button>
                   )}
                 </div>
-                <p className="text-xs sm:text-sm text-foreground font-medium">
-                  {selectedTooth.condition}
-                </p>
-              </div>
 
-              {selectedTooth.phaseOrder && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const phase = plan.phases.find((p) => p.order === selectedTooth.phaseOrder);
-                    if (phase) handleOpenScheduleModal(phase);
-                  }}
-                  className="text-xs"
-                >
-                  <Calendar className="size-3.5 mr-1" />
-                  Jump to Phase {selectedTooth.phaseOrder}
-                </Button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2 text-xs">
-              <div className="rounded-lg bg-card p-3">
-                <span className="font-semibold text-foreground block mb-1">
-                  Proposed Clinical Care:
-                </span>
-                <span className="text-muted-foreground">
-                  {selectedTooth.proposedTreatment}
-                </span>
-              </div>
-              <div className="rounded-lg bg-card p-3">
-                <span className="font-semibold text-foreground block mb-1">
-                  Clinician Diagnostic &amp; X-Ray Note:
-                </span>
-                <span className="text-muted-foreground italic">
-                  {selectedTooth.xrayNote || "No periapical bone loss or restorative defects detected."}
-                </span>
-              </div>
-            </div>
+                <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2 text-xs">
+                  <div className="rounded-lg bg-card p-3">
+                    <span className="font-semibold text-foreground block mb-1">
+                      Proposed Clinical Care:
+                    </span>
+                    <span className="text-muted-foreground">
+                      {selectedTooth.proposedTreatment}
+                    </span>
+                  </div>
+                  <div className="rounded-lg bg-card p-3">
+                    <span className="font-semibold text-foreground block mb-1">
+                      Clinician Diagnostic &amp; X-Ray Note:
+                    </span>
+                    <span className="text-muted-foreground italic">
+                      {selectedTooth.xrayNote || "No periapical bone loss or restorative defects detected."}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </CardContent>
       </Card>
+        </motion.div>
 
       {/* Phased Breakdown & Transparent Pricing */}
-      <Card className="border-border bg-card shadow-xs">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, delay: 0.12, ease: "easeOut" }}
+      >
+      <Card className="border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/35 hover:shadow-md">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -671,7 +713,7 @@ export function PatientTreatmentPlan() {
                           variant="accent"
                           size="sm"
                           onClick={() => handleOpenScheduleModal(phase)}
-                          className="font-medium"
+                          className="min-h-11 font-medium"
                         >
                           <Calendar className="size-3.5 mr-1.5" />
                           Schedule Phase {phase.order}
@@ -685,6 +727,7 @@ export function PatientTreatmentPlan() {
           </Accordion>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Approve Plan Dialog */}
       <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
@@ -909,7 +952,7 @@ export function PatientTreatmentPlan() {
                   variant="accent"
                   onClick={handleConfirmPhaseBooking}
                   disabled={isBookingPhase || !selectedDate || !selectedTimeSlot}
-                  className="font-semibold"
+                  className="min-h-11 font-semibold"
                 >
                   {isBookingPhase ? "Reserving..." : "Confirm Phase Reservation"}
                 </Button>
@@ -919,5 +962,6 @@ export function PatientTreatmentPlan() {
         </DialogContent>
       </Dialog>
     </div>
+    </MotionConfig>
   );
 }

@@ -119,7 +119,7 @@ export function LandingHero() {
                 alt={t.landing.hero.imageAlt}
                 fill
                 priority
-                sizes="100vw"
+                sizes="(max-width: 767px) 100vw, 1px"
                 onError={() => setImageError(true)}
                 className="object-cover object-top rtl:-scale-x-100 transition-transform duration-500"
               />
@@ -132,7 +132,7 @@ export function LandingHero() {
                 alt={t.landing.hero.imageAlt}
                 fill
                 priority
-                sizes="100vw"
+                sizes="(min-width: 768px) 100vw, 1px"
                 onError={() => setImageError(true)}
                 className="object-cover object-right rtl:object-left rtl:-scale-x-100 transition-transform duration-500"
               />
@@ -212,7 +212,7 @@ export function LandingHero() {
                 {upcomingSlots.map((slot, index) => (
                   <Link
                     key={`${slot.date}-${slot.time}-${index}`}
-                    href={`/book?serviceId=${encodeURIComponent(slot.serviceId)}&doctorId=${encodeURIComponent(slot.doctorId)}&date=${encodeURIComponent(slot.date)}&time=${encodeURIComponent(slot.time)}`}
+                    href={`/book?serviceId=${encodeURIComponent(slot.serviceId)}&doctorId=${encodeURIComponent(slot.doctorId)}&date=${encodeURIComponent(slot.date)}&time=${encodeURIComponent(slot.time)}&step=2`}
                     className="group flex min-h-11 items-center justify-between rounded-xl border border-border/60 bg-background/60 p-2 sm:p-3 transition-colors hover:bg-secondary/70 hover:border-primary/50 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">

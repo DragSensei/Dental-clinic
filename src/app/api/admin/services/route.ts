@@ -23,14 +23,21 @@ export async function POST(request: NextRequest) {
     const serviceInput = fromServiceInput(parsed);
     const service = await createService({
       title: serviceInput.title ?? parsed.title,
+      titleAr: serviceInput.titleAr,
       description: serviceInput.description ?? parsed.description,
+      descriptionAr: serviceInput.descriptionAr,
+      defaultLocale: serviceInput.defaultLocale ?? parsed.defaultLocale,
       durationMinutes: serviceInput.durationMinutes ?? parsed.durationMinutes,
       category: serviceInput.category ?? parsed.category,
       image: serviceInput.image ?? parsed.image,
-      overview: serviceInput.overview ?? undefined,
-      procedure: serviceInput.procedure ?? undefined,
-      benefits: serviceInput.benefits ?? undefined,
-      aftercare: serviceInput.aftercare ?? undefined,
+      overview: serviceInput.overview,
+      overviewAr: serviceInput.overviewAr,
+      procedure: serviceInput.procedure,
+      procedureAr: serviceInput.procedureAr,
+      benefits: serviceInput.benefits,
+      benefitsAr: serviceInput.benefitsAr,
+      aftercare: serviceInput.aftercare,
+      aftercareAr: serviceInput.aftercareAr,
     });
     return NextResponse.json({ service: toServiceDTO(service) }, { status: 201 });
   } catch (err: unknown) {

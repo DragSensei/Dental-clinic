@@ -1,5 +1,16 @@
 export const CLINIC_TIME_ZONE = "Africa/Cairo";
 
+const cairoFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: CLINIC_TIME_ZONE,
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+  hourCycle: "h23",
+});
+
 /**
  * Converts clinic-local "YYYY-MM-DD" + "HH:MM" to a UTC epoch ms, DST-safe.
  */
@@ -14,18 +25,7 @@ export function clinicInstant(date: string, time: string): number {
 
   const utcGuess = Date.UTC(year, month - 1, day, hour, minute);
 
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: CLINIC_TIME_ZONE,
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hourCycle: "h23",
-  });
-
-  const parts = formatter.formatToParts(new Date(utcGuess));
+  const parts = cairoFormatter.formatToParts(new Date(utcGuess));
   const p: Record<string, string> = {};
   for (const part of parts) {
     p[part.type] = part.value;

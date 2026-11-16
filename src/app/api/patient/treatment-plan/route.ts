@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTreatmentPlan, approveTreatmentPlan, ClinicError } from "@/lib/clinic-db";
+import { getTreatmentPlan, approveTreatmentPlan } from "@/lib/clinic-db";
 import { requireSession, resolvePatientEmail, isStaff, HttpError } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
 import { approveTreatmentPlanSchema } from "@/lib/clinic-schemas";
@@ -30,14 +30,6 @@ export async function POST(request: Request | NextRequest) {
     const body = await request.json();
     const email = resolvePatientEmail(user, body?.email);
     const parsed = approveTreatmentPlanSchema.parse(body);
-
-    const existing = await getTreatmentPlan(email);
-    if (!existing) {
-      throw new HttpError(404, "not_found");
-    }
-    if (existing.status === "approved") {
-      throw new ClinicError("already_approved");
-    }
 
     const treatmentPlan = await approveTreatmentPlan(
       email,

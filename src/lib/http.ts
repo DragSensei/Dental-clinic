@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { ZodError } from "zod";
 import { HttpError } from "@/lib/authz";
-import { ClinicError } from "@/lib/clinic-db";
+import { ClinicError, ClinicForbiddenError } from "@/lib/clinic-db";
 
 const CLINIC_STATUS: Record<string, number> = {
   appointment_not_found: 404,
@@ -45,6 +45,9 @@ export function toErrorResponse(err: unknown): NextResponse {
   }
   if (err instanceof SyntaxError) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
+  if (err instanceof ClinicForbiddenError) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   if (err instanceof ClinicError) {
     return NextResponse.json({ error: err.code }, { status: CLINIC_STATUS[err.code] ?? 400 });

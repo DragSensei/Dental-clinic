@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { MotionConfig, motion } from "motion/react";
 import {
   CalendarCheck2,
   CalendarPlus,
@@ -193,35 +194,47 @@ export function PatientOverview() {
       : 15;
 
   return (
-    <div className="max-w-7xl space-y-8">
-      {/* Welcome Header */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {locale === "ar"
-              ? `مرحبًا بك، ${name || "مريم أحمد"}`
-              : `Welcome back, ${name || "Mariam Ahmed"}`}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t.patient.nav.subtitle}
-          </p>
-        </div>
-        <div className="mt-3 sm:mt-0">
-          <Link
-            href="/patient/appointments?book=1"
-            className={buttonVariants({
-              variant: "accent",
-              className: "min-h-11 shadow-sm rounded-xl px-4 font-semibold",
-            })}
-          >
-            <CalendarPlus className="size-4 me-2" />
-            {locale === "ar" ? "حجز موعد جديد" : "+ Book Appointment"}
-          </Link>
-        </div>
-      </div>
+    <MotionConfig reducedMotion="user">
+      <div className="max-w-7xl space-y-8">
+        {/* Welcome Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              {locale === "ar"
+                ? `مرحبًا بك، ${name || "مريم أحمد"}`
+                : `Welcome back, ${name || "Mariam Ahmed"}`}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t.patient.nav.subtitle}
+            </p>
+          </div>
+          <div className="mt-3 sm:mt-0">
+            <Link
+              href="/patient/appointments?book=1"
+              className={buttonVariants({
+                variant: "accent",
+                className: "min-h-11 shadow-sm rounded-xl px-4 font-semibold transition-transform active:scale-[0.98]",
+              })}
+            >
+              <CalendarPlus className="size-4 me-2" />
+              {locale === "ar" ? "حجز موعد جديد" : "+ Book Appointment"}
+            </Link>
+          </div>
+        </motion.div>
 
-      {/* 1. MAIN CARD: NEXT VISIT (ATTENDANCE CONFIRMATION + RESCHEDULE/CANCEL) */}
-      <Card className="overflow-hidden rounded-3xl border border-border shadow-md">
+        {/* 1. MAIN CARD: NEXT VISIT (ATTENDANCE CONFIRMATION + RESCHEDULE/CANCEL) */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, delay: 0.04, ease: "easeOut" }}
+          whileHover={{ y: -2 }}
+        >
+          <Card className="overflow-hidden rounded-3xl border border-border shadow-md transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-lg">
         <CardHeader className="flex flex-col gap-2 bg-muted/30 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <span className="eyebrow">{locale === "ar" ? "الزيارة القادمة" : "Next Scheduled Visit"}</span>
@@ -378,9 +391,15 @@ export function PatientOverview() {
           )}
         </CardContent>
       </Card>
+        </motion.div>
 
       {/* 2. TO-DO (REPLACES HYGIENE RECALL BANNER + PRE-VISIT FORMS BANNER) */}
-      <Card className="rounded-3xl border border-border shadow-xs">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, delay: 0.08, ease: "easeOut" }}
+      >
+      <Card className="rounded-3xl border border-border shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/35 hover:shadow-md">
         <CardHeader className="pb-2">
           <span className="eyebrow">{locale === "ar" ? "قائمة المهام" : "Your Tasks"}</span>
           <CardTitle className="mt-1 text-lg font-bold">{locale === "ar" ? "مهام" : "To-do"}</CardTitle>
@@ -389,7 +408,11 @@ export function PatientOverview() {
         <CardContent className="px-6 pb-4 pt-0">
           <ul className="divide-y divide-border">
             {/* Hygiene recall */}
-            <li className="flex items-center gap-3 py-3">
+            <motion.li
+              whileHover={{ y: -1 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/35"
+            >
               <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                 <Sparkles className="size-4" />
               </span>
@@ -405,16 +428,20 @@ export function PatientOverview() {
               </div>
               <Link
                 href="/patient/appointments?reason=cleaning&book=1"
-                className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold" })}
+                className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-transform active:scale-[0.98]" })}
               >
                 {locale === "ar" ? "حجز جلسة التنظيف" : "Book My Cleaning"}
                 <ArrowRight className="size-3.5 ms-1.5 rtl:rotate-180" />
               </Link>
-            </li>
+            </motion.li>
 
             {/* Pre-visit forms */}
             {!intakeForm.consentSigned ? (
-              <li className="flex items-center gap-3 py-3">
+              <motion.li
+                whileHover={{ y: -1 }}
+                transition={{ duration: 0.16, ease: "easeOut" }}
+                className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/35"
+              >
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                   <FileWarning className="size-4" />
                 </span>
@@ -430,14 +457,18 @@ export function PatientOverview() {
                 </div>
                 <Link
                   href="/patient/forms"
-                  className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold" })}
+                  className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-transform active:scale-[0.98]" })}
                 >
                   <FileCheck2 className="size-4 me-1.5" />
                   {locale === "ar" ? "تعبئة النماذج الآن" : "Fill Out Forms"}
                 </Link>
-              </li>
+              </motion.li>
             ) : (
-              <li className="flex items-center gap-3 py-3">
+              <motion.li
+                whileHover={{ y: -1 }}
+                transition={{ duration: 0.16, ease: "easeOut" }}
+                className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/35"
+              >
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-primary">
                   <CheckCircle2 className="size-4" />
                 </span>
@@ -452,16 +483,24 @@ export function PatientOverview() {
                 >
                   {locale === "ar" ? "مراجعة" : "Review"}
                 </Link>
-              </li>
+              </motion.li>
             )}
           </ul>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* 3. MIDDLE SECTION: ACTIVE CARE (WORKFLOWS #4 & #5) */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Workflow #4: Active Treatment Plan Card */}
-        <Card className="rounded-3xl border border-border shadow-xs flex flex-col justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, delay: 0.12, ease: "easeOut" }}
+          whileHover={{ y: -3 }}
+          className="h-full"
+        >
+        <Card className="flex h-full flex-col justify-between rounded-3xl border border-border shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
           <div>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -510,16 +549,24 @@ export function PatientOverview() {
           <CardFooter className="pt-2 pb-5 px-6">
             <Link
               href="/patient/treatment-plan"
-              className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center" })}
+              className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center transition-transform active:scale-[0.98]" })}
             >
               <Stethoscope className="size-4 me-2" />
               {locale === "ar" ? "مراجعة الخطة واعتمادها ←" : "Review & Approve Plan →"}
             </Link>
           </CardFooter>
         </Card>
+        </motion.div>
 
         {/* Workflow #5: Recent Visit Care & e-Prescription Card */}
-        <Card className="rounded-3xl border border-border shadow-xs flex flex-col justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, delay: 0.16, ease: "easeOut" }}
+          whileHover={{ y: -3 }}
+          className="h-full"
+        >
+        <Card className="flex h-full flex-col justify-between rounded-3xl border border-border shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
           <div>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -565,16 +612,23 @@ export function PatientOverview() {
           <CardFooter className="pt-2 pb-5 px-6">
             <Link
               href="/patient/care"
-              className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center" })}
+              className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center transition-transform active:scale-[0.98]" })}
             >
               {locale === "ar" ? "عرض التعليمات وطباعة الروشتة ←" : "View Care & Print Rx →"}
             </Link>
           </CardFooter>
         </Card>
+        </motion.div>
       </div>
 
       {/* 4. BOTTOM SECTION: ACCOUNT & BILLING (WORKFLOW #5) */}
-      <Card className="rounded-3xl border border-border shadow-xs">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, delay: 0.2, ease: "easeOut" }}
+        whileHover={{ y: -2 }}
+      >
+      <Card className="rounded-3xl border border-border shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
         <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-4">
           <div>
             <span className="eyebrow">{locale === "ar" ? "الحسابات والفواتير" : "Billing & Account"}</span>
@@ -592,7 +646,7 @@ export function PatientOverview() {
             {totalBalanceDue > 0 && (
               <Link
                 href="/patient/billing?pay=1"
-                className="min-h-11 rounded-xl px-4 text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 shadow-xs inline-flex items-center justify-center"
+                className="min-h-11 rounded-xl px-4 text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 shadow-xs inline-flex items-center justify-center transition-transform active:scale-[0.98]"
               >
                 <CreditCard className="size-4 me-1.5" />
                 {locale === "ar" ? "دفع الآن" : "Pay Now"}
@@ -604,7 +658,7 @@ export function PatientOverview() {
         <CardContent className="px-6 pb-6 pt-0">
           <div className="divide-y divide-border/60">
             {invoices.slice(0, 2).map((inv) => (
-              <div key={inv.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-2">
+              <div key={inv.id} className="-mx-2 flex flex-col sm:flex-row sm:items-center justify-between rounded-xl px-2 py-3 gap-2 transition-colors hover:bg-muted/35">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-foreground">Invoice #{inv.id}</span>
@@ -634,6 +688,7 @@ export function PatientOverview() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* 24-Hour Policy Lock Warning / Cancellation Dialog */}
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
@@ -714,6 +769,7 @@ export function PatientOverview() {
         </DialogContent>
       </Dialog>
     </div>
+    </MotionConfig>
   );
 }
 

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { decideGate } from "../../src/proxy.ts";
+import { isActiveSessionUser } from "../../src/lib/authz.ts";
 
 test("decideGate matrix for logged-out visitor (null role)", () => {
   assert.deepEqual(decideGate("/admin", null), { kind: "notFound" });
@@ -32,4 +33,13 @@ test("decideGate matrix for admin role", () => {
   assert.deepEqual(decideGate("/admin/login", "admin"), { kind: "redirect", to: "/admin/overview" });
   assert.deepEqual(decideGate("/patient/overview", "admin"), { kind: "notFound" });
   assert.deepEqual(decideGate("/login", "admin"), { kind: "redirect", to: "/admin/overview" });
+});
+
+test("isActiveSessionUser rejects missing, banned, and inactive users", () => {
+  assert.equal(isActiveSessionUser(undefined), false);
+  assert.equal(isActiveSessionUser(null), false);
+  assert.equal(isActiveSessionUser({ role: "patient" }), true);
+  assert.equal(isActiveSessionUser({ role: "admin", status: "active", banned: false }), true);
+  assert.equal(isActiveSessionUser({ role: "admin", banned: true }), false);
+  assert.equal(isActiveSessionUser({ role: "doctor", status: "inactive" }), false);
 });

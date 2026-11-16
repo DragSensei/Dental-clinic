@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { checkDatabaseHealth } from "@/lib/clinic-db";
 
+export const PUBLIC_ROUTE = "health check endpoint, returns only status and timestamp";
+
 export async function GET() {
   const health = await checkDatabaseHealth();
   const timestamp = new Date().toISOString();

@@ -5,6 +5,8 @@ const { dictionaries } = await import("./dictionaries/index.ts");
 const { interpolate, formatUtcDate } = await import("./format.ts");
 const { services } = await import("../data/mock/catalog.ts");
 const { localizedService } = await import("../data/mock/localized-copy.ts");
+const { errorKeyFrom } = await import("./errors.ts");
+const { ClinicError } = await import("../data/clinic-repository.ts");
 
 function leaves(value, path = []) {
   if (Array.isArray(value)) return value.flatMap((item, index) => leaves(item, [...path, index]));
@@ -43,11 +45,14 @@ test("UTC dates follow the active language and use Western digits in Arabic", ()
   assert.doesNotMatch(arabic, /[٠-٩]/);
 });
 
-test("seeded catalog copy is translated, while staff-edited text is shown as entered", () => {
+test("seeded catalog copy is translated and respects single-language or bilingual defaults", () => {
   const seed = services[0];
   assert.equal(localizedService(seed, "ar").title, "الفحوصات الدورية");
   assert.equal(localizedService(seed, "en").title, seed.title);
-  assert.equal(localizedService({ ...seed, title: "Staff-entered title" }, "ar").title, "Staff-entered title");
+  assert.equal(localizedService({ ...seed, title: "Staff-entered title", titleAr: undefined }, "ar").title, "Staff-entered title");
+  assert.equal(localizedService({ ...seed, titleAr: "عنوان مخصص" }, "ar").title, "عنوان مخصص");
+  assert.equal(localizedService({ ...seed, defaultLocale: "en" }, "ar").title, seed.title);
+  assert.equal(localizedService({ ...seed, defaultLocale: "ar" }, "en").title, seed.titleAr);
 });
 
 test("every clinic error code has an English and an Arabic message", () => {
@@ -60,4 +65,11 @@ test("every clinic error code has an English and an Arabic message", () => {
     assert.ok(dictionaries.en.errors[code], `en ${code}`);
     assert.ok(dictionaries.ar.errors[code], `ar ${code}`);
   }
+});
+
+test("errorKeyFrom maps invalid_input to invalid_contact and falls back on internal_error", () => {
+  assert.equal(errorKeyFrom(new ClinicError("invalid_contact"), "submit_failed"), "invalid_contact");
+  assert.equal(errorKeyFrom(new ClinicError("invalid_input"), "submit_failed"), "invalid_contact");
+  assert.equal(errorKeyFrom(new ClinicError("internal_error"), "submit_failed"), "submit_failed");
+  assert.equal(errorKeyFrom(new ClinicError("request_failed"), "submit_failed"), "submit_failed");
 });

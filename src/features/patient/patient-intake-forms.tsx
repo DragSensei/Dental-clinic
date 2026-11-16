@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -262,13 +263,25 @@ export function PatientIntakeForms() {
   const hasMedicalAlert = selectedAllergies.filter((a) => a !== NO_KNOWN_ALLERGIES).length > 0 ||
     selectedConditions.filter((c) => c !== NONE_REPORTED).length > 0;
 
-  const validationAlert = validationError ? (
-    <Alert variant="destructive">
-      <AlertTriangle className="size-4" />
-      <AlertTitle>Validation Notice</AlertTitle>
-      <AlertDescription className="text-xs">{validationError}</AlertDescription>
-    </Alert>
-  ) : null;
+  const validationAlert = (
+    <AnimatePresence initial={false}>
+      {validationError ? (
+        <motion.div
+          key="intake-validation-error"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.16, ease: "easeOut" }}
+        >
+          <Alert variant="destructive">
+            <AlertTriangle className="size-4" />
+            <AlertTitle>Validation Notice</AlertTitle>
+            <AlertDescription className="text-xs">{validationError}</AlertDescription>
+          </Alert>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
 
   const backButton = (
     <Button
@@ -309,99 +322,138 @@ export function PatientIntakeForms() {
   };
 
   return (
-    <div className="max-w-3xl space-y-8">
-      {/* Header & Title */}
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {t.patient.intake.title}
-            </h1>
-            <p className="text-sm text-muted-foreground sm:text-base">
-              {t.patient.intake.subtitle}
-            </p>
-          </div>
-          {updatedAt && (
-            <Badge variant="outline" className="text-xs">
-              {t.patient.intake.updatedAt.replace(
-                "{date}",
-                formatDate(updatedAt.slice(0, 10), { month: "short", day: "numeric", year: "numeric" })
-              )}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Progress Card */}
-      <Card className="border-border bg-card shadow-xs">
-        <CardContent className="p-4 sm:p-6">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs sm:text-sm">
-              <span className="font-semibold text-foreground">
-                Pre-Visit Intake Progress — Est. 3 mins
-              </span>
-              <span className="font-medium text-brand-primary">
-                {progressPercent}% Complete
-              </span>
+    <MotionConfig reducedMotion="user">
+      <div className="max-w-3xl space-y-8">
+        {/* Header & Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="space-y-2"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                {t.patient.intake.title}
+              </h1>
+              <p className="text-sm text-muted-foreground sm:text-base">
+                {t.patient.intake.subtitle}
+              </p>
             </div>
-            <Progress value={progressPercent} className="h-2.5 w-full bg-muted" />
-            <ol className="m-0 grid list-none grid-cols-3 gap-2 p-0 pt-1 text-center text-xs text-muted-foreground">
-              {STEP_LABELS.map(({ step: n, label }) => {
-                const isCurrent = n === step;
-                const isDone = n < step;
-                const isReachable = n <= furthestStep;
-                const canNavigate = isReachable && !isCurrent;
-                const stepClass = cn(
-                  "flex min-h-11 w-full items-center justify-center gap-1 rounded-lg px-1 py-2 leading-tight",
-                  isCurrent && "font-semibold text-brand-primary",
-                  isDone && "font-medium text-foreground",
-                  canNavigate && "cursor-pointer transition-colors hover:bg-muted"
-                );
-                const content = (
-                  <>
-                    {isDone && <CheckCircle2 className="size-3.5 shrink-0 text-brand-primary" />}
-                    <span>{label}</span>
-                  </>
-                );
-                return (
-                  <li key={n}>
-                    {canNavigate ? (
-                      <button
-                        type="button"
-                        onClick={() => goToStep(n)}
-                        className={cn(stepClass, "outline-none focus-visible:ring-2 focus-visible:ring-ring")}
-                      >
-                        {content}
-                      </button>
-                    ) : (
-                      <span aria-current={isCurrent ? "step" : undefined} className={stepClass}>
-                        {content}
-                      </span>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
+            {updatedAt && (
+              <Badge variant="outline" className="text-xs">
+                {t.patient.intake.updatedAt.replace(
+                  "{date}",
+                  formatDate(updatedAt.slice(0, 10), { month: "short", day: "numeric", year: "numeric" })
+                )}
+              </Badge>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </motion.div>
 
-      {/* Save Confirmation Banner */}
-      {saveSuccess && (
-        <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
-          <CheckCircle2 className="size-5 text-brand-primary" />
-          <AlertTitle className="font-semibold text-foreground">
-            All Forms Complete ✅ — Synced to Doctor Dashboard & Locked in Chart
-          </AlertTitle>
-          <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
-            {t.patient.intake.savedSuccess} Your clinician will review your medical history and signed e-consent prior to your visit.
-          </AlertDescription>
-        </Alert>
-      )}
+        {/* Progress Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, delay: 0.04, ease: "easeOut" }}
+        >
+          <Card className="border-border bg-card shadow-xs">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <span className="font-semibold text-foreground">
+                    Pre-Visit Intake Progress — Est. 3 mins
+                  </span>
+                  <span className="font-medium text-brand-primary">
+                    {progressPercent}% Complete
+                  </span>
+                </div>
+                <Progress value={progressPercent} className="h-2.5 w-full bg-muted" />
+                <ol className="m-0 grid list-none grid-cols-3 gap-2 p-0 pt-1 text-center text-xs text-muted-foreground">
+                  {STEP_LABELS.map(({ step: n, label }) => {
+                    const isCurrent = n === step;
+                    const isDone = n < step;
+                    const isReachable = n <= furthestStep;
+                    const canNavigate = isReachable && !isCurrent;
+                    const stepClass = cn(
+                      "relative flex min-h-11 w-full items-center justify-center gap-1 overflow-hidden rounded-lg px-1 py-2 leading-tight",
+                      isCurrent && "font-semibold text-brand-primary",
+                      isDone && "font-medium text-foreground",
+                      canNavigate && "cursor-pointer transition-colors hover:bg-muted"
+                    );
+                    const content = (
+                      <>
+                        {isCurrent && (
+                          <motion.span
+                            layoutId="patient-intake-step-pill"
+                            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                            className="pointer-events-none absolute inset-0 rounded-lg bg-primary/10 ring-1 ring-primary/25"
+                          />
+                        )}
+                        <span className="relative z-10 flex items-center gap-1">
+                          {isDone && <CheckCircle2 className="size-3.5 shrink-0 text-brand-primary" />}
+                          <span>{label}</span>
+                        </span>
+                      </>
+                    );
+                    return (
+                      <li key={n}>
+                        {canNavigate ? (
+                          <button
+                            type="button"
+                            onClick={() => goToStep(n)}
+                            className={cn(stepClass, "outline-none focus-visible:ring-2 focus-visible:ring-ring")}
+                          >
+                            {content}
+                          </button>
+                        ) : (
+                          <span aria-current={isCurrent ? "step" : undefined} className={stepClass}>
+                            {content}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Step 1: Contact & Insurance Scaffold */}
-      {step === 1 && (
-        <Card className="border-border bg-card shadow-xs">
+        {/* Save Confirmation Banner */}
+        <AnimatePresence initial={false}>
+          {saveSuccess && (
+            <motion.div
+              key="intake-save-success"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
+                <CheckCircle2 className="size-5 text-brand-primary" />
+                <AlertTitle className="font-semibold text-foreground">
+                  All Forms Complete ✅ — Synced to Doctor Dashboard & Locked in Chart
+                </AlertTitle>
+                <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
+                  {t.patient.intake.savedSuccess} Your clinician will review your medical history and signed e-consent prior to your visit.
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence mode="wait" initial={false}>
+          {/* Step 1: Contact & Insurance Scaffold */}
+          {step === 1 && (
+            <motion.div
+              key="intake-step-1"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <Card className="border-border bg-card shadow-xs">
           <CardHeader>
             <div className="flex items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-lg bg-brand-subtle text-brand-primary">
@@ -525,11 +577,19 @@ export function PatientIntakeForms() {
             {continueButton}
           </CardFooter>
         </Card>
-      )}
+            </motion.div>
+          )}
 
-      {/* Step 2: Medical History & Allergies */}
-      {step === 2 && (
-        <Card className="border-border bg-card shadow-xs">
+          {/* Step 2: Medical History & Allergies */}
+          {step === 2 && (
+            <motion.div
+              key="intake-step-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <Card className="border-border bg-card shadow-xs">
           <CardHeader>
             <div className="flex items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-lg bg-brand-subtle text-brand-primary">
@@ -718,11 +778,19 @@ export function PatientIntakeForms() {
             {continueButton}
           </CardFooter>
         </Card>
-      )}
+            </motion.div>
+          )}
 
-      {/* Step 3: Digital e-Consent & Signature */}
-      {step === 3 && (
-        <Card className="border-border bg-card shadow-xs">
+          {/* Step 3: Digital e-Consent & Signature */}
+          {step === 3 && (
+            <motion.div
+              key="intake-step-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <Card className="border-border bg-card shadow-xs">
           <CardHeader>
             <div className="flex items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-lg bg-brand-subtle text-brand-primary">
@@ -787,7 +855,7 @@ export function PatientIntakeForms() {
                 size="lg"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="w-full sm:w-auto font-semibold"
+                className="min-h-11 w-full sm:w-auto font-semibold"
               >
                 {isSaving ? (
                   <span className="flex items-center gap-2">
@@ -804,7 +872,10 @@ export function PatientIntakeForms() {
             </div>
           </CardFooter>
         </Card>
-      )}
-    </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </MotionConfig>
   );
 }

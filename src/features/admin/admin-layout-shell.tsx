@@ -2,8 +2,6 @@
 
 import { Suspense, useState, useEffect, type ReactNode } from "react";
 import { notFound, redirect, usePathname, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { AdminDemoGate } from "@/features/admin/admin-demo-gate";
 import { useSession } from "@/data/use-session";
 import { hydrateAppointments } from "@/data/clinic-repository";
 import { useI18n } from "@/i18n/locale-provider";
@@ -61,11 +59,12 @@ export function AdminLayoutShell({
 
   const handleSignOut = async () => {
     try {
-      await authClient.signOut();
+      await signOut();
     } catch (e) {
       console.warn("SignOut API failed, redirecting:", e);
     }
-    window.location.href = "/";
+    router.replace("/");
+    router.refresh();
   };
 
   return (

@@ -184,6 +184,8 @@
           "/admin/login",
           "/admin/login"
         ],
+        "src/features/admin/service-form.tsx": ["/admin/login"],
+        "src/features/admin/doctor-form.tsx": ["/admin/login"],
         "src/features/admin/admin-layout-shell.tsx": [
           "/admin/login"
         ],

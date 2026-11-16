@@ -3,6 +3,8 @@ import { getAvailableDates, getAvailableSlots } from "@/lib/clinic-db";
 import { toErrorResponse } from "@/lib/http";
 import { availabilityQuerySchema } from "@/lib/clinic-schemas";
 
+export const PUBLIC_ROUTE = "public appointment slot availability lookup for guest and patient booking";
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams =

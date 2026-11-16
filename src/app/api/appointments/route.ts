@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppointments, bookAppointment } from "@/lib/clinic-db";
-import { requireSession, HttpError } from "@/lib/authz";
+import { requireSession, isActiveSessionUser, HttpError } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
 import { auth } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     const parsed = bookAppointmentSchema.parse(body);
 
     let email = parsed.email;
-    if (u && (u.role === "patient" || !u.role)) {
+    if (isActiveSessionUser(u) && (u.role === "patient" || !u.role)) {
       email = String(u.email).trim().toLowerCase();
     }
     if (!email) {

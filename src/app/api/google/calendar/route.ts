@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession } from "@/lib/authz";
+import { HttpError, isStaff, requireSession } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
 import { CLINIC_TIME_ZONE, clinicInstant } from "@/lib/clinic-time";
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import { calendarSyncSchema } from "@/lib/clinic-schemas";
 
 function toGoogleCalendarDate(d: Date): string {
@@ -25,6 +26,13 @@ export async function POST(request: NextRequest) {
       doctorName,
       location = "BlueHaven Dental Clinic, Makram Ebeid, Nasr City, Cairo",
     } = parsed;
+
+    if (appointmentId) {
+      const appt = await prisma.appointment.findUnique({ where: { id: appointmentId } });
+      if (!appt || (!isStaff(user) && appt.email.toLowerCase() !== user.email.toLowerCase())) {
+        throw new HttpError(404, "not_found");
+      }
+    }
 
     const eventTitle =
       title || (doctorName ? `Dental Appointment - Dr. ${doctorName}` : "Dental Appointment - BlueHaven Clinic");
@@ -60,13 +68,12 @@ export async function POST(request: NextRequest) {
       eventTitle
     )}&dates=${datesParam}&details=${encodeURIComponent(eventDescription)}&location=${encodeURIComponent(location)}`;
 
-    const cookieToken = (request as NextRequest).cookies?.get("dental_google_token")?.value;
-    let token = cookieToken;
+    let token: string | undefined;
     const authApi = auth.api as unknown as Record<
       string,
       ((opts: { body: { providerId: string }; headers: Headers }) => Promise<{ accessToken?: string }>) | undefined
     >;
-    if (!token && typeof authApi.getAccessToken === "function") {
+    if (typeof authApi.getAccessToken === "function") {
       try {
         const tokenRes = await authApi.getAccessToken({
           body: { providerId: "google" },
@@ -83,6 +90,7 @@ export async function POST(request: NextRequest) {
       try {
         const googleRes = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
           method: "POST",
+          signal: AbortSignal.timeout(5000),
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -108,6 +116,12 @@ export async function POST(request: NextRequest) {
           eventId = eventData.id || null;
           if (eventData.htmlLink) {
             finalUrl = eventData.htmlLink;
+          }
+          if (appointmentId && eventId) {
+            await prisma.appointment.update({
+              where: { id: appointmentId },
+              data: { calendarSynced: true, googleEventId: eventId },
+            });
           }
         }
       } catch (err) {

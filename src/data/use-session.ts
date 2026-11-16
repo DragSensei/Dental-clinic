@@ -45,10 +45,11 @@ export function updateSession(
 export function useSession() {
   const { data, isPending } = authClient.useSession();
   const user = data?.user as (Record<string, unknown> | undefined);
+  const isActive = Boolean(user && user.banned !== true && user.status !== "inactive");
 
-  const email = (user?.email as string) || null;
-  const role = (user?.role as AccountRole) || (email ? "patient" : null);
-  const name = (user?.name as string) || null;
+  const email = isActive ? (user?.email as string) || null : null;
+  const role = isActive ? (user?.role as AccountRole) || (email ? "patient" : null) : null;
+  const name = isActive ? (user?.name as string) || null : null;
   const dashboardRoute = getDashboardRoute(role);
 
   return {
