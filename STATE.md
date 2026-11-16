@@ -3,12 +3,13 @@
 ## BUG TRIAGE LOG
 
 ### BUG-2026-001 — Auth/Clinic 500s, Inactive Session Gate Gaps, Unbounded Admin Lookup & Hero Responsive Sizes
-- STATUS: IN_PROGRESS
+- STATUS: RESOLVED
 - ROOT CAUSE: Local `.env` (copied from `.env.example`) held placeholder PostgreSQL credentials (`user:password`), triggering Prisma `P1000` 500s on `/api/clinic`, `/api/health`, `/api/dev/demo-login`, and `/api/auth/sign-in/email`, alongside placeholder `RESEND_API_KEY` / Google credentials that activated unconfigured verification flows (`src/lib/auth.ts` accepted truthy placeholders). Additional gaps: `src/proxy.ts`, `src/data/use-session.ts`, and `src/app/api/appointments/route.ts` lacked `isActiveSessionUser` enforcement; `src/lib/clinic-db.ts` duplicated availability queries, used dynamic `take`, lacked ownership checks on appointment mutations, and kept dead `createAccount`; `src/app/api/admin/accounts/route.ts` omitted `take` on `service.findMany` and initial `doctorWorkingHours`; `src/app/api/google/calendar/route.ts` read a legacy token cookie without fetch timeouts or appointment ownership/sync persistence; `src/features/admin/admin-demo-gate.tsx` collapsed HTTP 5xx errors into `login_invalid`/`signup_duplicate`; and `src/features/booking/landing-hero.tsx` triggered `<Image sizes="100vw">` dev warnings on hidden responsive images.
 - CANONICAL OWNER: `src/lib/auth.ts`, `src/lib/authz.ts`, `src/proxy.ts`, `src/lib/clinic-db.ts`, `src/app/api/google/calendar/route.ts`, `src/features/admin/admin-demo-gate.tsx`
-- PREVENTION CLASS: TEST, STATIC_GUARD
-- GUARD / TEST PATH: `tests/unit/proxy-gate.test.mjs`, `tests/unit/booking-integrity.test.mjs`
-- VERIFICATION OWNER: TypeScript (`tsc --noEmit`), ESLint (`npm run lint`), static workspace gates (`scale-gate.mjs`, `lint-ui-architecture.mjs`, `token-lint.mjs`), unit tests (`npx tsx --test`), plus runtime DB smoke after configuring real local PostgreSQL credentials in `.env` (`npx prisma db push && npx tsx prisma/seed.ts`).
+- PREVENTION CLASS: TEST
+- GUARD / TEST PATH: tests/unit/proxy-gate.test.mjs#isActiveSessionUser rejects missing, banned, and inactive users; tests/unit/booking-integrity.test.mjs#state transitions: repeated cancel returns invalid_transition error (not second success)
+- VERIFICATION OWNER: TypeScript (`tsc --noEmit`), ESLint (`npm run lint`), static workspace gates (`lint-ui-architecture.mjs`, `token-lint.mjs`, `scale-gate.mjs`), guarded unit and integration suites (`test-db-guard.mjs --run-tests`), Next.js production build (`next build`), and visual audit (`visual-audit.mjs`).
+- FIXED-BY REFERENCE: BUG-2026-001 backend, session-gate, and admin-form remediation
 
 ## Landing Page Redesign (Calm Luxury) — Step 1: Hero & Trust Strip (2026-11-05)
 - Branch: `redesign/calm-luxury`
