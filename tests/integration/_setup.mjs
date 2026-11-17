@@ -19,6 +19,8 @@ const { default: prisma } = await import("../../src/lib/prisma.ts");
 const { auth } = await import("../../src/lib/auth.ts");
 
 export const RUN_ID = `itest-${crypto.randomUUID().slice(0, 8)}`;
+const ipBytes = crypto.randomBytes(2);
+export const RUN_IP = `198.18.${ipBytes[0]}.${ipBytes[1]}`;
 export const TEST_PASSWORD = "TestPassword2026!";
 
 export { prisma, auth };
@@ -84,6 +86,9 @@ export function req(url, options = {}) {
 
   if (cookie) {
     reqHeaders.set("cookie", cookie);
+  }
+  if (!reqHeaders.has("x-forwarded-for")) {
+    reqHeaders.set("x-forwarded-for", RUN_IP);
   }
   if (body !== undefined && !reqHeaders.has("content-type")) {
     reqHeaders.set("content-type", "application/json");
@@ -253,6 +258,19 @@ export async function cleanup() {
           { name: { contains: RUN_ID } },
         ],
       },
+    });
+
+    // 17. Ephemeral rate limit buckets created by this test run
+    await prisma.apiRateLimit.deleteMany({
+      where: {
+        OR: [
+          { key: { endsWith: `:${RUN_IP}` } },
+          { key: { startsWith: `appointments:${RUN_IP}` } },
+        ],
+      },
+    });
+    await prisma.rateLimit.deleteMany({
+      where: { key: { contains: RUN_IP } },
     });
   } catch (err) {
     console.error("Integration setup cleanup error:", err);

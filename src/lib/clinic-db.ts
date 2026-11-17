@@ -329,6 +329,12 @@ export async function getDoctors() {
     name: d.name,
     specialty: d.specialty,
     bio: d.bio,
+    image: d.image,
+    credentials: d.credentials,
+    experienceBadge: d.experienceBadge,
+    experienceSummary: d.experienceSummary,
+    languages: d.languages,
+    comfortFocus: d.comfortFocus,
     status: d.status,
     userId: d.userId,
     serviceIds: d.services.map((s) => s.serviceId),
@@ -342,6 +348,12 @@ export async function updateDoctor(
     name?: string;
     specialty?: string;
     bio?: string;
+    image?: string | null;
+    credentials?: string | null;
+    experienceBadge?: string | null;
+    experienceSummary?: string | null;
+    languages?: string | null;
+    comfortFocus?: string | null;
     serviceIds?: string[];
     status?: string;
   }
@@ -375,6 +387,9 @@ export async function updateDoctor(
     throw new ClinicError("doctor_service_blocked");
   }
 
+  const pickNullableField = (incoming: string | null | undefined, current: string | null) =>
+    incoming !== undefined ? incoming?.trim() || null : current;
+
   return await prisma.$transaction(async (tx) => {
     await tx.doctorService.deleteMany({ where: { doctorId: id } });
     if (nextServiceIds.length > 0) {
@@ -388,6 +403,12 @@ export async function updateDoctor(
         name: (input.name ?? existing.name).trim(),
         specialty: (input.specialty ?? existing.specialty).trim(),
         bio: (input.bio ?? existing.bio).trim(),
+        image: pickNullableField(input.image, existing.image),
+        credentials: pickNullableField(input.credentials, existing.credentials),
+        experienceBadge: pickNullableField(input.experienceBadge, existing.experienceBadge),
+        experienceSummary: pickNullableField(input.experienceSummary, existing.experienceSummary),
+        languages: pickNullableField(input.languages, existing.languages),
+        comfortFocus: pickNullableField(input.comfortFocus, existing.comfortFocus),
         status: input.status || existing.status,
       },
       include: { services: true, workingHours: true },

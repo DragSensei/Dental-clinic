@@ -717,6 +717,12 @@ export async function createAccount(
     status: accountInput.status,
     specialty: accountInput.specialty?.trim(),
     bio: accountInput.bio?.trim(),
+    image: accountInput.image?.trim() || undefined,
+    credentials: accountInput.credentials?.trim() || undefined,
+    experienceBadge: accountInput.experienceBadge?.trim() || undefined,
+    experienceSummary: accountInput.experienceSummary?.trim() || undefined,
+    languages: accountInput.languages?.trim() || undefined,
+    comfortFocus: accountInput.comfortFocus?.trim() || undefined,
     serviceIds: accountInput.serviceIds,
   };
 

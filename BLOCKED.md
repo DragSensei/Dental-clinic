@@ -8,8 +8,8 @@
 - `.env` `DATABASE_URL`: `postgresql://postgres:postgres@localhost:5432/dental_reservation_db?schema=public`
 - `.env.test` `TEST_DATABASE_URL`: `postgresql://postgres:postgres@localhost:5432/dental_reservation_test?schema=public` (ends in `_test`)
 
-## In-Memory Rate Limiting Notice
-- An in-memory limiter does not share state across server instances; it is acceptable for this single-node demo and must be replaced before multi-instance deployment.
+## PostgreSQL Rate Limiting Policy (Resolved)
+- API rate limiting is now backed by PostgreSQL (`api_rate_limit` table via `checkRateLimitDb` in `src/lib/rate-limit.ts`), and Better Auth uses `storage: "database"` (`rate_limit` table in `src/lib/auth.ts`) so limits persist across server instances and restarts.
 
 ## Deviations
 - **Phase 1 transitional stub for `requireUser`:** Completely removed in Phase 2. All API routes have been transitioned to `requireRole` and `requireSession` from `@/lib/authz`.
@@ -75,17 +75,22 @@
   - `http://localhost:3000/patient/forms --role=patient --expect="Digital Medical Intake Form"`: PASS across 375px, 768px, 1440px viewports (100% touch targets, zero horizontal spill).
   - `http://localhost:3000/ --require-shell=navbar,footer`: PASS across 375px, 768px, 1440px viewports (navbar and footer shells verified).
 - Rate Limiting Adjustments:
-  - Better Auth rate limiter configured with `window: 60`, `max: 10`, and `customRules: { "/get-session": false }` so repeated page hydration does not exhaust auth quotas while strictly protecting sign-in/sign-up.
-  - In-memory IP rate limiter on `POST /api/appointments`: 10 requests / 10 minutes per IP.
+  - Better Auth rate limiter configured with `window: 60`, `max: 10`, `storage: "database"`, and `customRules: { "/get-session": false }` so repeated page hydration does not exhaust auth quotas while strictly protecting sign-in/sign-up.
+  - PostgreSQL-backed IP rate limiter (`api_rate_limit` via `checkRateLimitDb`) on `POST /api/appointments` and `POST /api/dev/demo-login`: 10 requests / 10 minutes per IP.
 - Scale Gate:
-  - Run on `src/lib/clinic-db.ts`: reports `REVIEW_REQUIRED` (`UNVERIFIED_QUERY_BOUND` on line 579, `REPEATED_DATABASE_READ_REVIEW`, `CONCURRENCY_REVIEW`).
-    - `UNVERIFIED_QUERY_BOUND` (line 579): `getAppointments` enforces dynamic bounding capped at 200 via `const boundedTake = Math.min(Math.max(1, filter?.take ?? 200), 200)`. Because `scale-gate.mjs` statically inspects literal integer bounds, dynamic expressions trigger `REVIEW_REQUIRED`. The query bound behaviors (default 200 bound, dynamic custom bound, and 200-row upper ceiling clamp) are verified by integration test in `tests/integration/clinic-db.test.mjs` (lines 159-174).
-    - `CONCURRENCY_REVIEW`: Advisory transaction locking (`pg_advisory_xact_lock`) and concurrency conflict prevention verified by `tests/integration/security-matrix.test.mjs` (lines 588-667).
-    - `REPEATED_DATABASE_READ_REVIEW`: Verified loop query patterns bounded by doctor/date filters.
-- Surfaces Awaiting Human Sign-Off (Rule 0 Compliance):
-  - `.git/tier2-evidence.json` and `.verification/security-review.json` are superseded and intentionally left unsigned for human review.
-  - Database schema baseline migrations: currently `db push` only; flagged for baseline migration via `_shared-skills/db-guardian.md`.
-  - Cascade delete policy on `User` clinical and billing relations requires human business decision.
+  - Run on `src/lib/clinic-db.ts`: reports `REVIEW_REQUIRED` (`UNVERIFIED_QUERY_BOUND`, `REPEATED_DATABASE_READ_REVIEW`, `CONCURRENCY_REVIEW`), plus `src/lib/rate-limit.ts` (`UNSUPPORTED_DATABASE_PATH` for raw SQL PK upsert `INSERT ... ON CONFLICT ("key") DO UPDATE`). Query bounds (`getAppointments` capped at 200), advisory locking (`pg_advisory_xact_lock`), and DB rate-limit behavior are verified by `tests/integration/clinic-db.test.mjs`, `security-matrix.test.mjs`, and `rate-limit.test.mjs`.
+
+## Production Hardening & Resolved Items
+- **Database schema migrations (Resolved):** Established `prisma/migrations/0001_baseline` and `prisma/migrations/20261117124033_production_hardening`, applied across both `dental_reservation_db` and `dental_reservation_test` (`prisma migrate diff` confirms zero drift). Updated `package.json` `"build"` to `"prisma generate && next build"` with `"db:migrate:deploy": "prisma migrate deploy"`.
+- **`User` clinical/billing deletion policy (Resolved):** Changed `onDelete: Cascade` to `onDelete: Restrict` on `PatientIntakeForm`, `TreatmentPlan`, `VisitCareSummary`, and `PatientInvoice` per human product decision, verified by integration test in `tests/integration/security-matrix.test.mjs`.
+- **PostgreSQL rate limiting & secret hygiene (Resolved):** Migrated booking & demo-login rate limits to `api_rate_limit` and Better Auth to `rate_limit`, removed the hardcoded fallback password in `POST /api/admin/accounts` under `NODE_ENV === "production"`, and added production defaults to `.env.example`.
+- **Landing & Patient UI polish (Resolved):** Eliminated React `#418` on unauthenticated 404 footer rewrites and wrapped `(app)` shells in `<Suspense>`, migrated all inline patient portal strings to `en.ts`/`ar.ts`, updated the landing sections (preserving the 5-card smile marquee, restoring the 5-card `ExpandableCard` row in `CareGuide`, replacing `VisitGuide` with database-backed `LandingDoctors` cards), and resolved mobile `/login` button font-size warnings (`14px`).
+- **Doctor Portraits, Dynamic DB Card Fields & `#who-we-are` Removal (Resolved):** Added studio portraits `public/images/demo/doctor-omar.jpg`, `doctor-nour.jpg`, and `doctor-adam.jpg`; created migration `prisma/migrations/20261117142105_doctor_profile_card_fields` for `image`, `credentials`, `experienceBadge`, `experienceSummary`, `languages`, and `comfortFocus` across both dev and test PostgreSQL databases; wired shared `DoctorProfileFields` into `DoctorForm` (`/admin/doctors/[id]`) and `AccountCreator` (`/admin/accounts/new`), converted `LandingDoctors` + `localizedDoctor` to render DB-backed fields instead of static dictionary maps, and removed `ClinicStory` (`#who-we-are`) with updated footer anchor `/#doctors`.
+
+## Surfaces Awaiting Human Decision / Review
+- `.git/tier2-evidence.json` and `.verification/security-review.json` remain unsigned for human sign-off.
+- `next@16.4.2` reports a security advisory upgrade notice (`next upgrade --agent=security`); left un-upgraded pending user confirmation.
+- External Unsplash preset image URLs in `src/data/mock/catalog.ts` receive `ERR_BLOCKED_BY_RESPONSE.NotSameOrigin` under headless Chromium on `/admin/services` (optional future replacement with local `/public/images/` assets).
 
 ## Blocker Log
 (None currently)

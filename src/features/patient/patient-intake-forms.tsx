@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/data/use-session";
 import { useClinic } from "@/data/use-clinic";
+import { interpolate } from "@/i18n/format";
 import { useI18n } from "@/i18n/locale-provider";
 import type { PatientIntakeForm } from "@/data/mock/catalog";
 import { cn } from "@/lib/utils";
@@ -58,16 +59,24 @@ const NO_KNOWN_ALLERGIES = "No known allergies";
 
 type IntakeStep = 1 | 2 | 3;
 
-const STEP_LABELS: { step: IntakeStep; label: string }[] = [
-  { step: 1, label: "1. Personal & Insurance" },
-  { step: 2, label: "2. Medical History" },
-  { step: 3, label: "3. Consent & Agreement" },
-];
-
 export function PatientIntakeForms() {
   const { signedInEmail, name } = useSession();
   const clinic = useClinic();
-  const { formatDate, t, locale } = useI18n();
+  const { formatDate, t } = useI18n();
+
+  const stepLabels: { step: IntakeStep; label: string }[] = [
+    { step: 1, label: t.patient.intake.steps[0] },
+    { step: 2, label: t.patient.intake.steps[1] },
+    { step: 3, label: t.patient.intake.steps[2] },
+  ];
+
+  const translateCondition = (cond: string) =>
+    (t.patient.intake.conditionLabels as Record<string, string>)[cond] ||
+    (cond === NONE_REPORTED ? t.patient.intake.noneReportedLabel : cond);
+
+  const translateAllergy = (allergy: string) =>
+    (t.patient.intake.allergyLabels as Record<string, string>)[allergy] ||
+    (allergy === NO_KNOWN_ALLERGIES ? t.patient.intake.noKnownAllergiesLabel : allergy);
 
   const patientEmail = signedInEmail || "mariam.a@example.com";
   const patientDisplayName = name || "Mariam Ahmed";
@@ -161,19 +170,11 @@ export function PatientIntakeForms() {
   // Continue: validates the current step before advancing
   const handleContinue = () => {
     if (step === 1 && !phoneAndContactValid) {
-      setValidationError(
-        locale === "ar"
-          ? "يرجى إدخال رقم الهاتف الأساسي وجهة اتصال الطوارئ للمتابعة."
-          : "Please enter your primary phone and emergency contact to continue."
-      );
+      setValidationError(t.patient.intake.step1RequiredError);
       return;
     }
     if (step === 2 && !medicalAnswered) {
-      setValidationError(
-        locale === "ar"
-          ? "يرجى الإجابة عن سؤال واحد على الأقل حول التاريخ الطبي أو تأكيد عدم وجود تغييرات للمتابعة."
-          : "Answer at least one medical history question or confirm there are no changes to continue."
-      );
+      setValidationError(t.patient.intake.step2RequiredError);
       return;
     }
     const next: IntakeStep = step === 1 ? 2 : 3;
@@ -224,7 +225,7 @@ export function PatientIntakeForms() {
     setValidationError(null);
 
     if (!signedByName.trim()) {
-      setValidationError("Please enter your legal name to confirm the intake form.");
+      setValidationError(t.patient.intake.legalNameRequiredError);
       return;
     }
 
@@ -254,7 +255,7 @@ export function PatientIntakeForms() {
       setUpdatedAt(now);
       setSaveSuccess(true);
     } catch {
-      setValidationError("Failed to save intake form. Please try again.");
+      setValidationError(t.patient.intake.saveFailedError);
     } finally {
       setIsSaving(false);
     }
@@ -275,7 +276,7 @@ export function PatientIntakeForms() {
         >
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
-            <AlertTitle>Validation Notice</AlertTitle>
+            <AlertTitle>{t.patient.intake.validationNotice}</AlertTitle>
             <AlertDescription className="text-xs">{validationError}</AlertDescription>
           </Alert>
         </motion.div>
@@ -292,7 +293,7 @@ export function PatientIntakeForms() {
       className="min-h-11 gap-2 font-semibold"
     >
       <ArrowLeft className="size-4 rtl:rotate-180" />
-      {locale === "ar" ? "رجوع" : "Back"}
+      {t.patient.intake.backBtn}
     </Button>
   );
 
@@ -304,19 +305,19 @@ export function PatientIntakeForms() {
       onClick={handleContinue}
       className="min-h-11 gap-2 font-semibold"
     >
-      {locale === "ar" ? "متابعة" : "Continue"}
+      {t.patient.intake.continueBtn}
       <ArrowRight className="size-4 rtl:rotate-180" />
     </Button>
   );
 
-  const renderSummaryBadges = (items: string[]) => {
+  const renderSummaryBadges = (items: string[], translate: (v: string) => string) => {
     const visible = items.filter((item) => item !== NONE_REPORTED && item !== NO_KNOWN_ALLERGIES);
     if (items.length === 0 || visible.length === 0) {
-      return <span className="text-muted-foreground">{items[0] ?? "—"}</span>;
+      return <span className="text-muted-foreground">{items[0] ? translate(items[0]) : "—"}</span>;
     }
     return visible.map((item) => (
       <Badge key={item} variant="secondary" className="text-xs font-normal">
-        {item}
+        {translate(item)}
       </Badge>
     ));
   };
@@ -362,15 +363,15 @@ export function PatientIntakeForms() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="font-semibold text-foreground">
-                    Pre-Visit Intake Progress — Est. 3 mins
+                    {t.patient.intake.progressHeader}
                   </span>
                   <span className="font-medium text-brand-primary">
-                    {progressPercent}% Complete
+                    {interpolate(t.patient.intake.progressPercent, { percent: progressPercent })}
                   </span>
                 </div>
                 <Progress value={progressPercent} className="h-2.5 w-full bg-muted" />
                 <ol className="m-0 grid list-none grid-cols-3 gap-2 p-0 pt-1 text-center text-xs text-muted-foreground">
-                  {STEP_LABELS.map(({ step: n, label }) => {
+                  {stepLabels.map(({ step: n, label }) => {
                     const isCurrent = n === step;
                     const isDone = n < step;
                     const isReachable = n <= furthestStep;
@@ -433,10 +434,10 @@ export function PatientIntakeForms() {
               <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
                 <CheckCircle2 className="size-5 text-brand-primary" />
                 <AlertTitle className="font-semibold text-foreground">
-                  All Forms Complete ✅ — Synced to Doctor Dashboard & Locked in Chart
+                  {t.patient.intake.allCompleteTitle}
                 </AlertTitle>
                 <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
-                  {t.patient.intake.savedSuccess} Your clinician will review your medical history and signed e-consent prior to your visit.
+                  {t.patient.intake.allCompleteDesc}
                 </AlertDescription>
               </Alert>
             </motion.div>
@@ -465,10 +466,10 @@ export function PatientIntakeForms() {
                   tabIndex={-1}
                   className="scroll-mt-24 text-base sm:text-lg"
                 >
-                  Step 1: {t.patient.intake.personalInfo}
+                  {interpolate(t.patient.intake.step1Title, { label: t.patient.intake.personalInfo })}
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Verify your contact numbers and emergency notification information.
+                  {t.patient.intake.step1Desc}
                 </CardDescription>
               </div>
             </div>
@@ -476,7 +477,7 @@ export function PatientIntakeForms() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="patient-name">Full Name</Label>
+                <Label htmlFor="patient-name">{t.patient.intake.fullNameLabel}</Label>
                 <Input
                   id="patient-name"
                   value={patientDisplayName}
@@ -485,7 +486,7 @@ export function PatientIntakeForms() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="patient-email">Email Address</Label>
+                <Label htmlFor="patient-email">{t.patient.intake.emailLabel}</Label>
                 <Input
                   id="patient-email"
                   type="email"
@@ -495,7 +496,7 @@ export function PatientIntakeForms() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="patient-phone">Primary Phone</Label>
+                <Label htmlFor="patient-phone">{t.patient.intake.primaryPhoneLabel}</Label>
                 <Input
                   id="patient-phone"
                   value={phone}
@@ -518,7 +519,7 @@ export function PatientIntakeForms() {
                     setEmergencyContact(e.target.value);
                     setSaveSuccess(false);
                   }}
-                  placeholder="Name & Contact (+20 10 ...)"
+                  placeholder={t.patient.intake.emergencyPlaceholder}
                   className="bg-background"
                 />
               </div>
@@ -536,7 +537,7 @@ export function PatientIntakeForms() {
                   </span>
                 </div>
                 <Badge variant="secondary" className="text-xs">
-                  Scaffold Ready — Coming Soon
+                  {t.patient.intake.insuranceScaffoldBadge}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -551,7 +552,7 @@ export function PatientIntakeForms() {
                     id="insurance-provider"
                     value={insuranceProvider}
                     onChange={(e) => setInsuranceProvider(e.target.value)}
-                    placeholder="e.g. AXA, MetLife, Bupa"
+                    placeholder={t.patient.intake.providerPlaceholder}
                     className="bg-background text-xs"
                   />
                 </div>
@@ -563,7 +564,7 @@ export function PatientIntakeForms() {
                     id="insurance-member-id"
                     value={insuranceMemberId}
                     onChange={(e) => setInsuranceMemberId(e.target.value)}
-                    placeholder="e.g. POL-99283-EG"
+                    placeholder={t.patient.intake.memberIdPlaceholder}
                     className="bg-background text-xs"
                   />
                 </div>
@@ -601,10 +602,13 @@ export function PatientIntakeForms() {
                   tabIndex={-1}
                   className="scroll-mt-24 text-base sm:text-lg"
                 >
-                  Step 2: {t.patient.intake.medicalConditions} & {t.patient.intake.allergies}
+                  {interpolate(t.patient.intake.step2Title, {
+                    conditions: t.patient.intake.medicalConditions,
+                    allergies: t.patient.intake.allergies,
+                  })}
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Select any applicable medical conditions and known medication or material allergies.
+                  {t.patient.intake.step2Desc}
                 </CardDescription>
               </div>
             </div>
@@ -617,7 +621,7 @@ export function PatientIntakeForms() {
                   {t.patient.intake.noChanges}
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Returning patient shortcut to quickly certify prior records.
+                  {t.patient.intake.noChangesHint}
                 </p>
               </div>
               <Switch
@@ -633,14 +637,15 @@ export function PatientIntakeForms() {
               <Alert className="border-border bg-destructive/10 text-foreground shadow-xs">
                 <ShieldAlert className="size-5 text-destructive" />
                 <AlertTitle className="font-semibold text-destructive">
-                  ⚠️ Medical Alert will be highlighted on your Dentist&apos;s chart
+                  {t.patient.intake.medicalAlertTitle}
                 </AlertTitle>
                 <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
-                  Your clinical team will take special precautions for:{" "}
+                  {t.patient.intake.medicalAlertPrefix}{" "}
                   <strong className="text-foreground">
-                    {[...selectedAllergies, ...selectedConditions]
-                      .filter((item) => item !== NO_KNOWN_ALLERGIES && item !== NONE_REPORTED)
-                      .join(", ")}
+                    {[
+                      ...selectedAllergies.filter((a) => a !== NO_KNOWN_ALLERGIES).map(translateAllergy),
+                      ...selectedConditions.filter((c) => c !== NONE_REPORTED).map(translateCondition),
+                    ].join(", ")}
                   </strong>
                   .
                 </AlertDescription>
@@ -652,7 +657,7 @@ export function PatientIntakeForms() {
               <div className="space-y-4 rounded-xl bg-muted/40 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs sm:text-sm font-semibold text-foreground">
-                    {locale === "ar" ? "ملخص السجل الحالي" : "Current record summary"}
+                    {t.patient.intake.currentSummaryTitle}
                   </p>
                   <Button
                     type="button"
@@ -661,21 +666,27 @@ export function PatientIntakeForms() {
                     onClick={() => handleNoChangesToggle(false)}
                     className="min-h-11 font-medium"
                   >
-                    {locale === "ar" ? "تعديل" : "Edit"}
+                    {t.patient.intake.editBtn}
                   </Button>
                 </div>
                 <dl className="grid gap-4 text-xs sm:text-sm">
                   <div className="space-y-1.5">
                     <dt className="font-medium text-muted-foreground">{t.patient.intake.medicalConditions}</dt>
-                    <dd className="flex flex-wrap gap-1.5 text-foreground">{renderSummaryBadges(selectedConditions)}</dd>
+                    <dd className="flex flex-wrap gap-1.5 text-foreground">
+                      {renderSummaryBadges(selectedConditions, translateCondition)}
+                    </dd>
                   </div>
                   <div className="space-y-1.5">
                     <dt className="font-medium text-muted-foreground">{t.patient.intake.allergies}</dt>
-                    <dd className="flex flex-wrap gap-1.5 text-foreground">{renderSummaryBadges(selectedAllergies)}</dd>
+                    <dd className="flex flex-wrap gap-1.5 text-foreground">
+                      {renderSummaryBadges(selectedAllergies, translateAllergy)}
+                    </dd>
                   </div>
                   <div className="space-y-1.5">
                     <dt className="font-medium text-muted-foreground">{t.patient.intake.medications}</dt>
-                    <dd className="text-foreground">{medications.trim() || "—"}</dd>
+                    <dd className="text-foreground">
+                      {medications === NONE_REPORTED ? t.patient.intake.noneReportedLabel : medications.trim() || "—"}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -703,7 +714,7 @@ export function PatientIntakeForms() {
                           )}
                         >
                           {isSelected ? <CheckCircle2 className="size-4 shrink-0" /> : <div className="size-4 shrink-0 rounded-full border border-current opacity-40" />}
-                          <span>{cond}</span>
+                          <span>{translateCondition(cond)}</span>
                         </button>
                       );
                     })}
@@ -716,10 +727,10 @@ export function PatientIntakeForms() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs sm:text-sm font-medium text-foreground">
-                      {t.patient.intake.allergies} (Triggers Clinical Alert)
+                      {t.patient.intake.allergies} {t.patient.intake.allergiesAlertNote}
                     </Label>
                     <Badge variant="outline" className="text-[11px] text-destructive">
-                      High Priority
+                      {t.patient.intake.highPriorityBadge}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -739,7 +750,7 @@ export function PatientIntakeForms() {
                           )}
                         >
                           {isSelected ? <ShieldAlert className="size-4 shrink-0" /> : <div className="size-4 shrink-0 rounded-full border border-current opacity-40" />}
-                          <span>{allergy}</span>
+                          <span>{translateAllergy(allergy)}</span>
                         </button>
                       );
                     })}
@@ -802,10 +813,10 @@ export function PatientIntakeForms() {
                   tabIndex={-1}
                   className="scroll-mt-24 text-base sm:text-lg"
                 >
-                  Step 3: {t.patient.intake.consentTitle}
+                  {interpolate(t.patient.intake.step3Title, { label: t.patient.intake.consentTitle })}
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Review the informed clinical agreement and provide your legal confirmation.
+                  {t.patient.intake.step3Desc}
                 </CardDescription>
               </div>
             </div>
@@ -815,11 +826,11 @@ export function PatientIntakeForms() {
             <div className="space-y-2 rounded-xl bg-muted/40 p-4 text-xs sm:text-sm leading-relaxed text-muted-foreground">
               <div className="flex items-center gap-2 font-semibold text-foreground">
                 <FileCheck2 className="size-4 text-brand-primary" />
-                <span>Informed Dental Procedure &amp; Diagnostic Privacy Agreement</span>
+                <span>{t.patient.intake.agreementBoxTitle}</span>
               </div>
               <p>{t.patient.intake.consentBody}</p>
               <p className="text-[11px] text-muted-foreground">
-                By typing your legal name below and saving, you acknowledge having reviewed this consent and confirm that the medical history provided above is accurate and complete to the best of your knowledge.
+                {t.patient.intake.consentAcknowledge}
               </p>
             </div>
 
@@ -845,7 +856,7 @@ export function PatientIntakeForms() {
           <CardFooter className="flex flex-col items-stretch sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-border pt-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Info className="size-4 text-brand-primary shrink-0" />
-              <span>Synced automatically with the clinic&apos;s doctor workstation.</span>
+              <span>{t.patient.intake.syncedWorkstationNote}</span>
             </div>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
               {backButton}
@@ -860,7 +871,7 @@ export function PatientIntakeForms() {
                 {isSaving ? (
                   <span className="flex items-center gap-2">
                     <Sparkles className="size-4 animate-spin" />
-                    Saving Intake Form...
+                    {t.patient.intake.savingBtn}
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">

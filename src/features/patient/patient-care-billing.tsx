@@ -20,6 +20,7 @@ import {
 import { useSession } from "@/data/use-session";
 import { useClinic } from "@/data/use-clinic";
 import { useI18n } from "@/i18n/locale-provider";
+import { interpolate } from "@/i18n/format";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import type { PatientInvoice, VisitCareSummary } from "@/data/mock/catalog";
 import { cn } from "@/lib/utils";
@@ -73,12 +74,15 @@ export function PatientCareView() {
   const { locale, formatDate, t } = useI18n();
 
   const patientEmail = signedInEmail || "mariam.a@example.com";
-  const patientDisplayName = name || "Mariam Ahmed";
+  const patientDisplayName = name || t.patient.nav.defaultUserName;
 
   const visitSummaries = clinic.getPatientVisitSummaries(patientEmail);
 
   // Active visit selected for printable e-Prescription modal
   const [activePrescriptionVisit, setActivePrescriptionVisit] = useState<VisitCareSummary | null>(null);
+  const activePrescriptionDoctor = activePrescriptionVisit
+    ? clinic.doctors.find((d) => d.id === activePrescriptionVisit.doctorId)
+    : undefined;
 
   // Interactive recovery checklist tracking
   const [checkedRules, setCheckedRules] = useState<Record<string, boolean>>({});
@@ -114,19 +118,19 @@ export function PatientCareView() {
         {visitSummaries.length === 0 ? (
           <Card className="border-border bg-card p-8 text-center text-muted-foreground">
             <Stethoscope className="mx-auto size-10 text-brand-primary opacity-60 mb-3" />
-            <p className="text-base font-semibold text-foreground">No Visit Summaries On File</p>
+            <p className="text-base font-semibold text-foreground">{t.patient.care.emptyTitle}</p>
             <p className="text-xs sm:text-sm mt-1">
-              Clinical summaries and doctor post-op recovery notes appear here immediately following your appointments.
+              {t.patient.care.emptyDesc}
             </p>
           </Card>
         ) : (
           <div className="space-y-6">
             {visitSummaries.map((visit, index) => {
               const doctor = clinic.doctors.find((d) => d.id === visit.doctorId);
-              const doctorName = doctor ? localizedDoctor(doctor, locale).name : "Dr. Clinician";
-              const doctorSpecialty = doctor ? localizedDoctor(doctor, locale).specialty : "General Dentistry";
+              const doctorName = doctor ? localizedDoctor(doctor, locale).name : t.brand.name;
+              const doctorSpecialty = doctor ? localizedDoctor(doctor, locale).specialty : t.patient.overview.careDefaultDone;
               const service = clinic.services.find((s) => s.id === visit.serviceId);
-              const serviceTitle = service ? localizedService(service, locale).title : "Comprehensive Clinical Visit";
+              const serviceTitle = service ? localizedService(service, locale).title : t.patient.overview.careDefaultDone;
 
               const hasPrescriptions = visit.prescriptions && visit.prescriptions.length > 0;
 
@@ -148,10 +152,10 @@ export function PatientCareView() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs font-semibold">
-                            Visit Summary #{visit.id.slice(-6).toUpperCase()}
+                            {interpolate(t.patient.care.visitSummaryBadge, { id: visit.id.slice(-6).toUpperCase() })}
                           </Badge>
                           <Badge variant="success" className="text-xs">
-                            Completed Visit ✓
+                            {t.patient.care.completedVisitBadge}
                           </Badge>
                         </div>
                         <CardTitle className="text-lg sm:text-xl font-bold pt-1">
@@ -163,7 +167,7 @@ export function PatientCareView() {
                           </span>
                           <span>•</span>
                           <span className="font-medium text-foreground">
-                            {t.patient.care.doctorSigned.replace("{name}", `${doctorName} (${doctorSpecialty})`)}
+                            {interpolate(t.patient.care.doctorSigned, { name: `${doctorName} (${doctorSpecialty})` })}
                           </span>
                         </CardDescription>
                       </div>
@@ -175,7 +179,7 @@ export function PatientCareView() {
                           onClick={() => setActivePrescriptionVisit(visit)}
                           className="min-h-11 font-medium"
                         >
-                          <Printer className="size-3.5 mr-1.5" />
+                          <Printer className="size-3.5 me-1.5" />
                           {t.patient.care.printSummary}
                         </Button>
                       )}
@@ -198,13 +202,13 @@ export function PatientCareView() {
 
                     {/* Post-Op Instructions Checklist */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                           <ShieldCheck className="size-4 text-brand-primary" />
                           <span>{t.patient.care.postOpRules}</span>
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          Click rule to check off during recovery
+                          {t.patient.care.checkOffHint}
                         </span>
                       </div>
 
@@ -220,7 +224,7 @@ export function PatientCareView() {
                               whileTap={{ scale: 0.99 }}
                               onClick={() => toggleRule(ruleKey)}
                               className={cn(
-                                "min-h-11 w-full text-left flex items-start gap-3 rounded-lg p-3 text-xs sm:text-sm transition-colors cursor-pointer",
+                                "min-h-11 w-full text-start flex items-start gap-3 rounded-lg p-3 text-xs sm:text-sm transition-colors cursor-pointer",
                                 isChecked
                                   ? "bg-muted/20 text-muted-foreground line-through"
                                   : "bg-muted/40 text-foreground hover:bg-muted/70"
@@ -254,7 +258,7 @@ export function PatientCareView() {
                         </div>
                         {hasPrescriptions && (
                           <Badge variant="secondary" className="text-xs">
-                            {visit.prescriptions.length} Active Rx
+                            {interpolate(t.patient.care.activeRxBadge, { count: visit.prescriptions.length })}
                           </Badge>
                         )}
                       </div>
@@ -271,16 +275,16 @@ export function PatientCareView() {
                                   {rx.medication}
                                 </span>
                                 <Badge variant="outline" className="text-xs">
-                                  {t.patient.care.duration.replace("{days}", String(rx.durationDays))}
+                                  {interpolate(t.patient.care.duration, { days: rx.durationDays })}
                                 </Badge>
                               </div>
                               <div className="space-y-1 text-xs text-muted-foreground">
                                 <p className="text-foreground">
-                                  <strong>{t.patient.care.dosage.replace("{dosage}", rx.dosage)}</strong> •{" "}
-                                  {t.patient.care.frequency.replace("{frequency}", rx.frequency)}
+                                  <strong>{interpolate(t.patient.care.dosage, { dosage: rx.dosage })}</strong> •{" "}
+                                  {interpolate(t.patient.care.frequency, { frequency: rx.frequency })}
                                 </p>
                                 <p className="italic text-muted-foreground pt-0.5">
-                                  {t.patient.care.instructions.replace("{instructions}", rx.instructions)}
+                                  {interpolate(t.patient.care.instructions, { instructions: rx.instructions })}
                                 </p>
                               </div>
                             </div>
@@ -288,7 +292,7 @@ export function PatientCareView() {
                         </div>
                       ) : (
                         <div className="rounded-lg bg-muted/20 p-4 text-center text-xs text-muted-foreground">
-                          No prescription medications were required for this visit.
+                          {t.patient.care.noRxRequired}
                         </div>
                       )}
                     </div>
@@ -297,7 +301,7 @@ export function PatientCareView() {
                   <CardFooter className="bg-muted/20 border-t border-border py-3 px-6 flex justify-between items-center text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <Clock className="size-3.5" />
-                      Chart signed &amp; archived in clinic repository
+                      {t.patient.care.chartArchivedNote}
                     </span>
                     {hasPrescriptions && (
                       <Button
@@ -306,7 +310,7 @@ export function PatientCareView() {
                         onClick={() => setActivePrescriptionVisit(visit)}
                         className="min-h-11 text-xs font-semibold text-brand-primary hover:text-brand-hover"
                       >
-                        Print e-Prescription →
+                        {t.patient.care.printRxBtn}
                       </Button>
                     )}
                   </CardFooter>
@@ -326,10 +330,10 @@ export function PatientCareView() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Printer className="size-5 text-brand-primary" />
-              Official Clinical e-Prescription
+              {t.patient.care.rxModalTitle}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Digitally validated prescription signed by your attending dental specialist.
+              {t.patient.care.rxModalDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -339,13 +343,13 @@ export function PatientCareView() {
               <div className="border-b border-border pb-4 flex flex-col sm:flex-row justify-between items-start gap-2 min-w-0">
                 <div>
                   <h3 className="font-bold text-base text-foreground tracking-tight">
-                    BlueHaven Dental Clinic
+                    {t.brand.name}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Oral Health &amp; Specialized Dental Surgery
+                    {t.patient.care.rxClinicTagline}
                   </p>
                   <p className="text-[11px] text-muted-foreground break-words">
-                    Synapsys Office, Makram Ebeid, Nasr City, Cairo • Tel: +20 2 2270 9988
+                    {t.patient.care.rxClinicAddress}
                   </p>
                 </div>
                 <Badge variant="outline" className="text-xs font-mono shrink-0">
@@ -356,17 +360,19 @@ export function PatientCareView() {
               {/* Patient & Doctor metadata */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-muted/30 p-3 rounded-lg">
                 <div>
-                  <span className="text-muted-foreground block">Patient Name:</span>
+                  <span className="text-muted-foreground block">{t.patient.care.patientNameLabel}</span>
                   <span className="font-semibold text-foreground">{patientDisplayName}</span>
                   <span className="text-[11px] text-muted-foreground block">{patientEmail}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">Attending Doctor:</span>
+                  <span className="text-muted-foreground block">{t.patient.care.attendingDoctorLabel}</span>
                   <span className="font-semibold text-foreground">
-                    {clinic.doctors.find((d) => d.id === activePrescriptionVisit.doctorId)?.name || "Dr. Clinician"}
+                    {activePrescriptionDoctor ? localizedDoctor(activePrescriptionDoctor, locale).name : t.brand.name}
                   </span>
                   <span className="text-[11px] text-muted-foreground block">
-                    Issue Date: {formatDate(activePrescriptionVisit.visitDate, shortDateOpts)}
+                    {interpolate(t.patient.care.issueDateLabel, {
+                      date: formatDate(activePrescriptionVisit.visitDate, shortDateOpts),
+                    })}
                   </span>
                 </div>
               </div>
@@ -375,15 +381,15 @@ export function PatientCareView() {
               <div className="space-y-2 min-w-0">
                 <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
                   <span className="text-brand-primary font-serif italic text-base">℞</span>
-                  Prescribed Formulations:
+                  {t.patient.care.rxFormulationsHeading}
                 </span>
                 <Table className="w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-normal">Medication</TableHead>
-                      <TableHead className="whitespace-normal">Dosage</TableHead>
-                      <TableHead className="whitespace-normal">Frequency</TableHead>
-                      <TableHead className="whitespace-nowrap">Duration</TableHead>
+                      <TableHead className="whitespace-normal">{t.patient.care.colMedication}</TableHead>
+                      <TableHead className="whitespace-normal">{t.patient.care.colDosage}</TableHead>
+                      <TableHead className="whitespace-normal">{t.patient.care.colFrequency}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t.patient.care.colDuration}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -399,7 +405,9 @@ export function PatientCareView() {
                         </TableCell>
                         <TableCell className="whitespace-normal break-words align-top">{rx.dosage}</TableCell>
                         <TableCell className="whitespace-normal break-words align-top">{rx.frequency}</TableCell>
-                        <TableCell className="whitespace-nowrap align-top">{rx.durationDays} days</TableCell>
+                        <TableCell className="whitespace-nowrap align-top">
+                          {interpolate(t.patient.care.daysValue, { days: rx.durationDays })}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -409,13 +417,13 @@ export function PatientCareView() {
               {/* Digital Signature & Seal */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2 border-t border-border text-xs min-w-0">
                 <div className="text-muted-foreground space-y-0.5 break-words">
-                  <span className="font-semibold text-foreground block">Clinician Verification:</span>
-                  <span className="break-words">Licensed by Ministry of Health &amp; Dental Syndicate</span>
-                  <span className="block text-[10px] font-mono break-all">Verification Hash: 8F2A-09C3-DENTAL-VALID</span>
+                  <span className="font-semibold text-foreground block">{t.patient.care.clinicianVerification}</span>
+                  <span className="break-words">{t.patient.care.licensedBy}</span>
+                  <span className="block text-[10px] font-mono break-all">{t.patient.care.verificationHash}</span>
                 </div>
-                <div className="shrink-0 sm:text-right">
+                <div className="shrink-0 sm:text-end">
                   <Badge variant="success" className="text-xs">
-                    Digital Seal Valid ✓
+                    {t.patient.care.digitalSealValid}
                   </Badge>
                 </div>
               </div>
@@ -428,7 +436,7 @@ export function PatientCareView() {
               variant="outline"
               onClick={() => setActivePrescriptionVisit(null)}
             >
-              Close
+              {t.patient.care.closeBtn}
             </Button>
             <Button
               type="button"
@@ -436,8 +444,8 @@ export function PatientCareView() {
               onClick={handlePrint}
               className="font-semibold"
             >
-              <Printer className="size-4 mr-1.5" />
-              Print e-Prescription
+              <Printer className="size-4 me-1.5" />
+              {t.patient.care.printModalBtn}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -451,16 +459,19 @@ export function PatientCareView() {
 // Workflow #5: Part B — PatientBillingView
 // ============================================================================
 
+function BillingLoadingFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="max-w-4xl p-6 text-sm text-muted-foreground animate-pulse">
+      {t.patient.billing.loading}
+    </div>
+  );
+}
+
 export function PatientBillingView() {
   return (
     <MotionConfig reducedMotion="user">
-      <Suspense
-        fallback={
-          <div className="max-w-4xl p-6 text-sm text-muted-foreground animate-pulse">
-            Loading billing records and invoices...
-          </div>
-        }
-      >
+      <Suspense fallback={<BillingLoadingFallback />}>
         <PatientBillingViewContent />
       </Suspense>
     </MotionConfig>
@@ -475,7 +486,7 @@ function PatientBillingViewContent() {
   const searchParams = useSearchParams();
 
   const patientEmail = signedInEmail || "mariam.a@example.com";
-  const patientDisplayName = name || "Mariam Ahmed";
+  const patientDisplayName = name || t.patient.nav.defaultUserName;
 
   const invoices = clinic.getPatientInvoices(patientEmail);
 
@@ -570,13 +581,13 @@ function PatientBillingViewContent() {
           <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
             <CardContent className="p-4 sm:p-5">
               <span className="text-xs text-muted-foreground uppercase font-medium">
-                Total Billed
+                {t.patient.billing.totalBilledTitle}
               </span>
               <div className="text-2xl font-bold text-foreground mt-1 tabular-nums">
-                {kpis.totalBilled} EGP
+                {kpis.totalBilled} {t.patient.overview.currencyEgp}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                All clinical services to date
+                {t.patient.billing.totalBilledDesc}
               </p>
             </CardContent>
           </Card>
@@ -593,13 +604,13 @@ function PatientBillingViewContent() {
           <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
             <CardContent className="p-4 sm:p-5">
               <span className="text-xs text-muted-foreground uppercase font-medium">
-                Paid to Date
+                {t.patient.billing.paidToDateTitle}
               </span>
               <div className="text-2xl font-bold text-brand-primary mt-1 tabular-nums">
-                {kpis.paidToDate} EGP
+                {kpis.paidToDate} {t.patient.overview.currencyEgp}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Verified received receipts
+                {t.patient.billing.paidToDateDesc}
               </p>
             </CardContent>
           </Card>
@@ -616,13 +627,13 @@ function PatientBillingViewContent() {
           <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
             <CardContent className="p-4 sm:p-5">
               <span className="text-xs text-muted-foreground uppercase font-medium">
-                Remaining Balance Due
+                {t.patient.billing.remainingBalanceTitle}
               </span>
               <div className={cn("text-2xl font-bold mt-1 tabular-nums", kpis.remainingBalance > 0 ? "text-destructive" : "text-foreground")}>
-                {kpis.remainingBalance} EGP
+                {kpis.remainingBalance} {t.patient.overview.currencyEgp}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {kpis.remainingBalance > 0 ? "Payment pending" : "All accounts current ✓"}
+                {kpis.remainingBalance > 0 ? t.patient.billing.paymentPendingNote : t.patient.billing.accountsCurrentNote}
               </p>
             </CardContent>
           </Card>
@@ -639,13 +650,13 @@ function PatientBillingViewContent() {
           <Card className="h-full border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
             <CardContent className="p-4 sm:p-5">
               <span className="text-xs text-muted-foreground uppercase font-medium">
-                Next Installment Date
+                {t.patient.billing.nextInstallmentTitle}
               </span>
               <div className="text-lg font-bold text-foreground mt-1 truncate tabular-nums">
-                {kpis.nextInstallment ? formatDate(kpis.nextInstallment, shortDateOpts) : "None Due"}
+                {kpis.nextInstallment ? formatDate(kpis.nextInstallment, shortDateOpts) : t.patient.billing.noneDue}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Phased treatment plan billing
+                {t.patient.billing.phasedBillingNote}
               </p>
             </CardContent>
           </Card>
@@ -655,13 +666,13 @@ function PatientBillingViewContent() {
       {/* Invoices List */}
       <div className="space-y-6">
         <h2 className="text-lg font-semibold text-foreground">
-          Itemized Dental Invoices
+          {t.patient.billing.itemizedHeading}
         </h2>
 
         {invoices.map((inv, index) => {
           const isPaid = inv.status === "paid";
           const doctor = clinic.doctors.find((d) => d.id === inv.doctorId);
-          const doctorName = doctor ? localizedDoctor(doctor, locale).name : "Dr. Clinician";
+          const doctorName = doctor ? localizedDoctor(doctor, locale).name : t.brand.name;
 
           return (
             <motion.div
@@ -681,7 +692,7 @@ function PatientBillingViewContent() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-base sm:text-lg font-bold text-foreground">
-                        {t.patient.billing.invoiceNumber.replace("{id}", inv.id.replace("inv-", "").toUpperCase())}
+                        {interpolate(t.patient.billing.invoiceNumber, { id: inv.id.replace("inv-", "").toUpperCase() })}
                       </span>
                       {isPaid ? (
                         <Badge variant="success" className="text-xs font-semibold">
@@ -689,21 +700,21 @@ function PatientBillingViewContent() {
                         </Badge>
                       ) : (
                         <Badge variant="destructive" className="text-xs font-semibold">
-                          {t.patient.billing.statusBalanceDue} ({inv.balanceEgp} EGP)
+                          {t.patient.billing.statusBalanceDue} ({inv.balanceEgp} {t.patient.overview.currencyEgp})
                         </Badge>
                       )}
                     </div>
                     <CardDescription className="text-xs flex flex-wrap items-center gap-x-3 gap-y-1">
                       <span>
-                        {t.patient.billing.issuedOn.replace("{date}", formatDate(inv.issuedDate, shortDateOpts))}
+                        {interpolate(t.patient.billing.issuedOn, { date: formatDate(inv.issuedDate, shortDateOpts) })}
                       </span>
                       <span>•</span>
-                      <span>Attending: {doctorName}</span>
+                      <span>{interpolate(t.patient.billing.attendingPrefix, { name: doctorName })}</span>
                       {inv.receiptNumber && (
                         <>
                           <span>•</span>
                           <span className="font-mono text-brand-primary">
-                            Receipt: {inv.receiptNumber}
+                            {interpolate(t.patient.billing.receiptPrefix, { number: inv.receiptNumber })}
                           </span>
                         </>
                       )}
@@ -718,7 +729,7 @@ function PatientBillingViewContent() {
                         onClick={() => setReceiptInvoice(inv)}
                         className="min-h-11 font-medium"
                       >
-                        <Receipt className="size-3.5 mr-1.5" />
+                        <Receipt className="size-3.5 me-1.5" />
                         {t.patient.billing.downloadReceipt}
                       </Button>
                     ) : (
@@ -728,8 +739,8 @@ function PatientBillingViewContent() {
                         onClick={() => setCheckoutInvoice(inv)}
                         className="min-h-11 font-semibold"
                       >
-                        <CreditCard className="size-3.5 mr-1.5" />
-                        Pay Now ({inv.balanceEgp} EGP)
+                        <CreditCard className="size-3.5 me-1.5" />
+                        {interpolate(t.patient.billing.payNowBtn, { amount: inv.balanceEgp })}
                       </Button>
                     )}
                   </div>
@@ -742,7 +753,7 @@ function PatientBillingViewContent() {
                     <TableRow>
                       <TableHead>{t.patient.billing.itemDescription}</TableHead>
                       <TableHead className="w-[120px]">{t.patient.billing.itemTooth}</TableHead>
-                      <TableHead className="text-right w-[150px]">{t.patient.billing.itemFee}</TableHead>
+                      <TableHead className="text-end w-[150px]">{t.patient.billing.itemFee}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -752,10 +763,10 @@ function PatientBillingViewContent() {
                           {item.procedure}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {item.tooth || "General Arch"}
+                          {item.tooth || t.patient.billing.generalArch}
                         </TableCell>
-                        <TableCell className="text-right font-semibold text-foreground">
-                          {item.feeEgp} EGP
+                        <TableCell className="text-end font-semibold text-foreground">
+                          {item.feeEgp} {t.patient.overview.currencyEgp}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -765,24 +776,24 @@ function PatientBillingViewContent() {
                       <TableCell colSpan={2} className="font-semibold text-foreground">
                         {t.patient.billing.total}
                       </TableCell>
-                      <TableCell className="text-right font-bold text-foreground">
-                        {inv.totalFeeEgp} EGP
+                      <TableCell className="text-end font-bold text-foreground">
+                        {inv.totalFeeEgp} {t.patient.overview.currencyEgp}
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell colSpan={2} className="text-muted-foreground">
                         {t.patient.billing.paid}
                       </TableCell>
-                      <TableCell className="text-right text-brand-primary font-medium">
-                        {inv.paidAmountEgp} EGP
+                      <TableCell className="text-end text-brand-primary font-medium">
+                        {inv.paidAmountEgp} {t.patient.overview.currencyEgp}
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell colSpan={2} className="font-bold text-foreground">
                         {t.patient.billing.balanceDue}
                       </TableCell>
-                      <TableCell className={cn("text-right font-bold text-base", inv.balanceEgp > 0 ? "text-destructive" : "text-brand-primary")}>
-                        {inv.balanceEgp} EGP
+                      <TableCell className={cn("text-end font-bold text-base", inv.balanceEgp > 0 ? "text-destructive" : "text-brand-primary")}>
+                        {inv.balanceEgp} {t.patient.overview.currencyEgp}
                       </TableCell>
                     </TableRow>
                   </TableFooter>
@@ -792,10 +803,9 @@ function PatientBillingViewContent() {
                   <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
                     <Calendar className="size-4 text-brand-primary shrink-0" />
                     <span>
-                      {t.patient.billing.installmentNote.replace(
-                        "{date}",
-                        formatDate(inv.nextInstallmentDate, shortDateOpts)
-                      )}
+                      {interpolate(t.patient.billing.installmentNote, {
+                        date: formatDate(inv.nextInstallmentDate, shortDateOpts),
+                      })}
                     </span>
                   </div>
                 )}
@@ -815,10 +825,14 @@ function PatientBillingViewContent() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="size-5 text-brand-primary" />
-              Secure Online Checkout
+              {t.patient.billing.checkoutTitle}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Complete payment for Invoice #{checkoutInvoice?.id.replace("inv-", "").toUpperCase()}.
+              {checkoutInvoice
+                ? interpolate(t.patient.billing.checkoutDesc, {
+                    id: checkoutInvoice.id.replace("inv-", "").toUpperCase(),
+                  })
+                : ""}
             </DialogDescription>
           </DialogHeader>
 
@@ -828,21 +842,21 @@ function PatientBillingViewContent() {
               <div className="flex items-center justify-between rounded-xl bg-brand-subtle p-4">
                 <div>
                   <span className="text-xs text-muted-foreground block">
-                    Amount Outstanding:
+                    {t.patient.billing.amountOutstanding}
                   </span>
                   <span className="text-2xl font-bold text-foreground">
-                    {checkoutInvoice.balanceEgp} EGP
+                    {checkoutInvoice.balanceEgp} {t.patient.overview.currencyEgp}
                   </span>
                 </div>
                 <Badge variant="outline" className="text-xs">
-                  Instant Settlement
+                  {t.patient.billing.instantSettlement}
                 </Badge>
               </div>
 
               {/* Payment Method Selector */}
               <div className="space-y-3">
                 <Label className="text-xs sm:text-sm font-semibold">
-                  Select Payment Method
+                  {t.patient.billing.selectPaymentMethod}
                 </Label>
                 <RadioGroup
                   value={paymentMethod}
@@ -861,7 +875,7 @@ function PatientBillingViewContent() {
                   >
                     <RadioGroupItem value="card" id="pay-card" />
                     <CreditCard className="size-4 shrink-0 text-brand-primary" />
-                    <span>Credit / Debit Card</span>
+                    <span>{t.patient.billing.cardOptionLabel}</span>
                   </label>
 
                   {/* Local Mobile Wallet */}
@@ -876,7 +890,7 @@ function PatientBillingViewContent() {
                   >
                     <RadioGroupItem value="mobile_wallet" id="pay-wallet" />
                     <Wallet className="size-4 shrink-0 text-brand-primary" />
-                    <span>InstaPay / Vodafone</span>
+                    <span>{t.patient.billing.walletOptionLabel}</span>
                   </label>
                 </RadioGroup>
               </div>
@@ -885,7 +899,7 @@ function PatientBillingViewContent() {
               {paymentMethod === "card" && (
                 <div className="space-y-3 rounded-xl bg-muted/20 p-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="checkout-card" className="text-xs">Card Number</Label>
+                    <Label htmlFor="checkout-card" className="text-xs">{t.patient.billing.cardNumberLabel}</Label>
                     <Input
                       id="checkout-card"
                       value={cardNumber}
@@ -896,7 +910,7 @@ function PatientBillingViewContent() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="checkout-expiry" className="text-xs">Expiry</Label>
+                      <Label htmlFor="checkout-expiry" className="text-xs">{t.patient.billing.expiryLabel}</Label>
                       <Input
                         id="checkout-expiry"
                         value={cardExpiry}
@@ -906,7 +920,7 @@ function PatientBillingViewContent() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="checkout-cvv" className="text-xs">CVV</Label>
+                      <Label htmlFor="checkout-cvv" className="text-xs">{t.patient.billing.cvvLabel}</Label>
                       <Input
                         id="checkout-cvv"
                         value={cardCvv}
@@ -923,7 +937,7 @@ function PatientBillingViewContent() {
               {paymentMethod === "mobile_wallet" && (
                 <div className="space-y-2 rounded-xl bg-muted/20 p-4">
                   <Label htmlFor="checkout-mobile" className="text-xs">
-                    Registered Mobile Wallet Number (Vodafone Cash / InstaPay)
+                    {t.patient.billing.walletNumberLabel}
                   </Label>
                   <Input
                     id="checkout-mobile"
@@ -933,14 +947,14 @@ function PatientBillingViewContent() {
                     className="bg-background text-xs font-mono"
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    A secure payment prompt request will be transmitted directly to your mobile wallet app.
+                    {t.patient.billing.walletHint}
                   </p>
                 </div>
               )}
 
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                 <ShieldCheck className="size-4 text-brand-primary shrink-0" />
-                <span>256-bit TLS encrypted transaction processed via Central Bank of Egypt sandbox gateway.</span>
+                <span>{t.patient.billing.tlsNotice}</span>
               </div>
             </div>
           )}
@@ -952,7 +966,7 @@ function PatientBillingViewContent() {
               onClick={() => setCheckoutInvoice(null)}
               disabled={isProcessingPayment}
             >
-              Cancel
+              {t.patient.billing.cancelBtn}
             </Button>
             <Button
               type="button"
@@ -964,10 +978,12 @@ function PatientBillingViewContent() {
               {isProcessingPayment ? (
                 <span className="flex items-center gap-2">
                   <Sparkles className="size-4 animate-spin" />
-                  Processing...
+                  {t.patient.billing.processingBtn}
                 </span>
               ) : (
-                `Complete Payment (${checkoutInvoice?.balanceEgp} EGP)`
+                interpolate(t.patient.billing.completePaymentBtn, {
+                  amount: checkoutInvoice?.balanceEgp ?? 0,
+                })
               )}
             </Button>
           </DialogFooter>
@@ -986,7 +1002,10 @@ function PatientBillingViewContent() {
               {t.patient.billing.paymentSuccess}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              {receiptInvoice && t.patient.billing.receipt.replace("{number}", receiptInvoice.receiptNumber || "RCPT-DEMO")}
+              {receiptInvoice &&
+                interpolate(t.patient.billing.receipt, {
+                  number: receiptInvoice.receiptNumber || "RCPT-DEMO",
+                })}
             </DialogDescription>
           </DialogHeader>
 
@@ -996,28 +1015,35 @@ function PatientBillingViewContent() {
               <div className="border-b border-border pb-3 flex justify-between items-start">
                 <div>
                   <h3 className="font-bold text-sm text-foreground">
-                    BlueHaven Dental Clinic
+                    {t.brand.name}
                   </h3>
                   <p className="text-[11px] text-muted-foreground">
-                    Commercial Registry #109843 • Tax ID #492-881
+                    {t.patient.billing.registrySubtitle}
                   </p>
                 </div>
                 <Badge variant="success" className="text-xs">
-                  PAID IN FULL ✓
+                  {t.patient.billing.paidInFullBadge}
                 </Badge>
               </div>
 
               {/* Receipt Metadata */}
               <div className="grid grid-cols-2 gap-3 text-xs bg-muted/30 p-3 rounded-lg">
                 <div>
-                  <span className="text-muted-foreground block">Patient Name:</span>
+                  <span className="text-muted-foreground block">{t.patient.care.patientNameLabel}</span>
                   <span className="font-semibold text-foreground">{patientDisplayName}</span>
                   <span className="text-[11px] text-muted-foreground block">{patientEmail}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block">Settlement Details:</span>
+                  <span className="text-muted-foreground block">{t.patient.billing.settlementDetails}</span>
                   <span className="font-semibold text-foreground">
-                    Method: {receiptInvoice.paymentMethod?.toUpperCase() || "ONLINE"}
+                    {interpolate(t.patient.billing.methodLine, {
+                      method:
+                        receiptInvoice.paymentMethod === "card"
+                          ? t.patient.billing.cardOptionLabel
+                          : receiptInvoice.paymentMethod === "mobile_wallet"
+                            ? t.patient.billing.walletOptionLabel
+                            : receiptInvoice.paymentMethod?.toUpperCase() || "ONLINE",
+                    })}
                   </span>
                   <span className="text-[11px] text-muted-foreground block">
                     {formatDate(receiptInvoice.paidAt ? receiptInvoice.paidAt.slice(0, 10) : "2026-10-18", shortDateOpts)}
@@ -1029,16 +1055,16 @@ function PatientBillingViewContent() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Procedure</TableHead>
-                    <TableHead className="text-right">Amount Paid</TableHead>
+                    <TableHead>{t.patient.billing.colProcedure}</TableHead>
+                    <TableHead className="text-end">{t.patient.billing.colAmountPaid}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {receiptInvoice.items.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.procedure}</TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {item.feeEgp} EGP
+                      <TableCell className="text-end font-semibold">
+                        {item.feeEgp} {t.patient.overview.currencyEgp}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1046,10 +1072,10 @@ function PatientBillingViewContent() {
                 <TableFooter>
                   <TableRow>
                     <TableCell className="font-bold text-foreground">
-                      Total Paid Settlement
+                      {t.patient.billing.totalPaidSettlement}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-brand-primary text-base">
-                      {receiptInvoice.totalFeeEgp} EGP
+                    <TableCell className="text-end font-bold text-brand-primary text-base">
+                      {receiptInvoice.totalFeeEgp} {t.patient.overview.currencyEgp}
                     </TableCell>
                   </TableRow>
                 </TableFooter>
@@ -1063,7 +1089,7 @@ function PatientBillingViewContent() {
               variant="outline"
               onClick={() => setReceiptInvoice(null)}
             >
-              Close
+              {t.patient.care.closeBtn}
             </Button>
             <Button
               type="button"
@@ -1071,8 +1097,8 @@ function PatientBillingViewContent() {
               onClick={handlePrintReceipt}
               className="font-semibold"
             >
-              <Printer className="size-4 mr-1.5" />
-              Download / Print Receipt
+              <Printer className="size-4 me-1.5" />
+              {t.patient.billing.printReceiptBtn}
             </Button>
           </DialogFooter>
         </DialogContent>

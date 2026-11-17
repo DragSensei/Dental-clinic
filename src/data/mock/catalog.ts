@@ -79,9 +79,38 @@ export type Doctor = {
   name: string;
   specialty: string;
   bio: string;
+  image?: string;
+  credentials?: string;
+  experienceBadge?: string;
+  experienceSummary?: string;
+  languages?: string;
+  comfortFocus?: string;
   serviceIds: readonly string[];
   workingHours?: readonly DoctorWorkingHour[];
 };
+
+export const DOCTOR_IMAGE_PRESETS = Object.freeze([
+  Object.freeze({
+    labelEn: "Studio Portrait — Layla",
+    labelAr: "صورة استوديو — ليلى",
+    url: "/images/demo/doctor.jpg",
+  }),
+  Object.freeze({
+    labelEn: "Studio Portrait — Omar",
+    labelAr: "صورة استوديو — عمر",
+    url: "/images/demo/doctor-omar.jpg",
+  }),
+  Object.freeze({
+    labelEn: "Studio Portrait — Nour",
+    labelAr: "صورة استوديو — نور",
+    url: "/images/demo/doctor-nour.jpg",
+  }),
+  Object.freeze({
+    labelEn: "Studio Portrait — Adam",
+    labelAr: "صورة استوديو — آدم",
+    url: "/images/demo/doctor-adam.jpg",
+  }),
+]);
 
 export type VisitReasonCategory = "new-exam" | "emergency" | "cleaning" | "follow-up";
 
@@ -269,6 +298,12 @@ export type Account = {
   status: AccountStatus;
   specialty?: string;
   bio?: string;
+  image?: string;
+  credentials?: string;
+  experienceBadge?: string;
+  experienceSummary?: string;
+  languages?: string;
+  comfortFocus?: string;
   serviceIds?: readonly string[];
   createdAt: string;
 };
@@ -569,24 +604,48 @@ const doctorProfiles = [
   {
     specialty: "General dentistry",
     bio: "Layla focuses on check-ups, gum care, fillings, and practical next steps for everyday dental health.",
+    image: "/images/demo/doctor.jpg",
+    credentials: "BDS, MSc Restorative & Preventive Dentistry · Cairo University",
+    experienceBadge: "12 yrs exp",
+    experienceSummary: "12 years experience · 3,800+ patient visits",
+    languages: "Arabic, English",
+    comfortFocus: "Quiet preventive check-ups, clear bitewing explanations, and gentle hygiene pacing.",
     serviceIndexes: [0, 4, 7, 8, 10],
     workingHours: buildWeeklySchedule([5], "09:00", "16:45"),
   },
   {
     specialty: "Implant and restorative dentistry",
     bio: "Omar discusses implant care, root canal treatment, and options for restoring or replacing teeth.",
+    image: "/images/demo/doctor-omar.jpg",
+    credentials: "BDS, Fellowship in Oral Implantology & Endodontics",
+    experienceBadge: "10 yrs exp",
+    experienceSummary: "10 years experience · Implant & root canal specialist",
+    languages: "Arabic, English",
+    comfortFocus: "CBCT-guided surgical planning paired with calm comfort options and step-by-step reassurance.",
     serviceIndexes: [1, 5, 7, 8, 9],
     workingHours: buildWeeklySchedule([5], "09:00", "16:45"),
   },
   {
     specialty: "Orthodontics and cosmetic dentistry",
     bio: "Nour helps patients explore alignment, whitening, and veneer options in a consultation.",
+    image: "/images/demo/doctor-nour.jpg",
+    credentials: "BDS, MSc Orthodontics & Aesthetic Smile Design",
+    experienceBadge: "9 yrs exp",
+    experienceSummary: "9 years experience · Aligners & conservative veneers",
+    languages: "Arabic, English, French",
+    comfortFocus: "Digital 3D smile previews, minimal-prep cosmetic work, and natural shade matching.",
     serviceIndexes: [2, 3, 11],
     workingHours: buildWeeklySchedule([2, 5], "09:00", "14:30"),
   },
   {
     specialty: "Family dentistry",
     bio: "Adam welcomes children and families for check-ups, gum care, and restorative conversations.",
+    image: "/images/demo/doctor-adam.jpg",
+    credentials: "BDS, Diploma in Family & Pediatric Dentistry",
+    experienceBadge: "8 yrs exp",
+    experienceSummary: "8 years experience · Children & nervous-patient care",
+    languages: "Arabic, English",
+    comfortFocus: "Explain-first pacing built to help kids and hesitant adults feel genuinely at ease.",
     serviceIndexes: [0, 4, 6, 7],
     workingHours: buildWeeklySchedule([3, 5], "10:30", "16:45"),
   },
@@ -599,6 +658,12 @@ export const doctors: readonly Doctor[] = Object.freeze(demoClinic.team.map((nam
     name,
     specialty: profile.specialty,
     bio: profile.bio,
+    image: profile.image,
+    credentials: profile.credentials,
+    experienceBadge: profile.experienceBadge,
+    experienceSummary: profile.experienceSummary,
+    languages: profile.languages,
+    comfortFocus: profile.comfortFocus,
     serviceIds: Object.freeze(profile.serviceIndexes.map((serviceIndex) => services[serviceIndex].id)),
     workingHours: profile.workingHours,
   });

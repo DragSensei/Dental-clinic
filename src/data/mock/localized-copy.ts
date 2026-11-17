@@ -38,26 +38,60 @@ const arabicServices: Readonly<Record<string, { title: string; description: stri
   "service-12": { title: "قشور الأسنان", description: "استكشف الطبقات الرقيقة المستخدمة لتغيير مظهر الأسنان." },
 };
 
-const arabicDoctors: Readonly<Record<string, { name: string; specialty: string; bio: string }>> = {
+const arabicDoctors: Readonly<
+  Record<
+    string,
+    {
+      name: string;
+      specialty: string;
+      bio: string;
+      credentials: string;
+      experienceBadge: string;
+      experienceSummary: string;
+      languages: string;
+      comfortFocus: string;
+    }
+  >
+> = {
   "doctor-1": {
     name: "د. ليلى حسن",
     specialty: "طب الأسنان العام",
     bio: "تركّز ليلى على الفحوصات الدورية، والعناية باللثة، والحشوات، والخطوات العملية لصحة الأسنان اليومية.",
+    credentials: "بكالوريوس وماجستير طب الأسنان التحفظي والوقائي · جامعة القاهرة",
+    experienceBadge: "12 سنة خبرة",
+    experienceSummary: "12 عامًا من الخبرة · أكثر من 3,800 زيارة",
+    languages: "العربية، الإنجليزية",
+    comfortFocus: "فحوصات وقائية هادئة، شرح واضح للأشعة، وجلسات تنظيف لطيفة دون توتر.",
   },
   "doctor-2": {
     name: "د. عمر عادل",
     specialty: "زراعة الأسنان وطب الأسنان الترميمي",
     bio: "يناقش عمر العناية بالزراعات، وعلاج قناة الجذر، والخيارات المتاحة لترميم الأسنان أو تعويضها.",
+    credentials: "بكالوريوس طب الأسنان · زمالة زراعة الأسنان وعلاج الجذور",
+    experienceBadge: "10 سنوات خبرة",
+    experienceSummary: "10 أعوام خبرة · أخصائي الزراعة وعلاج الجذور",
+    languages: "العربية، الإنجليزية",
+    comfortFocus: "تخطيط رقمي ثلاثي الأبعاد للزراعات مع خيارات راحة مخصصة وشرح متأنٍ لكل خطوة.",
   },
   "doctor-3": {
     name: "د. نور سمير",
     specialty: "تقويم الأسنان وطب الأسنان التجميلي",
     bio: "تساعد نور المرضى على استكشاف خيارات تقويم الأسنان والتبييض والقشور أثناء الاستشارة.",
+    credentials: "بكالوريوس وماجستير تقويم الأسنان وتجميل الابتسامة",
+    experienceBadge: "9 سنوات خبرة",
+    experienceSummary: "9 أعوام خبرة · التقويم الشفاف وقشور البورسلين",
+    languages: "العربية، الإنجليزية، الفرنسية",
+    comfortFocus: "معاينة رقمية ثلاثية الأبعاد للابتسامة وتحضير محافظ للغاية يحافظ على الأسنان.",
   },
   "doctor-4": {
     name: "د. آدم خليل",
     specialty: "طب أسنان الأسرة",
     bio: "يرحب آدم بالأطفال والأسر للفحوصات الدورية وعناية اللثة ومناقشات الترميم.",
+    credentials: "بكالوريوس طب الأسنان · دبلومة طب أسنان الأطفال والأسرة",
+    experienceBadge: "8 سنوات خبرة",
+    experienceSummary: "8 أعوام خبرة · رعاية الأطفال والمرضى القلقين",
+    languages: "العربية، الإنجليزية",
+    comfortFocus: "أسلوب ودود يشرح كل خطوة ببساطة لمساعدة الأطفال والكبار على الشعور بالاطمئنان.",
   },
 };
 
@@ -192,12 +226,36 @@ export function localizedService(
   };
 }
 
-export function localizedDoctor(doctor: Doctor, locale: Locale): { name: string; specialty: string; bio: string } {
+export function localizedDoctor(
+  doctor: Doctor,
+  locale: Locale
+): {
+  name: string;
+  specialty: string;
+  bio: string;
+  image?: string;
+  credentials?: string;
+  experienceBadge?: string;
+  experienceSummary?: string;
+  languages?: string;
+  comfortFocus?: string;
+} {
   const seed = seedDoctors.find((item) => item.id === doctor.id);
   const translated = arabicDoctors[doctor.id];
+  const pickOptional = (current?: string, seedVal?: string, translatedVal?: string) => {
+    const trimmed = current?.trim();
+    if (!trimmed) return undefined;
+    return pick(trimmed, seedVal, translatedVal, locale);
+  };
   return {
     name: pick(doctor.name, seed?.name, translated?.name, locale),
     specialty: pick(doctor.specialty, seed?.specialty, translated?.specialty, locale),
     bio: pick(doctor.bio, seed?.bio, translated?.bio, locale),
+    image: doctor.image?.trim() || undefined,
+    credentials: pickOptional(doctor.credentials, seed?.credentials, translated?.credentials),
+    experienceBadge: pickOptional(doctor.experienceBadge, seed?.experienceBadge, translated?.experienceBadge),
+    experienceSummary: pickOptional(doctor.experienceSummary, seed?.experienceSummary, translated?.experienceSummary),
+    languages: pickOptional(doctor.languages, seed?.languages, translated?.languages),
+    comfortFocus: pickOptional(doctor.comfortFocus, seed?.comfortFocus, translated?.comfortFocus),
   };
 }

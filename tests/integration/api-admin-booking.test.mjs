@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { RUN_ID, prisma, createUserWithSession, req, cleanup } from "./_setup.mjs";
+import { RUN_ID, RUN_IP, prisma, createUserWithSession, req, cleanup } from "./_setup.mjs";
 
-const { resetRateLimitStore } = await import("../../src/lib/rate-limit.ts");
+const { resetRateLimitDb } = await import("../../src/lib/rate-limit.ts");
 const { GET: healthGET } = await import("../../src/app/api/health/route.ts");
 const { GET: clinicGET } = await import("../../src/app/api/clinic/route.ts");
 const { GET: availabilityGET } = await import("../../src/app/api/availability/route.ts");
@@ -29,8 +29,8 @@ const { GET: accountsGET, POST: accountsPOST } = await import(
   "../../src/app/api/admin/accounts/route.ts"
 );
 
-test.beforeEach(() => {
-  resetRateLimitStore();
+test.beforeEach(async () => {
+  await resetRateLimitDb([`appointments:${RUN_IP}`, RUN_IP]);
 });
 
 test.after(async () => {
@@ -252,6 +252,12 @@ test("API: /api/admin/doctors/[id] updates assigned services and details", async
       name: doc.name,
       specialty: doc.specialty,
       bio: "Updated bio during automated API integration testing",
+      image: "/images/demo/doctor-omar.jpg",
+      credentials: "BDS, PhD Periodontology",
+      experienceBadge: "15 yrs exp",
+      experienceSummary: "15 years experience · Dynamic test summary",
+      languages: "Arabic, English, German",
+      comfortFocus: "Tailored painless numbing and full consultation Q&A.",
       serviceIds: allServiceIds,
       status: "active",
     },
@@ -262,6 +268,19 @@ test("API: /api/admin/doctors/[id] updates assigned services and details", async
   assert.equal(patchRes.status, 200);
   const data = await patchRes.json();
   assert.equal(data.doctor.bio, "Updated bio during automated API integration testing");
+  assert.equal(data.doctor.image, "/images/demo/doctor-omar.jpg");
+  assert.equal(data.doctor.credentials, "BDS, PhD Periodontology");
+  assert.equal(data.doctor.experienceBadge, "15 yrs exp");
+  assert.equal(data.doctor.languages, "Arabic, English, German");
+
+  // Confirm dynamic profile changes propagate through public GET /api/clinic
+  const updatedClinicRes = await clinicGET();
+  assert.equal(updatedClinicRes.status, 200);
+  const updatedClinic = await updatedClinicRes.json();
+  const updatedDoc = updatedClinic.doctors.find((d) => d.id === doc.id);
+  assert.ok(updatedDoc);
+  assert.equal(updatedDoc.credentials, "BDS, PhD Periodontology");
+  assert.equal(updatedDoc.experienceBadge, "15 yrs exp");
 });
 
 test("API: /api/admin/working-hours GET and PUT", async () => {
@@ -316,6 +335,12 @@ test("API: /api/admin/accounts creates user and queries list", async () => {
       status: "active",
       specialty: "Orthodontics",
       bio: "Automated test clinician",
+      image: "/images/demo/doctor-nour.jpg",
+      credentials: "BDS, MSc Orthodontics",
+      experienceBadge: "7 yrs exp",
+      experienceSummary: "7 years experience · Aligner specialist",
+      languages: "Arabic, English",
+      comfortFocus: "Calm aligner scans without messy impressions.",
       serviceIds: [],
     },
   });
@@ -333,4 +358,7 @@ test("API: /api/admin/accounts creates user and queries list", async () => {
   assert.ok(dbUser);
   assert.equal(dbUser.role, "doctor");
   assert.ok(dbUser.doctorProfile);
+  assert.equal(dbUser.doctorProfile.image, "/images/demo/doctor-nour.jpg");
+  assert.equal(dbUser.doctorProfile.credentials, "BDS, MSc Orthodontics");
+  assert.equal(dbUser.doctorProfile.experienceBadge, "7 yrs exp");
 });

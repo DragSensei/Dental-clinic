@@ -39,6 +39,7 @@ function SmileComparison({
             alt={isDuplicate ? "" : comparison.beforeAlt}
             className="object-cover object-[center_40%]"
             fill
+            loading="eager"
             sizes="(max-width: 640px) 82vw, (max-width: 1024px) 380px, 420px"
             src={comparison.before}
           />
@@ -47,6 +48,7 @@ function SmileComparison({
               alt={isDuplicate ? "" : comparison.afterAlt}
               className="object-cover object-[center_40%]"
               fill
+              loading="eager"
               sizes="(max-width: 640px) 82vw, (max-width: 1024px) 380px, 420px"
               src={comparison.after}
             />
@@ -149,21 +151,19 @@ export function BeforeAfterComparison() {
   }, [isPaused]);
 
   return (
-    <section aria-labelledby="smile-preview-title" className="mx-auto w-full max-w-none scroll-mt-24 px-5 pb-14 pt-8 sm:px-8 sm:pb-20 sm:pt-10 lg:px-12 lg:pb-24 lg:pt-12 2xl:px-16" data-reveal="section" id="smile-preview">
-      <div className="grid gap-5 md:grid-cols-12 md:items-end md:gap-8">
+    <section aria-labelledby="smile-preview-title" className="w-full max-w-none scroll-mt-24 border-y border-border bg-secondary/40 px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 2xl:px-16" data-reveal="section" id="smile-preview">
+      <div className="mx-auto grid w-full max-w-7xl gap-5 md:grid-cols-12 md:items-end md:gap-8">
         <div className="md:col-span-7">
-          <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <span className="text-foreground">02</span>
-            <span aria-hidden="true" className="h-px w-8 bg-action" />
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-primary">
             {t.landing.smiles.eyebrow}
           </p>
-          <h2 className="mt-4 text-3xl font-bold leading-[1.02] tracking-[-0.055em] text-foreground sm:text-5xl" id="smile-preview-title">
+          <h2 className="font-display mt-3 text-3xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl" id="smile-preview-title">
             {t.landing.smiles.title}
           </h2>
         </div>
         <div className="max-w-sm border-s border-border ps-4 md:col-span-4 md:col-start-9 md:justify-self-end">
-          <p className="text-sm leading-6 text-muted-foreground">{t.landing.smiles.body}</p>
-          <p className="mt-3 inline-flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">{t.landing.smiles.body}</p>
+          <p className="mt-2.5 inline-flex items-start gap-2 text-xs leading-5 text-muted-foreground">
             <ArrowLeftRight aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground" />
             {t.landing.smiles.disclaimer}
           </p>

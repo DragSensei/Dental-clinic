@@ -3,7 +3,7 @@ import { getAppointments, bookAppointment } from "@/lib/clinic-db";
 import { requireSession, isActiveSessionUser, HttpError } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
 import { auth } from "@/lib/auth";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDb, getClientIp } from "@/lib/rate-limit";
 import {
   getAppointmentsQuerySchema,
   bookAppointmentSchema,
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`appointments:${ip}`, 10, 10 * 60 * 1000);
+    const rateCheck = await checkRateLimitDb(`appointments:${ip}`, 10, 10 * 60 * 1000);
     if (!rateCheck.allowed) {
       throw new HttpError(429, "rate_limited");
     }

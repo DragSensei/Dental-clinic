@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/data/use-session";
 import { useClinic } from "@/data/use-clinic";
+import { interpolate } from "@/i18n/format";
 import { useI18n } from "@/i18n/locale-provider";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import type { Appointment } from "@/data/mock/catalog";
@@ -205,9 +206,7 @@ export function PatientOverview() {
         >
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              {locale === "ar"
-                ? `مرحبًا بك، ${name || "مريم أحمد"}`
-                : `Welcome back, ${name || "Mariam Ahmed"}`}
+              {interpolate(t.patient.nav.welcome, { name: name || "Mariam Ahmed" })}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t.patient.nav.subtitle}
@@ -222,7 +221,7 @@ export function PatientOverview() {
               })}
             >
               <CalendarPlus className="size-4 me-2" />
-              {locale === "ar" ? "حجز موعد جديد" : "+ Book Appointment"}
+              {t.patient.overview.bookAppointmentCta}
             </Link>
           </div>
         </motion.div>
@@ -237,15 +236,15 @@ export function PatientOverview() {
           <Card className="overflow-hidden rounded-3xl border border-border shadow-md transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-lg">
         <CardHeader className="flex flex-col gap-2 bg-muted/30 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <span className="eyebrow">{locale === "ar" ? "الزيارة القادمة" : "Next Scheduled Visit"}</span>
+            <span className="eyebrow">{t.patient.overview.nextVisitEyebrow}</span>
             <CardTitle className="mt-1 text-xl font-bold">
-              {nextAppointment ? serviceTitle : (locale === "ar" ? "لا توجد مواعيد قادمة" : "No Upcoming Visit")}
+              {nextAppointment ? serviceTitle : t.patient.overview.noUpcomingTitle}
             </CardTitle>
           </div>
           {nextAppointment && (
             <Badge variant="outline" className="h-7 text-xs font-medium">
               <Clock className="size-3 me-1" />
-              {service?.durationMinutes ?? 45} mins
+              {interpolate(t.patient.overview.durationMins, { count: service?.durationMinutes ?? 45 })}
             </Badge>
           )}
         </CardHeader>
@@ -257,7 +256,7 @@ export function PatientOverview() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="size-12">
-                    <AvatarImage src={`https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80`} />
+                    <AvatarImage src="/images/demo/doctor.jpg" />
                     <AvatarFallback>{doctorName.slice(3, 5).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
@@ -268,24 +267,24 @@ export function PatientOverview() {
 
                 <div className="rounded-2xl bg-muted/40 p-4 space-y-3">
                   <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="text-muted-foreground">{locale === "ar" ? "حالة التأكيد:" : "Attendance:"}</span>
+                    <span className="text-muted-foreground">{t.patient.overview.attendanceLabel}</span>
                     {nextAppointment.attendanceConfirmed ? (
                       <Badge variant="success" className="gap-1 py-1 px-2.5 text-xs">
                         <ShieldCheck className="size-3.5" />
-                        {locale === "ar" ? "مؤكد ✓" : "Confirmed ✓"}
+                        {t.patient.overview.confirmedBadge}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="py-1 px-2.5 text-xs">
-                        {locale === "ar" ? "غير مؤكد" : "Unconfirmed"}
+                        {t.patient.overview.unconfirmedBadge}
                       </Badge>
                     )}
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{locale === "ar" ? "التاريخ:" : "Date:"}</span>
+                    <span className="text-muted-foreground">{t.patient.overview.dateLabel}</span>
                     <span className="font-semibold text-foreground">{formatDate(nextAppointment.date, dateOpts)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{locale === "ar" ? "التوقيت:" : "Time:"}</span>
+                    <span className="text-muted-foreground">{t.patient.overview.timeLabel}</span>
                     <span className="font-semibold text-foreground tabular-nums">
                       {formatTime(nextAppointment.time)}
                     </span>
@@ -299,14 +298,14 @@ export function PatientOverview() {
                       className="min-h-11 w-full rounded-xl px-4 font-semibold"
                     >
                       <CheckCircle2 className="size-4 me-2" />
-                      {locale === "ar" ? "تأكيد الحضور" : "Confirm Attendance"}
+                      {t.patient.banners.confirmAttendance}
                     </Button>
                   )}
                 </div>
 
                 {nextAppointment.note && (
                   <div className="rounded-xl bg-muted/30 p-3 text-xs text-muted-foreground">
-                    <strong className="text-foreground">{locale === "ar" ? "ملاحظتك:" : "Your Note:"}</strong> &ldquo;{nextAppointment.note}&rdquo;
+                    <strong className="text-foreground">{t.patient.overview.yourNoteLabel}</strong> &ldquo;{nextAppointment.note}&rdquo;
                   </div>
                 )}
               </div>
@@ -315,12 +314,10 @@ export function PatientOverview() {
               <div className="flex flex-col justify-between space-y-4 rounded-2xl bg-muted/40 p-5">
                 <div>
                   <h4 className="text-sm font-semibold text-foreground">
-                    {locale === "ar" ? "المزامنة مع تقويمك الشخصي" : "Personal Calendar Sync"}
+                    {t.patient.overview.calendarSyncTitle}
                   </h4>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {locale === "ar"
-                      ? "أضف الموعد مباشرة إلى Google Calendar أو حمل ملف .ics المتوافق مع Apple وOutlook."
-                      : "Directly sync to your Google Calendar or download a standard .ics file for Apple & Outlook."}
+                    {t.patient.overview.calendarSyncDesc}
                   </p>
                 </div>
 
@@ -334,8 +331,8 @@ export function PatientOverview() {
                   >
                     <ExternalLink className="size-4 me-2 text-primary" />
                     {nextAppointment.calendarSynced
-                      ? (locale === "ar" ? "تمت المزامنة مع Google Calendar ✓" : "Synced to Google Calendar ✓")
-                      : (locale === "ar" ? "إضافة إلى Google Calendar" : "Add to Google Calendar")}
+                      ? t.patient.overview.synced
+                      : t.patient.overview.syncGoogleCalendar}
                   </Button>
 
                   <Button
@@ -345,7 +342,7 @@ export function PatientOverview() {
                     className="min-h-11 w-full justify-start rounded-xl text-xs font-semibold"
                   >
                     <Download className="size-4 me-2 text-primary" />
-                    {locale === "ar" ? "تحميل ملف التقويم (.ics)" : "Download Apple / Outlook (.ics)"}
+                    {t.patient.overview.downloadIcs}
                   </Button>
                 </div>
 
@@ -356,7 +353,7 @@ export function PatientOverview() {
                     href={`/patient/appointments?reschedule=${nextAppointment.id}`}
                     className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 flex-1 rounded-xl text-xs font-semibold justify-center" })}
                   >
-                    {locale === "ar" ? "تعديل الموعد" : "Reschedule"}
+                    {t.patient.booking.reschedule}
                   </Link>
                   <Button
                     type="button"
@@ -364,7 +361,7 @@ export function PatientOverview() {
                     onClick={handleCancelClick}
                     className="min-h-11 flex-1 rounded-xl text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 shadow-xs"
                   >
-                    {locale === "ar" ? "إلغاء الموعد" : "Cancel"}
+                    {t.patient.booking.cancelBtn}
                   </Button>
                 </div>
               </div>
@@ -373,19 +370,17 @@ export function PatientOverview() {
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CalendarCheck2 className="size-12 text-muted-foreground/60 mb-3" />
               <p className="text-base font-semibold text-foreground">
-                {locale === "ar" ? "ليس لديك أي زيارات مجدولة حاليًا" : "No upcoming visits scheduled"}
+                {t.patient.overview.noUpcoming}
               </p>
               <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                {locale === "ar"
-                  ? "احجز فحصًا روتينيًا، أو كشفًا للألم، أو جلسة تنظيف اللثة بسهولة."
-                  : "Book a new exam, toothache triage, or routine cleaning in under 2 minutes."}
+                {t.patient.overview.noUpcomingDesc}
               </p>
               <Link
                 href="/patient/appointments?book=1"
                 className={buttonVariants({ variant: "outline", className: "mt-5 min-h-11 rounded-xl px-5 font-semibold" })}
               >
                 <CalendarPlus className="size-4 me-2" />
-                {locale === "ar" ? "حجز موعد الآن" : "Book an Appointment Now"}
+                {t.patient.overview.bookNowCta}
               </Link>
             </div>
           )}
@@ -401,8 +396,8 @@ export function PatientOverview() {
       >
       <Card className="rounded-3xl border border-border shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/35 hover:shadow-md">
         <CardHeader className="pb-2">
-          <span className="eyebrow">{locale === "ar" ? "قائمة المهام" : "Your Tasks"}</span>
-          <CardTitle className="mt-1 text-lg font-bold">{locale === "ar" ? "مهام" : "To-do"}</CardTitle>
+          <span className="eyebrow">{t.patient.overview.todoEyebrow}</span>
+          <CardTitle className="mt-1 text-lg font-bold">{t.patient.overview.todoTitle}</CardTitle>
         </CardHeader>
 
         <CardContent className="px-6 pb-4 pt-0">
@@ -418,19 +413,19 @@ export function PatientOverview() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  {locale === "ar" ? "حان موعد فحص وتنظيف الأسنان الدوري (6 أشهر)" : "6-Month Hygiene & Cleaning Due"}
+                  {t.patient.overview.hygieneDueTitle}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {locale === "ar"
-                    ? `آخر جلسة تنظيف كانت في ${formatDate(lastCleaningDate, shortDateOpts)}.`
-                    : `Your last professional cleaning was on ${formatDate(lastCleaningDate, shortDateOpts)}.`}
+                  {interpolate(t.patient.overview.hygieneDueDesc, {
+                    date: formatDate(lastCleaningDate, shortDateOpts),
+                  })}
                 </p>
               </div>
               <Link
                 href="/patient/appointments?reason=cleaning&book=1"
                 className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-transform active:scale-[0.98]" })}
               >
-                {locale === "ar" ? "حجز جلسة التنظيف" : "Book My Cleaning"}
+                {t.patient.overview.bookCleaningCta}
                 <ArrowRight className="size-3.5 ms-1.5 rtl:rotate-180" />
               </Link>
             </motion.li>
@@ -447,12 +442,10 @@ export function PatientOverview() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground">
-                    {locale === "ar" ? "يرجى استكمال النماذج الطبية قبل الزيارة" : "Complete Your Pre-Visit Forms"}
+                    {t.patient.overview.formsPendingTitle}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {locale === "ar"
-                      ? "استكمل التاريخ الصحي، الحساسية، والتوقيع الرقمي لتسريع إجراءات الاستقبال."
-                      : "Medical history, allergies and digital consent for express check-in (~3 mins)."}
+                    {t.patient.overview.formsPendingDesc}
                   </p>
                 </div>
                 <Link
@@ -460,7 +453,7 @@ export function PatientOverview() {
                   className={buttonVariants({ variant: "accent", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-transform active:scale-[0.98]" })}
                 >
                   <FileCheck2 className="size-4 me-1.5" />
-                  {locale === "ar" ? "تعبئة النماذج الآن" : "Fill Out Forms"}
+                  {t.patient.overview.fillFormsCta}
                 </Link>
               </motion.li>
             ) : (
@@ -474,14 +467,14 @@ export function PatientOverview() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-muted-foreground">
-                    {locale === "ar" ? "كافة النماذج الطبية والتوقيع الرقمي مكتملة" : "Pre-Visit Medical Forms & Consent Signed"}
+                    {t.patient.overview.formsDoneTitle}
                   </p>
                 </div>
                 <Link
                   href="/patient/forms"
                   className={buttonVariants({ variant: "ghost", size: "sm", className: "min-h-11 shrink-0 rounded-xl px-3 text-xs font-medium" })}
                 >
-                  {locale === "ar" ? "مراجعة" : "Review"}
+                  {t.patient.overview.reviewCta}
                 </Link>
               </motion.li>
             )}
@@ -504,19 +497,21 @@ export function PatientOverview() {
           <div>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <span className="eyebrow">{locale === "ar" ? "الخطة العلاجية" : "Treatment Plan"}</span>
+                <span className="eyebrow">{t.patient.overview.treatmentEyebrow}</span>
                 <Badge
                   variant={treatmentPlan.status === "approved" ? "success" : "secondary"}
                   className="text-xs capitalize"
                 >
-                  {treatmentPlan.status === "approved" ? "Active / Approved" : "Proposed Plan"}
+                  {treatmentPlan.status === "approved"
+                    ? t.patient.overview.treatmentStatusApproved
+                    : t.patient.overview.treatmentStatusProposed}
                 </Badge>
               </div>
               <CardTitle className="mt-1 text-lg font-bold">
-                {locale === "ar" ? "خطة التأهيل والعناية الشاملة" : "Comprehensive Restorative Plan"}
+                {t.patient.overview.treatmentTitle}
               </CardTitle>
               <CardDescription className="text-xs">
-                {treatmentPlan.phases.length} Phases · FDI 32-Teeth Chart Integrated
+                {interpolate(t.patient.overview.treatmentSummary, { count: treatmentPlan.phases.length })}
               </CardDescription>
             </CardHeader>
 
@@ -524,7 +519,7 @@ export function PatientOverview() {
               {/* Progress bar */}
               <div>
                 <div className="flex justify-between text-xs text-muted-foreground mb-1.5 font-medium">
-                  <span>{locale === "ar" ? "نسبة إنجاز الخطة:" : "Plan Progress:"}</span>
+                  <span>{t.patient.overview.treatmentProgress}</span>
                   <span>{planProgressPercent}%</span>
                 </div>
                 <Progress value={planProgressPercent} className="h-2 rounded-full" />
@@ -538,7 +533,9 @@ export function PatientOverview() {
                       <span className={`size-2 rounded-full ${
                         phase.priority === "urgent" ? "bg-destructive" : phase.priority === "restorative" ? "bg-primary" : "bg-chart-3"
                       }`} />
-                      <span className="font-semibold text-foreground">Phase {phase.order}: {phase.title}</span>
+                      <span className="font-semibold text-foreground">
+                        {interpolate(t.patient.overview.phaseLabel, { order: phase.order, title: phase.title })}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -552,7 +549,7 @@ export function PatientOverview() {
               className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center transition-transform active:scale-[0.98]" })}
             >
               <Stethoscope className="size-4 me-2" />
-              {locale === "ar" ? "مراجعة الخطة واعتمادها ←" : "Review & Approve Plan →"}
+              {t.patient.overview.reviewApprovePlanCta}
             </Link>
           </CardFooter>
         </Card>
@@ -570,16 +567,16 @@ export function PatientOverview() {
           <div>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <span className="eyebrow">{locale === "ar" ? "ملخص الزيارة والروشتة" : "Recent Care & Rx"}</span>
+                <span className="eyebrow">{t.patient.overview.careEyebrow}</span>
                 <Badge variant="outline" className="text-xs">
-                  {latestVisit ? formatDate(latestVisit.visitDate, shortDateOpts) : "Recent"}
+                  {latestVisit ? formatDate(latestVisit.visitDate, shortDateOpts) : t.patient.overview.careRecentBadge}
                 </Badge>
               </div>
               <CardTitle className="mt-1 text-lg font-bold">
-                {locale === "ar" ? "تقرير الإجراءات والتعليمات" : "Post-Op Care & e-Prescription"}
+                {t.patient.overview.careTitle}
               </CardTitle>
               <CardDescription className="text-xs">
-                {latestVisit ? latestVisit.whatWasDone : "Routine Oral Examination"}
+                {latestVisit ? latestVisit.whatWasDone : t.patient.overview.careDefaultDone}
               </CardDescription>
             </CardHeader>
 
@@ -587,13 +584,10 @@ export function PatientOverview() {
               {/* Post-Op Instructions preview */}
               <div className="rounded-2xl bg-muted/40 p-3.5 space-y-2 text-xs">
                 <p className="font-semibold text-foreground">
-                  {locale === "ar" ? "تعليمات التعافي بعد الجلسة:" : "Recovery Rules Preview:"}
+                  {t.patient.overview.recoveryPreviewLabel}
                 </p>
                 <ul className="list-disc ps-4 space-y-1 text-muted-foreground">
-                  {(latestVisit?.postOpInstructions ?? [
-                    "Avoid hot beverages and chewing on treated side for 2 hours",
-                    "Do not vigorously rinse mouth for 24 hours",
-                  ]).slice(0, 2).map((rule, idx) => (
+                  {(latestVisit?.postOpInstructions ?? t.patient.overview.defaultRecoveryRules).slice(0, 2).map((rule, idx) => (
                     <li key={idx}>{rule}</li>
                   ))}
                 </ul>
@@ -602,9 +596,11 @@ export function PatientOverview() {
               {/* Active e-Prescriptions badge count */}
               <div className="flex items-center justify-between rounded-xl bg-brand-primary/10 px-3.5 py-2.5 text-xs text-brand-primary">
                 <span className="font-medium">
-                  {latestVisit?.prescriptions?.length ?? 1} {locale === "ar" ? "أدوية موصوفة نشطة" : "Active e-Prescriptions"}
+                  {interpolate(t.patient.overview.activeRxCount, { count: latestVisit?.prescriptions?.length ?? 1 })}
                 </span>
-                <span className="font-semibold">Amoxicillin & Ibuprofen</span>
+                <span className="font-semibold">
+                  {latestVisit?.prescriptions?.map((p) => p.medication).slice(0, 2).join(" & ") || "Amoxicillin & Ibuprofen"}
+                </span>
               </div>
             </CardContent>
           </div>
@@ -614,7 +610,7 @@ export function PatientOverview() {
               href="/patient/care"
               className={buttonVariants({ variant: "accent", className: "min-h-11 w-full rounded-xl text-xs font-semibold justify-center transition-transform active:scale-[0.98]" })}
             >
-              {locale === "ar" ? "عرض التعليمات وطباعة الروشتة ←" : "View Care & Print Rx →"}
+              {t.patient.overview.viewCarePrintRxCta}
             </Link>
           </CardFooter>
         </Card>
@@ -631,16 +627,16 @@ export function PatientOverview() {
       <Card className="rounded-3xl border border-border shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-md">
         <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-4">
           <div>
-            <span className="eyebrow">{locale === "ar" ? "الحسابات والفواتير" : "Billing & Account"}</span>
+            <span className="eyebrow">{t.patient.overview.billingEyebrow}</span>
             <CardTitle className="mt-1 text-lg font-bold">
-              {locale === "ar" ? "الرصيد المستحق وسجل المدفوعات" : "Balance Due & Invoices"}
+              {t.patient.overview.billingTitle}
             </CardTitle>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-end">
-              <p className="text-xs text-muted-foreground">{locale === "ar" ? "إجمالي المستحق:" : "Total Balance:"}</p>
+              <p className="text-xs text-muted-foreground">{t.patient.overview.balanceDue}</p>
               <p className="text-xl font-extrabold text-foreground font-mono">
-                {totalBalanceDue.toLocaleString()} EGP
+                {totalBalanceDue.toLocaleString()} {t.patient.overview.currencyEgp}
               </p>
             </div>
             {totalBalanceDue > 0 && (
@@ -649,7 +645,7 @@ export function PatientOverview() {
                 className="min-h-11 rounded-xl px-4 text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 shadow-xs inline-flex items-center justify-center transition-transform active:scale-[0.98]"
               >
                 <CreditCard className="size-4 me-1.5" />
-                {locale === "ar" ? "دفع الآن" : "Pay Now"}
+                {t.patient.overview.payNow}
               </Link>
             )}
           </div>
@@ -661,25 +657,27 @@ export function PatientOverview() {
               <div key={inv.id} className="-mx-2 flex flex-col sm:flex-row sm:items-center justify-between rounded-xl px-2 py-3 gap-2 transition-colors hover:bg-muted/35">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-foreground">Invoice #{inv.id}</span>
+                    <span className="font-semibold text-sm text-foreground">
+                      {interpolate(t.patient.billing.invoiceNumber, { id: inv.id })}
+                    </span>
                     <Badge variant={inv.status === "paid" ? "success" : "secondary"} className="text-[10px]">
-                      {inv.status === "paid" ? "Paid in Full" : "Balance Due"}
+                      {inv.status === "paid" ? t.patient.billing.statusPaid : t.patient.billing.statusBalanceDue}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Issued {formatDate(inv.issuedDate, shortDateOpts)} · {inv.items.map((it) => it.procedure).join(", ")}
+                    {interpolate(t.patient.overview.invoiceIssued, { date: formatDate(inv.issuedDate, shortDateOpts) })} · {inv.items.map((it) => it.procedure).join(", ")}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4">
                   <div className="text-sm font-semibold tabular-nums text-foreground">
-                    {inv.totalFeeEgp.toLocaleString()} EGP
+                    {inv.totalFeeEgp.toLocaleString()} {t.patient.overview.currencyEgp}
                   </div>
                   <Link
                     href={`/patient/billing`}
                     className={buttonVariants({ variant: "ghost", size: "sm", className: "min-h-11 text-xs" })}
                   >
-                    {locale === "ar" ? "التفاصيل" : "Details"}
+                    {t.patient.overview.detailsCta}
                     <ChevronRight className="size-3.5 ms-1 rtl:rotate-180" />
                   </Link>
                 </div>
@@ -698,27 +696,26 @@ export function PatientOverview() {
               {cancelPolicyBlocked ? (
                 <>
                   <Ban className="size-5 text-destructive" />
-                  {locale === "ar" ? "إلغاء الموعد مقفل (أقل من 24 ساعة)" : "Cancellation Locked (< 24h)"}
+                  {t.patient.overview.cancelLockedTitle}
                 </>
               ) : (
                 <>
                   <AlertTriangle className="size-5 text-destructive" />
-                  {locale === "ar" ? "تأكيد إلغاء الموعد" : "Confirm Appointment Cancellation"}
+                  {t.patient.overview.cancelConfirmTitle}
                 </>
               )}
             </DialogTitle>
             <DialogDescription className="text-sm pt-2">
               {cancelPolicyBlocked ? (
                 <span>
-                  {locale === "ar"
-                    ? `وفقًا لسياسة العيادة، لا يمكن إلغاء الموعد ذاتيًا قبل أقل من 24 ساعة (${remainingHoursNotice} ساعة متبقية). يرجى الاتصال بمكتب الاستقبال مباشرة على الرقم 9988 2270 2 20+ لتعديل جدول الطبيب.`
-                    : `According to clinic policy, appointments within 24 hours cannot be cancelled online (${remainingHoursNotice} hours remaining). Please call the clinic reception desk directly at +20 2 2270 9988 so staff can release the clinician slot.`}
+                  {interpolate(t.patient.overview.cancelLockedDesc, { hours: remainingHoursNotice })}
                 </span>
               ) : (
                 <span>
-                  {locale === "ar"
-                    ? `هل أنت متأكد من رغبتك في إلغاء هذا الموعد (${serviceTitle})؟ سيتم تحرير هذا التوقيت تلقائيًا لمرضى العيادة الآخرين.`
-                    : `Are you sure you want to cancel your appointment for ${serviceTitle} on ${nextAppointment?.date}? Your reserved clinician slot will be immediately freed.`}
+                  {interpolate(t.patient.overview.cancelConfirmDesc, {
+                    service: serviceTitle,
+                    date: nextAppointment?.date ?? "",
+                  })}
                 </span>
               )}
             </DialogDescription>
@@ -726,7 +723,7 @@ export function PatientOverview() {
 
           {cancelPolicyBlocked && (
             <div className="rounded-2xl bg-destructive/10 p-3.5 text-xs text-destructive font-medium">
-              Clinic Contact Desk: +20 2 2270 9988 / Makram Ebeid, Nasr City, Cairo
+              {t.patient.overview.clinicDeskNotice}
             </div>
           )}
 
@@ -734,12 +731,10 @@ export function PatientOverview() {
             <Alert variant="destructive" className="border-destructive/30 bg-destructive/10 text-destructive my-1">
               <AlertTriangle className="size-4 text-destructive" />
               <AlertTitle className="text-xs font-semibold">
-                {locale === "ar" ? "تحذير: إلغاء نهائي للموعد" : "Warning: Irreversible Cancellation"}
+                {t.patient.overview.cancelWarningTitle}
               </AlertTitle>
               <AlertDescription className="text-xs text-destructive/90 mt-1 leading-relaxed">
-                {locale === "ar"
-                  ? "سيتم تحرير مقعد الطبيب والوقت المحجوز فور تأكيد الإلغاء. لمنع الإلغاء العرضي، اضغط مطولاً على الزر لتأكيد العملية."
-                  : "Your reserved chair and specialist slot will be immediately released. To prevent accidental cancellation, press and hold the button below."}
+                {t.patient.overview.cancelWarningDesc}
               </AlertDescription>
             </Alert>
           )}
@@ -751,18 +746,18 @@ export function PatientOverview() {
               onClick={() => setCancelDialogOpen(false)}
               className="min-h-11 rounded-xl text-xs"
             >
-              {locale === "ar" ? "الاحتفاظ بالموعد" : "Keep Appointment"}
+              {t.patient.overview.keepAppointment}
             </Button>
             {!cancelPolicyBlocked && (
               <HoldButton
                 variant="destructive"
                 holdDuration={1500}
-                holdingLabel={locale === "ar" ? "استمر بالضغط للإلغاء..." : "Keep holding to cancel..."}
-                completeLabel={locale === "ar" ? "تم إلغاء الموعد" : "Appointment Cancelled"}
+                holdingLabel={t.patient.overview.keepHoldingCancel}
+                completeLabel={t.patient.overview.appointmentCancelled}
                 onHoldComplete={handleConfirmCancel}
                 className="min-h-11 rounded-xl text-xs font-semibold"
               >
-                {locale === "ar" ? "اضغط مطولاً لتأكيد الإلغاء" : "Hold to Cancel Appointment"}
+                {t.patient.overview.holdToCancel}
               </HoldButton>
             )}
           </DialogFooter>

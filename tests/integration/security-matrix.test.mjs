@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   RUN_ID,
+  RUN_IP,
   prisma,
   createUserWithSession,
   req,
@@ -46,10 +47,10 @@ const { GET: workingHoursGET, PUT: workingHoursPUT } = await import(
 const { GET: accountsGET, POST: accountsPOST } = await import(
   "../../src/app/api/admin/accounts/route.ts"
 );
-const { resetRateLimitStore } = await import("../../src/lib/rate-limit.ts");
+const { resetRateLimitDb } = await import("../../src/lib/rate-limit.ts");
 
-test.beforeEach(() => {
-  resetRateLimitStore();
+test.beforeEach(async () => {
+  await resetRateLimitDb([`appointments:${RUN_IP}`, RUN_IP]);
 });
 
 test.after(async () => {
@@ -963,4 +964,51 @@ test("canCancel/hoursUntil: 23.5h -> not allowed, 24h -> allowed; Clinic time zo
   const summerInstant = clinicInstant("2026-07-15", "12:00");
   const summerDate = new Date(summerInstant);
   assert.equal(summerDate.getUTCHours(), 9, "12:00 Cairo in summer (UTC+3) should be 09:00 UTC");
+});
+
+test("Schema invariant: User deletion is blocked by onDelete: Restrict when owning invoice or intake records", async () => {
+  const patient = await createUserWithSession("patient", "restrict-guard");
+  const doctor = await prisma.doctor.findFirst();
+  assert.ok(doctor, "Seeded doctor required for invoice FK check");
+
+  const invoice = await prisma.patientInvoice.create({
+    data: {
+      patientEmail: patient.email,
+      issuedDate: "2026-11-17",
+      doctorId: doctor.id,
+      totalFeeEgp: 500,
+      paidAmountEgp: 0,
+      balanceEgp: 500,
+      status: "balance_due",
+    },
+  });
+
+  const isRestrictFkError = (err) =>
+    err?.code === "P2003" ||
+    err?.code === "23503" ||
+    /restrict|foreign key|constraint/i.test(String(err?.message || ""));
+
+  await assert.rejects(
+    () => prisma.user.delete({ where: { email: patient.email } }),
+    isRestrictFkError,
+    "Deleting User with PatientInvoice must fail under onDelete: Restrict"
+  );
+
+  await prisma.patientInvoice.delete({ where: { id: invoice.id } });
+
+  await prisma.patientIntakeForm.create({
+    data: {
+      patientEmail: patient.email,
+      phone: "+20 10 0000 0000",
+      emergencyContact: "Restrict Guard Contact",
+      conditions: [],
+      allergies: [],
+    },
+  });
+
+  await assert.rejects(
+    () => prisma.user.delete({ where: { email: patient.email } }),
+    isRestrictFkError,
+    "Deleting User with PatientIntakeForm must fail under onDelete: Restrict"
+  );
 });

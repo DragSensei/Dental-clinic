@@ -2,11 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import { auth } from "./_setup.mjs";
-import { checkRateLimit, resetRateLimitStore } from "../../src/lib/rate-limit.ts";
+import { checkRateLimit, checkRateLimitDb, resetRateLimitDb } from "../../src/lib/rate-limit.ts";
 import { POST as appointmentsPOST } from "../../src/app/api/appointments/route.ts";
 
-test.beforeEach(() => {
-  resetRateLimitStore();
+const TEST_KEYS = ["appointments:192.0.2.55", "appointments:203.0.113.195", "198.51.100.42"];
+
+test.beforeEach(async () => {
+  await resetRateLimitDb(TEST_KEYS);
+});
+
+test.after(async () => {
+  await resetRateLimitDb(TEST_KEYS);
 });
 
 test("in-memory rate limiter allows 10 requests and blocks the 11th", async () => {
@@ -16,6 +22,16 @@ test("in-memory rate limiter allows 10 requests and blocks the 11th", async () =
     assert.equal(res.allowed, true, `Request ${i + 1} should be allowed`);
   }
   const eleventh = checkRateLimit(`appointments:${ip}`, 10, 600_000);
+  assert.equal(eleventh.allowed, false, "11th request should be blocked");
+});
+
+test("database rate limiter allows 10 requests and blocks the 11th", async () => {
+  const ip = "192.0.2.55";
+  for (let i = 0; i < 10; i++) {
+    const res = await checkRateLimitDb(`appointments:${ip}`, 10, 600_000);
+    assert.equal(res.allowed, true, `Request ${i + 1} should be allowed`);
+  }
+  const eleventh = await checkRateLimitDb(`appointments:${ip}`, 10, 600_000);
   assert.equal(eleventh.allowed, false, "11th request should be blocked");
 });
 

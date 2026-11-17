@@ -51,6 +51,15 @@ export const paymentMethodSchema = z.enum([
 // 2. Request Schemas
 // ==========================================
 
+const doctorProfileFieldsShape = {
+  image: z.string().trim().max(1000).nullish(),
+  credentials: z.string().trim().max(300).nullish(),
+  experienceBadge: z.string().trim().max(60).nullish(),
+  experienceSummary: z.string().trim().max(300).nullish(),
+  languages: z.string().trim().max(200).nullish(),
+  comfortFocus: z.string().trim().max(1000).nullish(),
+};
+
 export const createAccountSchema = z.object({
   name: nameSchema,
   email: emailSchema,
@@ -59,6 +68,7 @@ export const createAccountSchema = z.object({
   role: z.enum(["admin", "doctor", "patient"]),
   specialty: z.string().trim().max(120).optional(),
   bio: z.string().max(2000).optional(),
+  ...doctorProfileFieldsShape,
   serviceIds: stringArraySchema.optional(),
   status: z.enum(["active", "inactive"]).optional(),
 });
@@ -67,6 +77,7 @@ export const updateDoctorSchema = z.object({
   name: nameSchema.optional(),
   specialty: z.string().trim().max(120).optional(),
   bio: z.string().max(2000).optional(),
+  ...doctorProfileFieldsShape,
   serviceIds: stringArraySchema.optional(),
   status: z.enum(["active", "inactive"]).optional(),
 });

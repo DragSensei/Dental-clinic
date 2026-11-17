@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { getAccounts } from "@/lib/clinic-db";
 import { requireRole, HttpError } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
@@ -23,12 +24,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = createAccountSchema.parse(body);
 
+    const fallbackPassword =
+      process.env.NODE_ENV === "production"
+        ? process.env.SEED_DEMO_PASSWORD || crypto.randomBytes(18).toString("base64url")
+        : process.env.SEED_DEMO_PASSWORD || "ClinicDemo2026!";
+
     const res = await auth.api
       .createUser({
         body: {
           name: parsed.name,
           email: parsed.email,
-          password: parsed.password || process.env.SEED_DEMO_PASSWORD || "ClinicDemo2026!",
+          password: parsed.password || fallbackPassword,
           role: parsed.role as unknown as "admin" | "user",
           data: {
             phone: parsed.phone || null,
@@ -65,6 +71,12 @@ export async function POST(request: NextRequest) {
               name: parsed.name,
               specialty: parsed.specialty || "General Dentistry",
               bio: parsed.bio || "",
+              image: parsed.image?.trim() || null,
+              credentials: parsed.credentials?.trim() || null,
+              experienceBadge: parsed.experienceBadge?.trim() || null,
+              experienceSummary: parsed.experienceSummary?.trim() || null,
+              languages: parsed.languages?.trim() || null,
+              comfortFocus: parsed.comfortFocus?.trim() || null,
               status: parsed.status || "active",
             },
           });

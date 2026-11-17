@@ -25,6 +25,10 @@ import { useI18n } from "@/i18n/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { PageTitle, Panel, field, labelClass } from "@/features/admin/admin-ui";
 import { AlertErrorWithEverything } from "@/components/shared/alert-error";
+import {
+  DoctorProfileFields,
+  type DoctorProfileFieldsValue,
+} from "@/features/admin/doctor-profile-fields";
 
 const WEEKDAY_NAMES_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
 const WEEKDAY_NAMES_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"] as const;
@@ -52,6 +56,14 @@ export function DoctorForm({
   const [name, setName] = useState(doctor.name);
   const [specialty, setSpecialty] = useState(doctor.specialty);
   const [bio, setBio] = useState(doctor.bio);
+  const [profileFields, setProfileFields] = useState<DoctorProfileFieldsValue>({
+    image: doctor.image ?? "",
+    credentials: doctor.credentials ?? "",
+    experienceBadge: doctor.experienceBadge ?? "",
+    experienceSummary: doctor.experienceSummary ?? "",
+    languages: doctor.languages ?? "",
+    comfortFocus: doctor.comfortFocus ?? "",
+  });
   const [serviceIds, setServiceIds] = useState<string[]>([...doctor.serviceIds]);
   const [serviceFilter, setServiceFilter] = useState("");
   const [error, setError] = useState<ErrorKey | "">("");
@@ -88,6 +100,12 @@ export function DoctorForm({
         name: name.trim(),
         specialty: specialty.trim(),
         bio: bio.trim(),
+        image: profileFields.image.trim(),
+        credentials: profileFields.credentials.trim(),
+        experienceBadge: profileFields.experienceBadge.trim(),
+        experienceSummary: profileFields.experienceSummary.trim(),
+        languages: profileFields.languages.trim(),
+        comfortFocus: profileFields.comfortFocus.trim(),
         serviceIds,
       });
       setSaved(true);
@@ -140,7 +158,7 @@ export function DoctorForm({
         transition={{ duration: 0.25, ease: "easeOut" }}
         className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start"
       >
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="min-w-0 space-y-6" onSubmit={handleSubmit}>
           {/* Section 1: Identity & Biography */}
           <Panel>
             <div className="mb-5">
@@ -210,6 +228,16 @@ export function DoctorForm({
                 }}
               />
             </label>
+
+            <div className="mt-5">
+              <DoctorProfileFields
+                value={profileFields}
+                onChange={(next) => {
+                  setProfileFields(next);
+                  setSaved(false);
+                }}
+              />
+            </div>
           </Panel>
 
           {/* Section 2: Assigned Treatments */}
@@ -232,11 +260,11 @@ export function DoctorForm({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  className="min-h-11 text-xs"
+                  className="min-h-11 text-sm"
                   onClick={() => {
                     setServiceIds(services.map((item) => item.id));
                     setSaved(false);
@@ -248,7 +276,7 @@ export function DoctorForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="min-h-11 text-xs"
+                  className="min-h-11 text-sm"
                   onClick={() => {
                     setServiceIds([]);
                     setSaved(false);
@@ -426,7 +454,7 @@ export function DoctorForm({
         </form>
 
         {/* Right Column: Live Clinician Profile Preview + Weekly Schedule */}
-        <aside className="space-y-4 xl:sticky xl:top-20">
+        <aside className="min-w-0 space-y-4 xl:sticky xl:top-20">
           <Panel>
             <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-brand-primary">
               <Sparkles aria-hidden="true" className="size-3.5" />
@@ -438,14 +466,29 @@ export function DoctorForm({
 
             <div className="mt-4 rounded-2xl border border-brand-border bg-background p-5 shadow-xs">
               <div className="flex items-center gap-3.5">
-                <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-brand-subtle text-base font-bold text-brand-primary ring-1 ring-brand-primary/20">
-                  {getInitials(previewName)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                    <Stethoscope aria-hidden="true" className="size-3" />
-                    <span className="truncate">{previewSpecialty}</span>
+                {profileFields.image.trim() ? (
+                  <img
+                    src={profileFields.image.trim()}
+                    alt={previewName}
+                    className="size-14 shrink-0 rounded-2xl object-cover object-top ring-1 ring-brand-primary/20"
+                  />
+                ) : (
+                  <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-brand-subtle text-base font-bold text-brand-primary ring-1 ring-brand-primary/20">
+                    {getInitials(previewName)}
                   </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                      <Stethoscope aria-hidden="true" className="size-3 shrink-0" />
+                      <span className="truncate">{previewSpecialty}</span>
+                    </span>
+                    {profileFields.experienceBadge.trim() && (
+                      <span className="inline-flex items-center rounded-full border border-brand-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {profileFields.experienceBadge.trim()}
+                      </span>
+                    )}
+                  </div>
                   <h3 className="mt-1.5 truncate text-lg font-bold tracking-tight text-foreground">
                     {previewName}
                   </h3>
@@ -455,6 +498,13 @@ export function DoctorForm({
               <p className="mt-4 text-sm leading-6 text-muted-foreground">
                 {previewBio}
               </p>
+
+              {(profileFields.credentials.trim() || profileFields.languages.trim()) && (
+                <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                  {profileFields.credentials.trim() && <p>{profileFields.credentials.trim()}</p>}
+                  {profileFields.languages.trim() && <p>{profileFields.languages.trim()}</p>}
+                </div>
+              )}
 
               <div className="mt-4 border-t border-border/70 pt-3.5">
                 <p className="text-xs font-medium text-muted-foreground">

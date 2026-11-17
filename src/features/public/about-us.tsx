@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -173,10 +174,12 @@ export function AboutUs() {
             </ul>
           </div>
           <div className="relative h-72 sm:h-96 w-full overflow-hidden rounded-2xl border border-brand-border">
-            <img
-              src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1000&q=80"
+            <Image
+              src="/images/demo/interior.jpg"
               alt="Modern BlueHaven Dental clinic interior"
-              className="h-full w-full object-cover object-center"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-center"
             />
           </div>
         </div>

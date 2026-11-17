@@ -12,6 +12,8 @@ export interface ExpandableCardProps {
   description: string;
   category?: string;
   duration?: number | string;
+  badgeText?: string;
+  imageClassName?: string;
   children?: React.ReactNode;
   className?: string;
   classNameExpanded?: string;
@@ -38,6 +40,8 @@ export function ExpandableCard({
   description,
   category,
   duration,
+  badgeText,
+  imageClassName = "object-center",
   children,
   className,
   classNameExpanded,
@@ -163,7 +167,7 @@ export function ExpandableCard({
                     <img
                       src={src}
                       alt={title}
-                      className="h-full w-full object-cover object-center"
+                      className={cn("h-full w-full object-cover", imageClassName)}
                     />
                     {category && (
                       <motion.span
@@ -192,9 +196,9 @@ export function ExpandableCard({
                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                           {description}
                         </p>
-                        {duration && (
+                        {(badgeText || duration) && (
                           <span className="inline-flex shrink-0 items-center rounded-full bg-brand-subtle px-2.5 py-0.5 text-xs font-semibold text-brand-primary">
-                            {duration} mins
+                            {badgeText || `${duration} mins`}
                           </span>
                         )}
                       </div>
@@ -284,7 +288,7 @@ export function ExpandableCard({
           <img
             src={src}
             alt={title}
-            className="h-full w-full object-cover object-center"
+            className={cn("h-full w-full object-cover", imageClassName)}
           />
           {category && (
             <motion.span

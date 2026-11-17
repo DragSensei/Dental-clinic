@@ -12,6 +12,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { AppCombobox } from "@/components/ui/combobox";
 import { PageTitle, Panel, field, labelClass } from "@/features/admin/admin-ui";
 import { AlertErrorWithEverything } from "@/components/shared/alert-error";
+import {
+  DoctorProfileFields,
+  EMPTY_DOCTOR_PROFILE_FIELDS,
+  type DoctorProfileFieldsValue,
+} from "@/features/admin/doctor-profile-fields";
 
 export function AccountCreator() {
   const { locale, t } = useI18n();
@@ -24,6 +29,9 @@ export function AccountCreator() {
   const [phone, setPhone] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [bio, setBio] = useState("");
+  const [doctorProfileFields, setDoctorProfileFields] = useState<DoctorProfileFieldsValue>(
+    EMPTY_DOCTOR_PROFILE_FIELDS
+  );
   const [serviceIds, setServiceIds] = useState<string[]>([]);
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<AccountStatus>("active");
@@ -39,6 +47,7 @@ export function AccountCreator() {
     setPhone("");
     setSpecialty("");
     setBio("");
+    setDoctorProfileFields(EMPTY_DOCTOR_PROFILE_FIELDS);
     setServiceIds([]);
     setPassword("");
     setStatus("active");
@@ -71,6 +80,19 @@ export function AccountCreator() {
         status,
         specialty: role === "doctor" ? specialty.trim() : undefined,
         bio: role === "doctor" ? bio.trim() : undefined,
+        image: role === "doctor" ? doctorProfileFields.image.trim() || undefined : undefined,
+        credentials:
+          role === "doctor" ? doctorProfileFields.credentials.trim() || undefined : undefined,
+        experienceBadge:
+          role === "doctor" ? doctorProfileFields.experienceBadge.trim() || undefined : undefined,
+        experienceSummary:
+          role === "doctor"
+            ? doctorProfileFields.experienceSummary.trim() || undefined
+            : undefined,
+        languages:
+          role === "doctor" ? doctorProfileFields.languages.trim() || undefined : undefined,
+        comfortFocus:
+          role === "doctor" ? doctorProfileFields.comfortFocus.trim() || undefined : undefined,
         serviceIds: role === "doctor" ? serviceIds : undefined,
       });
       setCreatedName(name.trim());
@@ -301,6 +323,12 @@ export function AccountCreator() {
                         placeholder="Brief clinician background and expertise…"
                       />
                     </label>
+
+                    <DoctorProfileFields
+                      compact
+                      value={doctorProfileFields}
+                      onChange={setDoctorProfileFields}
+                    />
 
                     <fieldset className="grid gap-2">
                       <legend className="text-sm font-medium">{t.admin.accounts.linkedServices}</legend>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { HttpError } from "@/lib/authz";
 import { toErrorResponse } from "@/lib/http";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDb, getClientIp } from "@/lib/rate-limit";
 import { z, ZodError } from "zod";
 
 const demoLoginSchema = z.object({
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`demo-login:${ip}`, 15, 60_000);
+    const rateCheck = await checkRateLimitDb(`demo-login:${ip}`, 15, 60_000);
     if (!rateCheck.allowed) {
       throw new HttpError(429, "rate_limited");
     }

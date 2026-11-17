@@ -85,6 +85,24 @@ model Verification {
   @@map("verification")
 }
 
+model RateLimit {
+  id          String @id @default(uuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rate_limit")
+}
+
+model ApiRateLimit {
+  key     String @id
+  count   Int
+  resetAt BigInt
+
+  @@index([resetAt])
+  @@map("api_rate_limit")
+}
+
 // ==========================================
 // 2. Clinic Catalog & Scheduling Models
 // ==========================================
@@ -119,15 +137,21 @@ model Service {
 }
 
 model Doctor {
-  id             String               @id @default(uuid())
-  userId         String?              @unique
-  user           User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
-  name           String
-  specialty      String
-  bio            String               @db.Text
-  status         String               @default("active") // "active" | "inactive"
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+  id                String               @id @default(uuid())
+  userId            String?              @unique
+  user              User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name              String
+  specialty         String
+  bio               String               @db.Text
+  image             String?
+  credentials       String?
+  experienceBadge   String?
+  experienceSummary String?
+  languages         String?
+  comfortFocus      String?              @db.Text
+  status            String               @default("active") // "active" | "inactive"
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   services       DoctorService[]
   appointments   Appointment[]
@@ -217,7 +241,7 @@ model Appointment {
 model PatientIntakeForm {
   id                String    @id @default(uuid())
   patientEmail      String    @unique
-  user              User      @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  user              User      @relation(fields: [patientEmail], references: [email], onDelete: Restrict)
   phone             String
   emergencyContact  String
   noChangesVerified Boolean   @default(false)
@@ -244,7 +268,7 @@ model PatientIntakeForm {
 model TreatmentPlan {
   id               String           @id @default(uuid())
   patientEmail     String           @unique
-  user             User             @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  user             User             @relation(fields: [patientEmail], references: [email], onDelete: Restrict)
   doctorId         String
   doctor           Doctor           @relation(fields: [doctorId], references: [id], onDelete: Restrict)
   status           String           @default("proposed") // "proposed" | "approved"
@@ -304,7 +328,7 @@ model TreatmentPhase {
 model VisitCareSummary {
   id                 String             @id @default(uuid())
   patientEmail       String
-  user               User               @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  user               User               @relation(fields: [patientEmail], references: [email], onDelete: Restrict)
   visitDate          String             // "YYYY-MM-DD"
   doctorId           String
   doctor             Doctor             @relation(fields: [doctorId], references: [id], onDelete: Restrict)
@@ -340,7 +364,7 @@ model PrescriptionItem {
 model PatientInvoice {
   id                  String            @id @default(uuid())
   patientEmail        String
-  user                User              @relation(fields: [patientEmail], references: [email], onDelete: Cascade)
+  user                User              @relation(fields: [patientEmail], references: [email], onDelete: Restrict)
   issuedDate          String            // "YYYY-MM-DD"
   doctorId            String
   doctor              Doctor            @relation(fields: [doctorId], references: [id], onDelete: Restrict)

@@ -15,6 +15,7 @@ import {
 import { useSession } from "@/data/use-session";
 import { useClinic } from "@/data/use-clinic";
 import { useI18n } from "@/i18n/locale-provider";
+import { interpolate } from "@/i18n/format";
 import { localizedService } from "@/data/mock/localized-copy";
 import type { ToothRecord, ToothStatus, TreatmentPhase } from "@/data/mock/catalog";
 import { cn } from "@/lib/utils";
@@ -78,7 +79,21 @@ export function PatientTreatmentPlan() {
   const { locale, formatDate, formatTime, t } = useI18n();
 
   const patientEmail = signedInEmail || "mariam.a@example.com";
-  const patientDisplayName = name || "Mariam Ahmed";
+  const patientDisplayName = name || t.patient.nav.defaultUserName;
+
+  const toothStatusLabels: Record<ToothStatus, string> = {
+    healthy: t.patient.treatment.statusHealthy,
+    urgent: t.patient.treatment.statusUrgent,
+    restorative: t.patient.treatment.statusRestorative,
+    elective: t.patient.treatment.statusElective,
+    treated: t.patient.treatment.statusTreated,
+  };
+
+  const priorityLabels: Record<string, string> = {
+    urgent: t.patient.treatment.statusUrgent,
+    restorative: t.patient.treatment.statusRestorative,
+    elective: t.patient.treatment.statusElective,
+  };
 
   const plan = clinic.getPatientTreatmentPlan(patientEmail);
   const teethMap = useMemo(() => {
@@ -89,15 +104,18 @@ export function PatientTreatmentPlan() {
     return map;
   }, [plan.teeth]);
 
+  const getToothRecord = (num: number): ToothRecord =>
+    teethMap.get(num) ?? {
+      toothNumber: num,
+      label: "",
+      status: "healthy",
+      condition: t.patient.treatment.healthyConditionDefault,
+      proposedTreatment: t.patient.treatment.healthyTreatmentDefault,
+    };
+
   // Selected tooth for inspection
   const [selectedToothNumber, setSelectedToothNumber] = useState<number>(36);
-  const selectedTooth = teethMap.get(selectedToothNumber) ?? {
-    toothNumber: selectedToothNumber,
-    label: `Tooth #${selectedToothNumber}`,
-    status: "healthy" as ToothStatus,
-    condition: "Sound anatomical structure with no active pathologies.",
-    proposedTreatment: "Routine preventive maintenance and observation.",
-  };
+  const selectedTooth = getToothRecord(selectedToothNumber);
 
   // Plan approval modal state
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
@@ -144,11 +162,11 @@ export function PatientTreatmentPlan() {
   const handleApprovePlan = async () => {
     setApprovalError(null);
     if (!approvalName.trim()) {
-      setApprovalError("Please provide your full legal name.");
+      setApprovalError(t.patient.treatment.nameRequiredError);
       return;
     }
     if (!approvalSignature) {
-      setApprovalError("Please sign within the box to confirm your digital acceptance.");
+      setApprovalError(t.patient.treatment.signatureRequiredError);
       return;
     }
 
@@ -157,7 +175,7 @@ export function PatientTreatmentPlan() {
       await clinic.approveTreatmentPlan(plan.id, approvalName.trim(), approvalSignature, patientEmail);
       setApproveDialogOpen(false);
     } catch {
-      setApprovalError("Failed to record plan approval. Please try again.");
+      setApprovalError(t.patient.treatment.approveFailedError);
     } finally {
       setIsApproving(false);
     }
@@ -175,7 +193,7 @@ export function PatientTreatmentPlan() {
   // Handle phase appointment booking
   const handleConfirmPhaseBooking = async () => {
     if (!schedulePhase || !selectedDate || !selectedTimeSlot) {
-      setBookingError("Please select an available date and time slot.");
+      setBookingError(t.patient.treatment.slotRequiredError);
       return;
     }
 
@@ -199,7 +217,7 @@ export function PatientTreatmentPlan() {
         id: booked.id,
       });
     } catch {
-      setBookingError("This time slot is no longer available. Please select another slot.");
+      setBookingError(t.patient.treatment.slotUnavailableError);
     } finally {
       setIsBookingPhase(false);
     }
@@ -208,6 +226,45 @@ export function PatientTreatmentPlan() {
   const defaultDateOpts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
 
   const isApproved = plan.status === "approved";
+
+  const schedulePhaseService = schedulePhase ? clinic.services.find((s) => s.id === schedulePhase.serviceId) : undefined;
+  const schedulePhaseTitle = schedulePhase
+    ? schedulePhaseService
+      ? localizedService(schedulePhaseService, locale).title
+      : schedulePhase.title
+    : "";
+
+  const renderToothQuadrant = (nums: readonly number[]) => (
+    <div className="flex gap-1 sm:gap-1.5">
+      {nums.map((num) => {
+        const tooth = getToothRecord(num);
+        const isSelected = selectedToothNumber === num;
+        const toothTitle = tooth.label
+          ? `${interpolate(t.patient.treatment.toothNumberTitle, { number: num })} — ${tooth.label}`
+          : interpolate(t.patient.treatment.toothNumberTitle, { number: num });
+        return (
+          <motion.button
+            key={num}
+            type="button"
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setSelectedToothNumber(num)}
+            className={cn(
+              "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              toothStatusStyles[tooth.status],
+              isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
+            )}
+            title={`${toothTitle} - ${tooth.condition}`}
+          >
+            <span className="text-[11px] leading-tight">{num}</span>
+            {tooth.status !== "healthy" && (
+              <span className="size-1.5 rounded-full bg-current mt-0.5" />
+            )}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <MotionConfig reducedMotion="user">
@@ -248,22 +305,23 @@ export function PatientTreatmentPlan() {
             <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
               <CheckCircle2 className="size-5 text-brand-primary" />
               <AlertTitle className="font-semibold text-foreground">
-                {t.patient.treatment.planApprovedOn
-                  .replace("{date}", plan.approvedAt ? formatDate(plan.approvedAt.slice(0, 10), defaultDateOpts) : "Oct 19, 2026")
-                  .replace("{name}", plan.signedByName || patientDisplayName)}
+                {interpolate(t.patient.treatment.planApprovedOn, {
+                  date: plan.approvedAt ? formatDate(plan.approvedAt.slice(0, 10), defaultDateOpts) : formatDate("2026-10-19", defaultDateOpts),
+                  name: plan.signedByName || patientDisplayName,
+                })}
               </AlertTitle>
               <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
-                Your clinical roadmap is locked. You can now schedule upcoming phases directly in sequence below.
+                {t.patient.treatment.planApprovedDesc}
               </AlertDescription>
             </Alert>
           ) : (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 shadow-xs">
               <div className="space-y-1">
                 <span className="text-sm font-semibold text-foreground">
-                  Action Required: Digital Plan Acceptance
+                  {t.patient.treatment.actionRequiredTitle}
                 </span>
                 <p className="text-xs text-muted-foreground">
-                  Review the diagnosed dental chart and phased procedures below, then sign electronically to authorize care.
+                  {t.patient.treatment.actionRequiredDesc}
                 </p>
               </div>
               <Button
@@ -275,7 +333,7 @@ export function PatientTreatmentPlan() {
                 }}
                 className="min-h-11 font-semibold shrink-0"
               >
-                <PenTool className="size-4 mr-1.5" />
+                <PenTool className="size-4 me-1.5" />
                 {t.patient.treatment.approvePlan}
               </Button>
             </div>
@@ -293,28 +351,31 @@ export function PatientTreatmentPlan() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
                 <div className="space-y-1">
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Overall Phased Progress
+                    {t.patient.treatment.overallProgressLabel}
                   </span>
                   <div className="text-2xl font-bold text-foreground">
-                    {pricingTotals.scheduledPhasesCount} of {pricingTotals.totalPhases} Phases
+                    {interpolate(t.patient.treatment.phasesFraction, {
+                      scheduled: pricingTotals.scheduledPhasesCount,
+                      total: pricingTotals.totalPhases,
+                    })}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {pricingTotals.scheduledPhasesCount === pricingTotals.totalPhases
-                      ? "All phases booked into clinical calendar."
-                      : "Next phase awaiting reservation."}
+                      ? t.patient.treatment.allPhasesBooked
+                      : t.patient.treatment.nextPhaseAwaiting}
                   </p>
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
                   <div className="flex justify-between text-xs font-medium">
-                    <span className="text-muted-foreground">Roadmap Completion</span>
+                    <span className="text-muted-foreground">{t.patient.treatment.roadmapCompletion}</span>
                     <span className="text-brand-primary">{pricingTotals.progressPercent}%</span>
                   </div>
                   <Progress value={pricingTotals.progressPercent} className="h-3 w-full bg-muted" />
                   <div className="flex justify-between text-xs text-muted-foreground pt-1">
-                    <span>Phase 1 (Urgent)</span>
-                    <span>Phase 2 (Restorative)</span>
-                    <span>Phase 3 (Elective)</span>
+                    <span>{t.patient.treatment.phaseShort1}</span>
+                    <span>{t.patient.treatment.phaseShort2}</span>
+                    <span>{t.patient.treatment.phaseShort3}</span>
                   </div>
                 </div>
               </div>
@@ -340,14 +401,14 @@ export function PatientTreatmentPlan() {
               </CardDescription>
             </div>
             <Badge variant="outline" className="text-xs">
-              Adult FDI 2-Digit Standard
+              {t.patient.treatment.fdiStandardBadge}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Status Color Legend */}
           <div className="flex flex-wrap items-center justify-center gap-3 rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">Legend:</span>
+            <span className="font-semibold text-foreground">{t.patient.treatment.legendLabel}</span>
             <div className="flex items-center gap-1.5">
               <span className={cn("size-3 rounded-full", legendDotStyles.urgent)} />
               <span>{t.patient.treatment.statusUrgent}</span>
@@ -370,167 +431,33 @@ export function PatientTreatmentPlan() {
             </div>
           </div>
 
-          {/* Dental Arches Grid */}
-          <div className="space-y-6 overflow-x-auto pb-2">
+          {/* Dental Arches Grid (FDI anatomy stays left-to-right regardless of document dir) */}
+          <div dir="ltr" className="space-y-6 overflow-x-auto pb-2">
             {/* Maxilla (Upper Jaw) */}
             <div className="space-y-2 min-w-[580px]">
               <div className="flex items-center justify-between px-1 text-xs font-semibold text-muted-foreground">
-                <span>Upper Right (Q1)</span>
+                <span>{t.patient.treatment.upperRightQ1}</span>
                 <span className="text-foreground uppercase tracking-wider">{t.patient.treatment.upperJaw}</span>
-                <span>Upper Left (Q2)</span>
+                <span>{t.patient.treatment.upperLeftQ2}</span>
               </div>
               <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                {/* Upper Right Quadrant 1: 18 down to 11 */}
-                <div className="flex gap-1 sm:gap-1.5">
-                  {UPPER_RIGHT_QUAD.map((num) => {
-                    const tooth = teethMap.get(num) ?? {
-                      toothNumber: num,
-                      label: `Tooth #${num}`,
-                      status: "healthy" as ToothStatus,
-                      condition: "Sound",
-                      proposedTreatment: "Preventive",
-                    };
-                    const isSelected = selectedToothNumber === num;
-                    return (
-                      <motion.button
-                        key={num}
-                        type="button"
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => setSelectedToothNumber(num)}
-                        className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          toothStatusStyles[tooth.status],
-                          isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
-                        )}
-                        title={`${tooth.label} - ${tooth.condition}`}
-                      >
-                        <span className="text-[11px] leading-tight">{num}</span>
-                        {tooth.status !== "healthy" && (
-                          <span className="size-1.5 rounded-full bg-current mt-0.5" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                {/* Arch Midline Divider */}
+                {renderToothQuadrant(UPPER_RIGHT_QUAD)}
                 <div className="h-10 w-px bg-border/80 mx-1 shrink-0" />
-
-                {/* Upper Left Quadrant 2: 21 up to 28 */}
-                <div className="flex gap-1 sm:gap-1.5">
-                  {UPPER_LEFT_QUAD.map((num) => {
-                    const tooth = teethMap.get(num) ?? {
-                      toothNumber: num,
-                      label: `Tooth #${num}`,
-                      status: "healthy" as ToothStatus,
-                      condition: "Sound",
-                      proposedTreatment: "Preventive",
-                    };
-                    const isSelected = selectedToothNumber === num;
-                    return (
-                      <motion.button
-                        key={num}
-                        type="button"
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => setSelectedToothNumber(num)}
-                        className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          toothStatusStyles[tooth.status],
-                          isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
-                        )}
-                        title={`${tooth.label} - ${tooth.condition}`}
-                      >
-                        <span className="text-[11px] leading-tight">{num}</span>
-                        {tooth.status !== "healthy" && (
-                          <span className="size-1.5 rounded-full bg-current mt-0.5" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                {renderToothQuadrant(UPPER_LEFT_QUAD)}
               </div>
             </div>
 
             {/* Mandible (Lower Jaw) */}
             <div className="space-y-2 min-w-[580px]">
               <div className="flex items-center justify-between px-1 text-xs font-semibold text-muted-foreground">
-                <span>Lower Right (Q4)</span>
+                <span>{t.patient.treatment.lowerRightQ4}</span>
                 <span className="text-foreground uppercase tracking-wider">{t.patient.treatment.lowerJaw}</span>
-                <span>Lower Left (Q3)</span>
+                <span>{t.patient.treatment.lowerLeftQ3}</span>
               </div>
               <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                {/* Lower Right Quadrant 4: 48 down to 41 */}
-                <div className="flex gap-1 sm:gap-1.5">
-                  {LOWER_RIGHT_QUAD.map((num) => {
-                    const tooth = teethMap.get(num) ?? {
-                      toothNumber: num,
-                      label: `Tooth #${num}`,
-                      status: "healthy" as ToothStatus,
-                      condition: "Sound",
-                      proposedTreatment: "Preventive",
-                    };
-                    const isSelected = selectedToothNumber === num;
-                    return (
-                      <motion.button
-                        key={num}
-                        type="button"
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => setSelectedToothNumber(num)}
-                        className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          toothStatusStyles[tooth.status],
-                          isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
-                        )}
-                        title={`${tooth.label} - ${tooth.condition}`}
-                      >
-                        <span className="text-[11px] leading-tight">{num}</span>
-                        {tooth.status !== "healthy" && (
-                          <span className="size-1.5 rounded-full bg-current mt-0.5" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                {/* Arch Midline Divider */}
+                {renderToothQuadrant(LOWER_RIGHT_QUAD)}
                 <div className="h-10 w-px bg-border/80 mx-1 shrink-0" />
-
-                {/* Lower Left Quadrant 3: 31 up to 38 */}
-                <div className="flex gap-1 sm:gap-1.5">
-                  {LOWER_LEFT_QUAD.map((num) => {
-                    const tooth = teethMap.get(num) ?? {
-                      toothNumber: num,
-                      label: `Tooth #${num}`,
-                      status: "healthy" as ToothStatus,
-                      condition: "Sound",
-                      proposedTreatment: "Preventive",
-                    };
-                    const isSelected = selectedToothNumber === num;
-                    return (
-                      <motion.button
-                        key={num}
-                        type="button"
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => setSelectedToothNumber(num)}
-                        className={cn(
-                          "min-h-11 min-w-11 relative flex flex-col items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          toothStatusStyles[tooth.status],
-                          isSelected && "ring-2 ring-primary ring-offset-2 scale-105 z-10 shadow-md font-bold"
-                        )}
-                        title={`${tooth.label} - ${tooth.condition}`}
-                      >
-                        <span className="text-[11px] leading-tight">{num}</span>
-                        {tooth.status !== "healthy" && (
-                          <span className="size-1.5 rounded-full bg-current mt-0.5" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                {renderToothQuadrant(LOWER_LEFT_QUAD)}
               </div>
             </div>
           </div>
@@ -547,16 +474,17 @@ export function PatientTreatmentPlan() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-base sm:text-lg font-bold text-foreground">
-                        Tooth #{selectedTooth.toothNumber} — {selectedTooth.label}
+                        {interpolate(t.patient.treatment.toothNumberTitle, { number: selectedTooth.toothNumber })}
+                        {selectedTooth.label ? ` — ${selectedTooth.label}` : ""}
                       </span>
                       <Badge variant={toothStatusBadgeVariants[selectedTooth.status]}>
-                        {selectedTooth.status.toUpperCase()}
+                        {toothStatusLabels[selectedTooth.status]}
                       </Badge>
                       {selectedTooth.phaseOrder && (
                         <Badge variant="outline" className="text-xs">
-                          Phase {selectedTooth.phaseOrder} Priority
+                          {interpolate(t.patient.treatment.phasePriorityBadge, { order: selectedTooth.phaseOrder })}
                         </Badge>
                       )}
                     </div>
@@ -575,8 +503,8 @@ export function PatientTreatmentPlan() {
                       }}
                       className="min-h-11 text-xs"
                     >
-                      <Calendar className="size-3.5 mr-1" />
-                      Jump to Phase {selectedTooth.phaseOrder}
+                      <Calendar className="size-3.5 me-1" />
+                      {interpolate(t.patient.treatment.jumpToPhaseBtn, { order: selectedTooth.phaseOrder })}
                     </Button>
                   )}
                 </div>
@@ -584,7 +512,7 @@ export function PatientTreatmentPlan() {
                 <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2 text-xs">
                   <div className="rounded-lg bg-card p-3">
                     <span className="font-semibold text-foreground block mb-1">
-                      Proposed Clinical Care:
+                      {t.patient.treatment.proposedCareLabel}
                     </span>
                     <span className="text-muted-foreground">
                       {selectedTooth.proposedTreatment}
@@ -592,10 +520,10 @@ export function PatientTreatmentPlan() {
                   </div>
                   <div className="rounded-lg bg-card p-3">
                     <span className="font-semibold text-foreground block mb-1">
-                      Clinician Diagnostic &amp; X-Ray Note:
+                      {t.patient.treatment.xrayNoteLabel}
                     </span>
                     <span className="text-muted-foreground italic">
-                      {selectedTooth.xrayNote || "No periapical bone loss or restorative defects detected."}
+                      {selectedTooth.xrayNote || t.patient.treatment.xrayNoteDefault}
                     </span>
                   </div>
                 </div>
@@ -620,11 +548,11 @@ export function PatientTreatmentPlan() {
                 {t.patient.treatment.phasesTitle}
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                Step-by-step phased care planned in order of clinical urgency, functionality, and aesthetic results.
+                {t.patient.treatment.phasesSubtitle}
               </CardDescription>
             </div>
             <Badge variant="secondary" className="text-xs">
-              3 Structured Clinical Phases
+              {interpolate(t.patient.treatment.phasesCountBadge, { count: plan.phases.length })}
             </Badge>
           </div>
         </CardHeader>
@@ -635,11 +563,12 @@ export function PatientTreatmentPlan() {
               const isScheduled = Boolean(phase.scheduledAppointmentId);
               const service = clinic.services.find((s) => s.id === phase.serviceId);
               const serviceTitle = service ? localizedService(service, locale).title : phase.title;
+              const phasePriorityLabel = priorityLabels[phase.priority.toLowerCase()] ?? phase.priority;
 
               return (
                 <AccordionItem key={phase.id} value={phase.id} className="py-2">
                   <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex flex-1 flex-wrap items-center justify-between gap-3 text-left pr-4">
+                    <div className="flex flex-1 flex-wrap items-center justify-between gap-3 text-start pe-4">
                       <div className="flex items-center gap-3">
                         <div className="flex size-7 items-center justify-center rounded-full bg-brand-subtle text-brand-primary text-xs font-bold">
                           {phase.order}
@@ -649,7 +578,10 @@ export function PatientTreatmentPlan() {
                             {serviceTitle}
                           </span>
                           <span className="text-xs text-muted-foreground block">
-                            Priority: {phase.priority.toUpperCase()} • Approx {phase.durationMinutes} mins
+                            {interpolate(t.patient.treatment.phasePriorityDuration, {
+                              priority: phasePriorityLabel,
+                              minutes: phase.durationMinutes,
+                            })}
                           </span>
                         </div>
                       </div>
@@ -657,15 +589,15 @@ export function PatientTreatmentPlan() {
                       <div className="flex items-center gap-2">
                         {isScheduled ? (
                           <Badge variant="success" className="text-xs">
-                            Scheduled ✓
+                            {t.patient.treatment.scheduledBadge}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">
-                            Not Scheduled
+                            {t.patient.treatment.notScheduledBadge}
                           </Badge>
                         )}
                         <span className="text-sm font-bold text-foreground">
-                          {phase.outOfPocketEgp} EGP
+                          {phase.outOfPocketEgp} {t.patient.overview.currencyEgp}
                         </span>
                       </div>
                     </div>
@@ -676,21 +608,21 @@ export function PatientTreatmentPlan() {
                     {/* Financial & Clinical Details Grid */}
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <div className="rounded-lg bg-muted/40 p-3">
-                        <span className="text-xs text-muted-foreground block">Total Clinic Fee</span>
+                        <span className="text-xs text-muted-foreground block">{t.patient.treatment.totalClinicFee}</span>
                         <span className="text-sm font-semibold text-foreground">
-                          {phase.totalFeeEgp} EGP
+                          {phase.totalFeeEgp} {t.patient.overview.currencyEgp}
                         </span>
                       </div>
                       <div className="rounded-lg bg-muted/40 p-3">
-                        <span className="text-xs text-muted-foreground block">Insurance Scaffold</span>
+                        <span className="text-xs text-muted-foreground block">{t.patient.treatment.insuranceScaffoldLabel}</span>
                         <span className="text-xs font-medium text-brand-primary">
-                          {phase.insuranceScaffoldNote} (0 EGP)
+                          {phase.insuranceScaffoldNote} (0 {t.patient.overview.currencyEgp})
                         </span>
                       </div>
                       <div className="rounded-lg bg-muted/40 p-3">
-                        <span className="text-xs text-muted-foreground block">Patient Out-of-Pocket</span>
+                        <span className="text-xs text-muted-foreground block">{t.patient.treatment.outOfPocketLabel}</span>
                         <span className="text-sm font-bold text-foreground">
-                          {phase.outOfPocketEgp} EGP
+                          {phase.outOfPocketEgp} {t.patient.overview.currencyEgp}
                         </span>
                       </div>
                     </div>
@@ -701,10 +633,12 @@ export function PatientTreatmentPlan() {
                         {isScheduled ? (
                           <span className="flex items-center gap-1.5 text-foreground font-medium">
                             <Check className="size-4 text-brand-primary" />
-                            Confirmed in booking calendar (Reference: #{phase.scheduledAppointmentId})
+                            {interpolate(t.patient.treatment.confirmedCalendarRef, {
+                              id: phase.scheduledAppointmentId ?? "",
+                            })}
                           </span>
                         ) : (
-                          <span>Earliest available dental chair slot can be reserved now.</span>
+                          <span>{t.patient.treatment.earliestSlotHint}</span>
                         )}
                       </div>
 
@@ -715,8 +649,8 @@ export function PatientTreatmentPlan() {
                           onClick={() => handleOpenScheduleModal(phase)}
                           className="min-h-11 font-medium"
                         >
-                          <Calendar className="size-3.5 mr-1.5" />
-                          Schedule Phase {phase.order}
+                          <Calendar className="size-3.5 me-1.5" />
+                          {interpolate(t.patient.treatment.schedulePhaseBtn, { order: phase.order })}
                         </Button>
                       )}
                     </div>
@@ -738,36 +672,36 @@ export function PatientTreatmentPlan() {
               {t.patient.treatment.approvePlan}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Review and sign electronically to accept the proposed phased care course and transparent estimates.
+              {t.patient.treatment.approveDialogDesc}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="rounded-lg bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground space-y-1">
               <span className="font-semibold text-foreground block">
-                Digital Informed Acceptance Terms:
+                {t.patient.treatment.termsHeading}
               </span>
               <p>
-                I have reviewed the diagnostic dental chart and recommended phased treatments. I understand the estimated fees and authorize BlueHaven Dental clinicians to carry out these agreed procedures.
+                {t.patient.treatment.termsBody}
               </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="approve-name" className="text-xs sm:text-sm font-medium">
-                Full Legal Name *
+                {t.patient.treatment.fullLegalNameLabel}
               </Label>
               <Input
                 id="approve-name"
                 value={approvalName}
                 onChange={(e) => setApprovalName(e.target.value)}
-                placeholder="Full Legal Name"
+                placeholder={t.patient.treatment.fullLegalNameLabel.replace(" *", "")}
                 className="bg-background"
               />
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs sm:text-sm font-medium">
-                Digital Signature (Mouse, Pen or Finger) *
+                {t.patient.treatment.signatureLabel}
               </Label>
               <div className="rounded-xl border border-border bg-card p-2">
                 <SignaturePad
@@ -781,7 +715,7 @@ export function PatientTreatmentPlan() {
             {approvalError && (
               <Alert variant="destructive">
                 <AlertCircle className="size-4" />
-                <AlertTitle>Validation Notice</AlertTitle>
+                <AlertTitle>{t.patient.intake.validationNotice}</AlertTitle>
                 <AlertDescription className="text-xs">{approvalError}</AlertDescription>
               </Alert>
             )}
@@ -794,7 +728,7 @@ export function PatientTreatmentPlan() {
               onClick={() => setApproveDialogOpen(false)}
               disabled={isApproving}
             >
-              Cancel
+              {t.patient.booking.cancelBtn}
             </Button>
             <Button
               type="button"
@@ -803,7 +737,7 @@ export function PatientTreatmentPlan() {
               disabled={isApproving}
               className="font-semibold"
             >
-              {isApproving ? "Recording Approval..." : "Sign & Authorize Treatment Plan"}
+              {isApproving ? t.patient.treatment.recordingApproval : t.patient.treatment.authorizePlanBtn}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -815,10 +749,15 @@ export function PatientTreatmentPlan() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Calendar className="size-5 text-brand-primary" />
-              Schedule Phase #{schedulePhase?.order}: {schedulePhase?.title}
+              {schedulePhase
+                ? interpolate(t.patient.treatment.scheduleDialogTitle, {
+                    order: schedulePhase.order,
+                    title: schedulePhaseTitle,
+                  })
+                : ""}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Select your preferred appointment date and clinician time slot.
+              {t.patient.treatment.scheduleDialogDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -827,15 +766,20 @@ export function PatientTreatmentPlan() {
               <Alert className="border-border bg-brand-subtle text-foreground shadow-xs">
                 <CheckCircle2 className="size-5 text-brand-primary" />
                 <AlertTitle className="font-semibold text-foreground">
-                  Phase #{schedulePhase?.order} Successfully Reserved!
+                  {schedulePhase
+                    ? interpolate(t.patient.treatment.phaseReservedTitle, { order: schedulePhase.order })
+                    : ""}
                 </AlertTitle>
                 <AlertDescription className="text-xs sm:text-sm text-muted-foreground space-y-1 mt-1">
                   <p>
-                    Your appointment has been confirmed for{" "}
-                    <strong>{formatDate(bookedSuccessInfo.date, defaultDateOpts)}</strong> at{" "}
-                    <strong>{formatTime(bookedSuccessInfo.time)}</strong>.
+                    {interpolate(t.patient.treatment.phaseReservedBody, {
+                      date: formatDate(bookedSuccessInfo.date, defaultDateOpts),
+                      time: formatTime(bookedSuccessInfo.time),
+                    })}
                   </p>
-                  <p className="text-[11px]">Confirmation reference: #{bookedSuccessInfo.id}</p>
+                  <p className="text-[11px]">
+                    {interpolate(t.patient.treatment.confirmationRef, { id: bookedSuccessInfo.id })}
+                  </p>
                 </AlertDescription>
               </Alert>
 
@@ -846,7 +790,7 @@ export function PatientTreatmentPlan() {
                   onClick={() => setSchedulePhase(null)}
                   className="w-full"
                 >
-                  Done
+                  {t.patient.treatment.doneBtn}
                 </Button>
               </DialogFooter>
             </div>
@@ -856,18 +800,22 @@ export function PatientTreatmentPlan() {
               <div className="rounded-lg bg-muted/40 p-3 text-xs flex justify-between items-center">
                 <div>
                   <span className="font-semibold text-foreground block">
-                    Duration: {schedulePhase?.durationMinutes} minutes
+                    {interpolate(t.patient.treatment.durationMinutesLabel, {
+                      minutes: schedulePhase?.durationMinutes ?? 0,
+                    })}
                   </span>
                   <span className="text-muted-foreground">
-                    Out-of-Pocket: {schedulePhase?.outOfPocketEgp} EGP
+                    {interpolate(t.patient.treatment.outOfPocketLine, {
+                      amount: schedulePhase?.outOfPocketEgp ?? 0,
+                    })}
                   </span>
                 </div>
-                <Badge variant="outline">Chairside Care</Badge>
+                <Badge variant="outline">{t.patient.treatment.chairsideCareBadge}</Badge>
               </div>
 
               {/* Date Selection */}
               <div className="space-y-2">
-                <Label className="text-xs sm:text-sm font-medium">1. Choose Date</Label>
+                <Label className="text-xs sm:text-sm font-medium">{t.patient.treatment.chooseDateStep}</Label>
                 <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1">
                   {availablePhaseDates.length > 0 ? (
                     availablePhaseDates.map((date) => (
@@ -890,7 +838,7 @@ export function PatientTreatmentPlan() {
                     ))
                   ) : (
                     <span className="text-xs text-muted-foreground py-2">
-                      No open calendar slots found for this procedure.
+                      {t.patient.treatment.noPhaseDates}
                     </span>
                   )}
                 </div>
@@ -899,7 +847,7 @@ export function PatientTreatmentPlan() {
               {/* Time Slots */}
               {selectedDate && (
                 <div className="space-y-2">
-                  <Label className="text-xs sm:text-sm font-medium">2. Choose Time Slot</Label>
+                  <Label className="text-xs sm:text-sm font-medium">{t.patient.treatment.chooseSlotStep}</Label>
                   <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1">
                     {availablePhaseSlots.length > 0 ? (
                       availablePhaseSlots.map((slot) => {
@@ -923,7 +871,7 @@ export function PatientTreatmentPlan() {
                       })
                     ) : (
                       <span className="text-xs text-muted-foreground py-2">
-                        All slots on this date are fully booked.
+                        {t.patient.treatment.noPhaseSlots}
                       </span>
                     )}
                   </div>
@@ -933,7 +881,7 @@ export function PatientTreatmentPlan() {
               {bookingError && (
                 <Alert variant="destructive">
                   <AlertCircle className="size-4" />
-                  <AlertTitle>Booking Error</AlertTitle>
+                  <AlertTitle>{t.patient.treatment.bookingErrorTitle}</AlertTitle>
                   <AlertDescription className="text-xs">{bookingError}</AlertDescription>
                 </Alert>
               )}
@@ -945,7 +893,7 @@ export function PatientTreatmentPlan() {
                   onClick={() => setSchedulePhase(null)}
                   disabled={isBookingPhase}
                 >
-                  Cancel
+                  {t.patient.booking.cancelBtn}
                 </Button>
                 <Button
                   type="button"
@@ -954,7 +902,7 @@ export function PatientTreatmentPlan() {
                   disabled={isBookingPhase || !selectedDate || !selectedTimeSlot}
                   className="min-h-11 font-semibold"
                 >
-                  {isBookingPhase ? "Reserving..." : "Confirm Phase Reservation"}
+                  {isBookingPhase ? t.patient.treatment.reservingBtn : t.patient.treatment.confirmPhaseBtn}
                 </Button>
               </DialogFooter>
             </div>

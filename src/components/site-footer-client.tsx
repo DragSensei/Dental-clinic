@@ -1,15 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { SiteBrand } from "@/components/shared/site-brand";
 import { useI18n } from "@/i18n/locale-provider";
 
 export function SiteFooterClient() {
-  const pathname = usePathname();
   const { t } = useI18n();
-
-  if (pathname.startsWith("/admin") || pathname.startsWith("/patient")) return null;
 
   const groups = [
     {
@@ -23,7 +19,7 @@ export function SiteFooterClient() {
     {
       title: t.footer.onThisSite,
       links: [
-        [t.footer.storyLink, "/#who-we-are"],
+        [t.footer.doctors, "/#doctors"],
         [t.footer.faqs, "/#faq"],
         [t.footer.contact, "/#clinic"],
       ],
@@ -53,6 +49,7 @@ export function SiteFooterClient() {
                   <Link
                     className="inline-flex min-h-11 min-w-11 items-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring"
                     href={href}
+                    prefetch={href.startsWith("/admin") ? false : undefined}
                   >
                     {label}
                   </Link>

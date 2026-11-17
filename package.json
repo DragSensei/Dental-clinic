@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push --accept-data-loss && npx tsx prisma/seed.ts && next build",
+    "build": "prisma generate && next build",
+    "db:migrate:deploy": "prisma migrate deploy",
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
@@ -228,9 +229,6 @@
         "src/features/booking/clinic-information.tsx": [
           "/"
         ],
-        "src/features/booking/clinic-story.tsx": [
-          "/"
-        ],
         "src/features/booking/landing-hero.tsx": [
           "/"
         ],
@@ -240,7 +238,7 @@
         "src/features/booking/patient-satisfaction.tsx": [
           "/"
         ],
-        "src/features/booking/visit-guide.tsx": [
+        "src/features/booking/landing-doctors.tsx": [
           "/"
         ],
         "src/features/booking-flow/booking-flow.tsx": [

@@ -37,7 +37,7 @@ export function PatientNavigationClient(props?: {
   const onSignOut = props?.onSignOut ?? context?.onSignOut;
 
   const pathname = usePathname();
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
 
   const items: DashboardNavItem[] = navConfig.map((item) => {
     const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -55,16 +55,16 @@ export function PatientNavigationClient(props?: {
     <DashboardSidebar
       items={items}
       workspaceLabel={t.patient.nav.portalTitle}
-      navAriaLabel={locale === "ar" ? "قائمة بوابة المريض" : "Patient portal navigation"}
+      navAriaLabel={t.patient.nav.navAriaLabel}
       collapsed={collapsed}
       onToggle={onToggle}
-      expandLabel={locale === "ar" ? "توسيع الشريط الجانبي للمريض" : "Expand patient sidebar"}
-      collapseLabel={locale === "ar" ? "طي الشريط الجانبي للمريض" : "Collapse patient sidebar"}
-      expandTitle={locale === "ar" ? "توسيع الشريط الجانبي" : "Expand sidebar"}
-      collapseTitle={locale === "ar" ? "طي الشريط الجانبي" : "Collapse sidebar"}
+      expandLabel={t.patient.nav.expandSidebar}
+      collapseLabel={t.patient.nav.collapseSidebar}
+      expandTitle={t.patient.nav.expandTitle}
+      collapseTitle={t.patient.nav.collapseTitle}
       signedInEmail={signedInEmail}
-      userDisplayName={userDisplayName ?? signedInEmail ?? "Patient"}
-      roleLabel={locale === "ar" ? "مريض العيادة" : "Clinic Patient"}
+      userDisplayName={userDisplayName ?? signedInEmail ?? t.patient.nav.defaultUserName}
+      roleLabel={t.patient.nav.roleLabel}
       signOutLabel={t.admin.layout.signOut}
       onSignOut={onSignOut}
     />

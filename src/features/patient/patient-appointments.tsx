@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/data/use-session";
 import { useClinic } from "@/data/use-clinic";
+import { interpolate } from "@/i18n/format";
 import { useI18n } from "@/i18n/locale-provider";
 import { localizedDoctor, localizedService } from "@/data/mock/localized-copy";
 import { visitReasonCategories, type Appointment, type VisitReasonCategory } from "@/data/mock/catalog";
@@ -309,7 +310,7 @@ function PatientAppointmentsContent() {
         >
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              {locale === "ar" ? "حجز وإدارة المواعيد" : "Appointments & Booking"}
+              {t.patient.booking.title}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t.patient.booking.subtitle}
@@ -319,11 +320,11 @@ function PatientAppointmentsContent() {
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "manage" | "book")} className="shrink-0">
             <TabsList className="rounded-2xl p-1 bg-muted flex-wrap h-auto">
               <TabsTrigger value="manage" className="rounded-xl text-xs font-semibold px-3 sm:px-4 min-h-11">
-                {locale === "ar" ? "مواعيدي الحالية" : "My Appointments"}
+                {t.patient.booking.tabManage}
               </TabsTrigger>
               <TabsTrigger value="book" className="rounded-xl text-xs font-semibold px-3 sm:px-4 min-h-11">
                 <CalendarPlus className="size-3.5 me-1.5" />
-                {locale === "ar" ? "حجز موعد جديد" : "Book New Visit"}
+                {t.patient.booking.tabBook}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -337,17 +338,21 @@ function PatientAppointmentsContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              aria-label="Booking Confirmation"
+              aria-label={t.patient.booking.confirmedSuccess}
               className="flex items-center justify-between rounded-3xl border border-primary/40 bg-brand-subtle p-5 text-foreground"
             >
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="size-6 text-primary" />
                 <div>
                   <p className="font-bold text-sm">
-                    {locale === "ar" ? "تم حجز موعدك بنجاح!" : "Appointment Successfully Booked!"}
+                    {t.patient.booking.bookedToastTitle}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatDate(bookingSuccess.date, { weekday: "short", month: "short", day: "numeric" })} at {formatTime(bookingSuccess.time)} · Ref #{bookingSuccess.id}
+                    {interpolate(t.patient.booking.bookedToastMeta, {
+                      date: formatDate(bookingSuccess.date, { weekday: "short", month: "short", day: "numeric" }),
+                      time: formatTime(bookingSuccess.time),
+                      id: bookingSuccess.id,
+                    })}
                   </p>
                 </div>
               </div>
@@ -358,7 +363,7 @@ function PatientAppointmentsContent() {
                 onClick={() => setBookingSuccess(null)}
                 className="min-h-11 text-xs"
               >
-                Dismiss
+                {t.patient.booking.dismiss}
               </Button>
             </motion.aside>
           )}
@@ -378,19 +383,17 @@ function PatientAppointmentsContent() {
               {/* Upcoming Visits */}
               <div>
                 <h2 className="text-lg font-bold text-foreground mb-4">
-                  {locale === "ar" ? "المواعيد القادمة المؤكدة" : "Upcoming Confirmed Appointments"}
+                  {t.patient.booking.upcomingTitle}
                 </h2>
 
                 {upcomingAppointments.length === 0 ? (
                   <Card className="rounded-3xl border border-dashed border-border p-10 text-center">
                     <CalendarCheck2 className="size-12 mx-auto text-muted-foreground/60 mb-3" />
                     <p className="font-semibold text-foreground text-sm">
-                      {locale === "ar" ? "لا توجد أي مواعيد قادمة" : "No upcoming appointments"}
+                      {t.patient.booking.noUpcomingTitle}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                      {locale === "ar"
-                        ? "اختر موعدك المفضل الآن مع طبيبك أو احجز في أقرب موعد متاح."
-                        : "Select a visit reason and reserve your next visit with our clinicians."}
+                      {t.patient.booking.noUpcomingDesc}
                     </p>
                     <Button
                       type="button"
@@ -399,7 +402,7 @@ function PatientAppointmentsContent() {
                       className="mt-4 min-h-11 rounded-xl text-xs font-semibold"
                     >
                       <CalendarPlus className="size-4 me-1.5" />
-                      {locale === "ar" ? "حجز موعد الآن" : "Book New Appointment"}
+                      {t.patient.booking.bookNewAppointmentCta}
                     </Button>
                   </Card>
                 ) : (
@@ -407,9 +410,9 @@ function PatientAppointmentsContent() {
                     {upcomingAppointments.map((apt, index) => {
                       const s = clinic.services.find((it) => it.id === apt.serviceId);
                       const d = clinic.doctors.find((it) => it.id === apt.doctorId);
-                      const sTitle = s ? localizedService(s, locale).title : "General Dental Consultation";
+                      const sTitle = s ? localizedService(s, locale).title : t.patient.overview.careDefaultDone;
                       const dName = d ? localizedDoctor(d, locale).name : "Dr. Clinician";
-                      const dSpecialty = d ? localizedDoctor(d, locale).specialty : "General Dentistry";
+                      const dSpecialty = d ? localizedDoctor(d, locale).specialty : "";
 
                       return (
                         <motion.div
@@ -428,7 +431,7 @@ function PatientAppointmentsContent() {
                               {/* Info Column */}
                               <div className="flex items-start gap-4">
                                 <Avatar className="size-12 border border-border">
-                                  <AvatarImage src={`https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80`} />
+                                  <AvatarImage src="/images/demo/doctor.jpg" />
                                   <AvatarFallback>{dName.slice(3, 5)}</AvatarFallback>
                                 </Avatar>
                                 <div className="space-y-1">
@@ -437,31 +440,31 @@ function PatientAppointmentsContent() {
                                     {apt.attendanceConfirmed ? (
                                       <Badge variant="success" className="text-[11px] gap-1">
                                         <Check className="size-3" />
-                                        Confirmed by Patient ✓
+                                        {t.patient.booking.confirmedByPatient}
                                       </Badge>
                                     ) : (
                                       <Badge variant="outline" className="text-[11px] text-primary border-primary/40">
-                                        Action Required: Confirm
+                                        {t.patient.booking.actionRequiredConfirm}
                                       </Badge>
                                     )}
                                     {apt.calendarSynced && (
                                       <Badge variant="secondary" className="text-[11px]">
-                                        Calendar Synced
+                                        {t.patient.booking.calendarSyncedBadge}
                                       </Badge>
                                     )}
                                   </div>
 
                                   <p className="text-xs text-muted-foreground">
-                                    {dName} · {dSpecialty}
+                                    {dName}{dSpecialty ? ` · ${dSpecialty}` : ""}
                                   </p>
 
                                   <p className="text-sm font-semibold text-foreground pt-1 tabular-nums">
-                                    {formatDate(apt.date, { weekday: "short", month: "short", day: "numeric" })} at {formatTime(apt.time)}
+                                    {formatDate(apt.date, { weekday: "short", month: "short", day: "numeric" })} · {formatTime(apt.time)}
                                   </p>
 
                                   {apt.note && (
                                     <p className="text-xs italic text-muted-foreground pt-0.5">
-                                      Note: &ldquo;{apt.note}&rdquo;
+                                      {t.patient.booking.notePrefix} &ldquo;{apt.note}&rdquo;
                                     </p>
                                   )}
                                 </div>
@@ -478,7 +481,7 @@ function PatientAppointmentsContent() {
                                     className="min-h-11 rounded-xl text-xs font-semibold shadow-xs"
                                   >
                                     <CheckCircle2 className="size-4 me-1.5" />
-                                    {locale === "ar" ? "تأكيد الحضور" : "Confirm Attendance"}
+                                    {t.patient.banners.confirmAttendance}
                                   </Button>
                                 )}
 
@@ -491,7 +494,7 @@ function PatientAppointmentsContent() {
                                   className="min-h-11 rounded-xl text-xs font-medium"
                                 >
                                   <ExternalLink className="size-3.5 me-1 text-primary" />
-                                  {apt.calendarSynced ? "Resync Google" : "Sync Google"}
+                                  {apt.calendarSynced ? t.patient.booking.resyncGoogle : t.patient.booking.syncGoogle}
                                 </Button>
 
                                 <Button
@@ -502,7 +505,7 @@ function PatientAppointmentsContent() {
                                   className="min-h-11 rounded-xl text-xs font-medium"
                                 >
                                   <Download className="size-3.5 me-1 text-primary" />
-                                  .ics
+                                  {t.patient.booking.icsShort}
                                 </Button>
 
                                 <Button
@@ -517,7 +520,7 @@ function PatientAppointmentsContent() {
                                   className="min-h-11 rounded-xl text-xs font-medium"
                                 >
                                   <RefreshCw className="size-3.5 me-1" />
-                                  {locale === "ar" ? "تعديل" : "Reschedule"}
+                                  {t.patient.booking.reschedule}
                                 </Button>
 
                                 <Button
@@ -531,7 +534,7 @@ function PatientAppointmentsContent() {
                                   className="min-h-11 rounded-xl text-xs font-medium text-destructive hover:bg-destructive/10"
                                 >
                                   <XCircle className="size-3.5 me-1" />
-                                  {locale === "ar" ? "إلغاء" : "Cancel"}
+                                  {t.patient.booking.cancelBtn}
                                 </Button>
                               </div>
                             </div>
@@ -547,19 +550,20 @@ function PatientAppointmentsContent() {
               {pastAppointments.length > 0 && (
                 <div className="pt-6">
                   <h2 className="text-sm font-semibold text-muted-foreground mb-3">
-                    {locale === "ar" ? "المواعيد الملغاة / السابقة" : "Cancelled / Past Appointments"}
+                    {t.patient.booking.pastTitle}
                   </h2>
                   <div className="divide-y divide-border/60 rounded-2xl border border-border bg-card p-4">
                     {pastAppointments.map((apt) => {
                       const s = clinic.services.find((it) => it.id === apt.serviceId);
+                      const sTitle = s ? localizedService(s, locale).title : t.patient.overview.careDefaultDone;
                       return (
                         <div key={apt.id} className="py-2.5 flex items-center justify-between text-xs text-muted-foreground">
                           <div>
-                            <span className="font-medium text-foreground">{s?.title || "Consultation"}</span>
-                            <span> · {formatDate(apt.date, { month: "short", day: "numeric" })} at {apt.time}</span>
+                            <span className="font-medium text-foreground">{sTitle}</span>
+                            <span> · {formatDate(apt.date, { month: "short", day: "numeric" })} · {formatTime(apt.time)}</span>
                           </div>
                           <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40">
-                            Cancelled
+                            {t.patient.booking.cancelledBadge}
                           </Badge>
                         </div>
                       );
@@ -579,14 +583,12 @@ function PatientAppointmentsContent() {
               {/* TAB 2: BOOKING WIZARD */}
               <Card className="rounded-3xl border border-border shadow-md overflow-hidden">
                 <CardHeader className="border-b border-border/70 bg-muted/30 p-6 sm:p-8">
-                  <span className="eyebrow">{locale === "ar" ? "حجز مباشر وسريع" : "Express Self-Service Booking"}</span>
+                  <span className="eyebrow">{t.patient.booking.expressEyebrow}</span>
                   <CardTitle className="text-2xl font-bold mt-1">
-                    {locale === "ar" ? "اختر سبب الزيارة وتوقيت الحجز" : "Select Visit Reason & Schedule Slot"}
+                    {t.patient.booking.expressTitle}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    {locale === "ar"
-                      ? "حدد سبب الزيارة وسيقوم النظام تلقائيًا بضبط مدة الجلسة وعرض أقرب المواعيد الشاغرة."
-                      : "Choose your primary reason for visiting. Slot durations and available doctor timings adjust automatically."}
+                    {t.patient.booking.expressDesc}
                   </CardDescription>
                 </CardHeader>
 
@@ -595,10 +597,10 @@ function PatientAppointmentsContent() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                        1. {locale === "ar" ? "سبب الزيارة" : "Reason for Visit"}
+                        {t.patient.booking.stepReason}
                       </h3>
                       <Badge variant="outline" className="text-xs">
-                        {matchedReason.durationMinutes} mins
+                        {interpolate(t.patient.booking.durationMins, { count: matchedReason.durationMinutes })}
                       </Badge>
                     </div>
 
@@ -642,7 +644,7 @@ function PatientAppointmentsContent() {
                   <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                        2. {locale === "ar" ? "اختيار الطبيب والتوقيت" : "Clinician & Live Slot Picker"}
+                        {t.patient.booking.stepClinician}
                       </h3>
 
                       {/* "Any Available Doctor" Switch */}
@@ -718,10 +720,10 @@ function PatientAppointmentsContent() {
                     {/* Live Dates Picker */}
                     <div className="space-y-3">
                       <p className="text-xs font-semibold text-muted-foreground">
-                        {locale === "ar" ? "اختر اليوم المناسب:" : "Select Date:"}
+                        {t.patient.booking.selectDateLabel}
                       </p>
                       {availableDates.length === 0 ? (
-                        <p className="text-xs text-muted-foreground italic">No available dates found for this service.</p>
+                        <p className="text-xs text-muted-foreground italic">{t.patient.booking.noDatesAvailable}</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {availableDates.map((dateStr) => {
@@ -762,16 +764,16 @@ function PatientAppointmentsContent() {
                         >
                           <div className="flex items-center justify-between">
                             <p className="text-xs font-semibold text-muted-foreground">
-                              {locale === "ar" ? "اختر التوقيت المتاح (بتوقيت العيادة):" : "Select Open Time Slot (clinic time):"}
+                              {t.patient.booking.selectTimeSlotLabel}
                             </p>
                             <span className="text-[11px] text-muted-foreground">
-                              {availableSlotsForDate.length} {locale === "ar" ? "مواعيد متاحة" : "slots open"}
+                              {interpolate(t.patient.booking.slotsOpenCount, { count: availableSlotsForDate.length })}
                             </span>
                           </div>
 
                           {availableSlotsForDate.length === 0 ? (
                             <p className="text-xs text-muted-foreground italic">
-                              {locale === "ar" ? "لا توجد خانات شاغرة في هذا اليوم" : "No open slots on this date. Please choose another date."}
+                              {t.patient.booking.noSlotsAvailable}
                             </p>
                           ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
@@ -821,24 +823,18 @@ function PatientAppointmentsContent() {
                   {/* STEP 3: OPTIONAL SYMPTOM NOTE & CONTACT AUTO-FILL */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                      3. {locale === "ar" ? "ملاحظات إضافية وتأكيد الحجز" : "Optional Symptom Note & Confirmation"}
+                      {t.patient.booking.stepReview}
                     </h3>
 
                     <div className="space-y-2">
                       <label htmlFor="symptom-note" className="text-xs font-medium text-muted-foreground">
-                        {locale === "ar"
-                          ? "هل تشعر بأي ألم أو أعراض محددة؟ (اختياري):"
-                          : "Describe any specific symptoms, tooth pain, or concerns (Optional):"}
+                        {t.patient.booking.symptomLabel}
                       </label>
                       <Textarea
                         id="symptom-note"
                         value={symptomNote}
                         onChange={(e) => setSymptomNote(e.target.value)}
-                        placeholder={
-                          locale === "ar"
-                            ? "مثال: ألم حاد عند تناول المشروبات الباردة في الضرس السفلي الأيسر..."
-                            : "e.g. Throbbing ache in lower left molar when drinking cold water..."
-                        }
+                        placeholder={t.patient.booking.symptomPlaceholder}
                         className="rounded-2xl min-h-[90px] text-sm"
                       />
                     </div>
@@ -847,7 +843,7 @@ function PatientAppointmentsContent() {
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs">
                       <div className="space-y-0.5">
                         <p className="font-semibold text-foreground">
-                          Booking for: {name || "Mariam Ahmed"}
+                          {interpolate(t.patient.booking.bookingForLabel, { name: name || "Mariam Ahmed" })}
                         </p>
                         <p className="text-muted-foreground">
                           {email} · {patientPhone}
@@ -855,7 +851,7 @@ function PatientAppointmentsContent() {
                       </div>
                       <Badge variant="outline" className="text-[11px] gap-1">
                         <UserCheck className="size-3" />
-                        Auto-populated
+                        {t.patient.booking.autoPopulatedBadge}
                       </Badge>
                     </div>
                   </div>
@@ -870,11 +866,11 @@ function PatientAppointmentsContent() {
                       className="min-h-12 w-full rounded-2xl text-sm font-bold shadow-md transition-transform active:scale-[0.99]"
                     >
                       {bookingPending ? (
-                        locale === "ar" ? "جاري تأكيد الحجز..." : "Booking Appointment..."
+                        t.patient.booking.submittingBooking
                       ) : (
                         <>
                           <CalendarCheck2 className="size-4 me-2" />
-                          {locale === "ar" ? "تأكيد حجز الموعد الآن" : "Confirm & Book Appointment"}
+                          {t.patient.booking.confirmBookCta}
                         </>
                       )}
                     </Button>
@@ -890,13 +886,21 @@ function PatientAppointmentsContent() {
         <DialogContent className="rounded-3xl sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">
-              {locale === "ar" ? "تعديل موعد الزيارة" : "Reschedule Appointment"}
+              {t.patient.booking.rescheduleDialogTitle}
             </DialogTitle>
             <DialogDescription className="text-xs">
               {rescheduleTarget && (
                 <span>
-                  Change date and time for {clinic.services.find((s) => s.id === rescheduleTarget.serviceId)?.title} with{" "}
-                  {clinic.doctors.find((d) => d.id === rescheduleTarget.doctorId)?.name}.
+                  {interpolate(t.patient.booking.rescheduleDialogDesc, {
+                    service: (() => {
+                      const srv = clinic.services.find((s) => s.id === rescheduleTarget.serviceId);
+                      return srv ? localizedService(srv, locale).title : t.patient.overview.careDefaultDone;
+                    })(),
+                    doctor: (() => {
+                      const doc = clinic.doctors.find((d) => d.id === rescheduleTarget.doctorId);
+                      return doc ? localizedDoctor(doc, locale).name : "Dr. Clinician";
+                    })(),
+                  })}
                 </span>
               )}
             </DialogDescription>
@@ -906,7 +910,7 @@ function PatientAppointmentsContent() {
             <div className="space-y-4 py-2">
               {/* Select Date */}
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground">Select New Date:</p>
+                <p className="text-xs font-semibold text-muted-foreground">{t.patient.booking.selectNewDateLabel}</p>
                 <div className="flex flex-wrap gap-2">
                   {clinic.getAvailableDates(rescheduleTarget.serviceId, rescheduleTarget.doctorId).map((d) => (
                     <Button
@@ -929,7 +933,7 @@ function PatientAppointmentsContent() {
               {/* Select Slot */}
               {rescheduleDate && (
                 <div className="space-y-2 pt-2">
-                  <p className="text-xs font-semibold text-muted-foreground">Select New Slot (clinic time):</p>
+                  <p className="text-xs font-semibold text-muted-foreground">{t.patient.booking.selectNewSlotLabel}</p>
                   <div className="grid grid-cols-4 gap-2">
                     {clinic.getAvailableSlots(rescheduleTarget.serviceId, rescheduleTarget.doctorId, rescheduleDate).map((tSlot) => (
                       <Button
@@ -956,7 +960,7 @@ function PatientAppointmentsContent() {
               onClick={() => setRescheduleTarget(null)}
               className="min-h-11 rounded-xl text-xs"
             >
-              Cancel
+              {t.patient.booking.cancelBtn}
             </Button>
             <Button
               type="button"
@@ -965,7 +969,7 @@ function PatientAppointmentsContent() {
               onClick={handleRescheduleSubmit}
               className="min-h-11 rounded-xl text-xs font-bold"
             >
-              {reschedulePending ? "Saving..." : "Save New Timing"}
+              {reschedulePending ? t.patient.booking.savingBtn : t.patient.booking.saveNewTimingBtn}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -979,27 +983,28 @@ function PatientAppointmentsContent() {
               {!cancelPolicyResult.allowed ? (
                 <>
                   <Ban className="size-5 text-destructive" />
-                  {locale === "ar" ? "قفل الإلغاء (أقل من 24 ساعة)" : "24-Hour Policy Lock Active"}
+                  {t.patient.booking.cancelBlocked}
                 </>
               ) : (
                 <>
                   <AlertTriangle className="size-5 text-destructive" />
-                  {locale === "ar" ? "تأكيد إلغاء الموعد" : "Cancel Appointment"}
+                  {t.patient.booking.cancelAllowed}
                 </>
               )}
             </DialogTitle>
             <DialogDescription className="text-xs pt-1 leading-relaxed">
               {!cancelPolicyResult.allowed ? (
                 <span>
-                  {locale === "ar"
-                    ? `وفقًا لسياسة العيادة المعتمدة، لا يمكن إلغاء الموعد ذاتيًا قبل أقل من 24 ساعة (${cancelPolicyResult.hoursRemaining} ساعة متبقية). يرجى الاتصال بمكتب الاستقبال مباشرة لتسوية الموعد.`
-                    : `According to clinic policy, appointments cannot be cancelled online within 24 hours of scheduled time (${cancelPolicyResult.hoursRemaining}h remaining). Please call the front desk directly.`}
+                  {interpolate(t.patient.booking.cancelBlockedNote, {
+                    hours: cancelPolicyResult.hoursRemaining,
+                  })}
                 </span>
               ) : (
                 <span>
-                  {locale === "ar"
-                    ? `هل أنت متأكد من إلغاء موعدك في ${cancelTarget?.date}؟ سيتم تحرير الخانة فورًا للمرضى الآخرين.`
-                    : `Are you sure you want to cancel your visit on ${cancelTarget?.date} at ${cancelTarget?.time}? Your slot will be freed for other patients.`}
+                  {interpolate(t.patient.booking.cancelConfirmInline, {
+                    date: cancelTarget?.date ?? "",
+                    time: cancelTarget?.time ?? "",
+                  })}
                 </span>
               )}
             </DialogDescription>
@@ -1008,19 +1013,19 @@ function PatientAppointmentsContent() {
           {/* Test Harness QA Toggle: Simulate <24h Window */}
           <div className="my-2 rounded-2xl border border-dashed border-border/80 bg-muted/40 p-3 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-xs font-semibold text-foreground">QA Test Simulation</span>
-              <p className="text-[11px] text-muted-foreground">Simulate &lt; 24h window enforcement</p>
+              <span className="text-xs font-semibold text-foreground">{t.patient.booking.qaSimTitle}</span>
+              <p className="text-[11px] text-muted-foreground">{t.patient.booking.qaSimDesc}</p>
             </div>
             <Switch
               checked={simulateUnder24h}
               onCheckedChange={setSimulateUnder24h}
-              aria-label="Simulate < 24h window"
+              aria-label={t.patient.booking.qaSimAria}
             />
           </div>
 
           {!cancelPolicyResult.allowed && (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive font-medium">
-              Clinic Contact Desk: +20 2 2270 9988 / Makram Ebeid, Nasr City, Cairo
+              {t.patient.overview.clinicDeskNotice}
             </div>
           )}
 
@@ -1028,12 +1033,10 @@ function PatientAppointmentsContent() {
             <Alert variant="destructive" className="border-destructive/30 bg-destructive/10 text-destructive my-1">
               <AlertTriangle className="size-4 text-destructive" />
               <AlertTitle className="text-xs font-semibold">
-                {locale === "ar" ? "تحذير: إلغاء نهائي للموعد" : "Warning: Irreversible Cancellation"}
+                {t.patient.overview.cancelWarningTitle}
               </AlertTitle>
               <AlertDescription className="text-xs text-destructive/90 mt-1 leading-relaxed">
-                {locale === "ar"
-                  ? "سيتم تحرير الخانة والكرسي المخصصين لك فور تأكيد الإلغاء. لمنع الإلغاء العرضي، اضغط مطولاً على الزر لتأكيد العملية."
-                  : "Your reserved chair and specialist slot will be immediately freed upon confirmation. To prevent accidental cancellation, press and hold the button below."}
+                {t.patient.overview.cancelWarningDesc}
               </AlertDescription>
             </Alert>
           )}
@@ -1045,19 +1048,19 @@ function PatientAppointmentsContent() {
               onClick={() => setCancelTarget(null)}
               className="min-h-11 rounded-xl text-xs"
             >
-              {locale === "ar" ? "الاحتفاظ بالموعد" : "Keep Appointment"}
+              {t.patient.overview.keepAppointment}
             </Button>
             {cancelPolicyResult.allowed && (
               <HoldButton
                 variant="destructive"
                 holdDuration={1500}
                 disabled={cancelPending}
-                holdingLabel={locale === "ar" ? "استمر بالضغط للإلغاء..." : "Keep holding to cancel..."}
-                completeLabel={locale === "ar" ? "تم إلغاء الموعد" : "Appointment Cancelled"}
+                holdingLabel={t.patient.overview.keepHoldingCancel}
+                completeLabel={t.patient.overview.appointmentCancelled}
                 onHoldComplete={handleCancelSubmit}
                 className="min-h-11 rounded-xl text-xs font-semibold"
               >
-                {locale === "ar" ? "اضغط مطولاً لتأكيد الإلغاء" : "Hold to Cancel Appointment"}
+                {t.patient.overview.holdToCancel}
               </HoldButton>
             )}
           </DialogFooter>

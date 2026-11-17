@@ -181,6 +181,12 @@ export function toDoctorDTO(row: {
   name: string;
   specialty: string;
   bio: string;
+  image?: string | null;
+  credentials?: string | null;
+  experienceBadge?: string | null;
+  experienceSummary?: string | null;
+  languages?: string | null;
+  comfortFocus?: string | null;
   services?: Array<{ serviceId: string }> | null;
   serviceIds?: string[] | null;
   workingHours?: Array<{
@@ -190,11 +196,24 @@ export function toDoctorDTO(row: {
     endTime?: string | null;
   }> | null;
 }): Doctor {
+  const image = cleanOptionalText(row.image);
+  const credentials = cleanOptionalText(row.credentials);
+  const experienceBadge = cleanOptionalText(row.experienceBadge);
+  const experienceSummary = cleanOptionalText(row.experienceSummary);
+  const languages = cleanOptionalText(row.languages);
+  const comfortFocus = cleanOptionalText(row.comfortFocus);
+
   return {
     id: row.id,
     name: row.name,
     specialty: row.specialty,
     bio: row.bio,
+    ...(image ? { image } : {}),
+    ...(credentials ? { credentials } : {}),
+    ...(experienceBadge ? { experienceBadge } : {}),
+    ...(experienceSummary ? { experienceSummary } : {}),
+    ...(languages ? { languages } : {}),
+    ...(comfortFocus ? { comfortFocus } : {}),
     serviceIds:
       row.serviceIds ?? (row.services ? row.services.map((s) => s.serviceId) : []),
     ...(row.workingHours
@@ -535,6 +554,12 @@ export function toAccountDTO(user: {
   doctorProfile?: {
     specialty?: string | null;
     bio?: string | null;
+    image?: string | null;
+    credentials?: string | null;
+    experienceBadge?: string | null;
+    experienceSummary?: string | null;
+    languages?: string | null;
+    comfortFocus?: string | null;
     services?: Array<{ serviceId: string }> | null;
   } | null;
 }): Account {
@@ -547,6 +572,16 @@ export function toAccountDTO(user: {
     status: user.status as Account["status"],
     specialty: user.doctorProfile?.specialty ?? undefined,
     bio: user.doctorProfile?.bio ?? undefined,
+    ...(user.doctorProfile?.image ? { image: user.doctorProfile.image } : {}),
+    ...(user.doctorProfile?.credentials ? { credentials: user.doctorProfile.credentials } : {}),
+    ...(user.doctorProfile?.experienceBadge
+      ? { experienceBadge: user.doctorProfile.experienceBadge }
+      : {}),
+    ...(user.doctorProfile?.experienceSummary
+      ? { experienceSummary: user.doctorProfile.experienceSummary }
+      : {}),
+    ...(user.doctorProfile?.languages ? { languages: user.doctorProfile.languages } : {}),
+    ...(user.doctorProfile?.comfortFocus ? { comfortFocus: user.doctorProfile.comfortFocus } : {}),
     serviceIds: user.doctorProfile?.services
       ? user.doctorProfile.services.map((s) => s.serviceId)
       : undefined,

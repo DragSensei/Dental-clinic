@@ -47,9 +47,7 @@ function ServiceDirectoryContent() {
           {t.services.directory.lead}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          {locale === "ar"
-            ? "انقر على أي بطاقة أدناه لاستكشاف خطوات العلاج والتفاصيل السريرية وإرشادات ما بعد الزيارة."
-            : "Click any card below to explore treatment procedures, clinical expectations, and aftercare guides."}
+          {t.services.directory.clickHint}
         </p>
       </header>
 
@@ -91,28 +89,13 @@ function ServiceDirectoryContent() {
                 <p>{copy.extendedDetails?.overview || copy.description}</p>
 
                 <h4>{t.services.card.procedureHeading}</h4>
-                <p>
-                  {copy.extendedDetails?.procedure ||
-                    (locale === "ar"
-                      ? "يستخدم فريقنا الطبي أحدث تقنيات التصوير التشخيصي والبروتوكولات اللطيفة لضمان راحتك الكاملة طوال الزيارة."
-                      : "Our experienced clinical team utilizes modern diagnostic imaging, gentle dental protocols, and sterile instrumentation to ensure complete comfort throughout your visit.")}
-                </p>
+                <p>{copy.extendedDetails?.procedure || t.services.card.fallbackProcedure}</p>
 
                 <h4>{t.services.card.benefitsHeading}</h4>
-                <p>
-                  {copy.extendedDetails?.benefits ||
-                    (locale === "ar"
-                      ? "يحافظ على صحة الفم، ويستعيد الوظيفة الطبيعية والمظهر المتناسق، ويدعم صحة الأسنان على المدى الطويل."
-                      : "Preserves your oral health, restores full biting function, enhances smile aesthetics, and supports lasting dental wellness.")}
-                </p>
+                <p>{copy.extendedDetails?.benefits || t.services.card.fallbackBenefits}</p>
 
                 <h4>{t.services.card.aftercareHeading}</h4>
-                <p>
-                  {copy.extendedDetails?.aftercare ||
-                    (locale === "ar"
-                      ? "حافظ على التفريش والخيط يوميًا، واتبع إرشادات العناية المنزلية الموصى بها، والتزم بالمتابعة الدورية."
-                      : "Maintain everyday brushing and flossing, follow personalized home-care recommendations, and attend routine examinations.")}
-                </p>
+                <p>{copy.extendedDetails?.aftercare || t.services.card.fallbackAftercare}</p>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-brand-border pt-3.5 w-full">
                   <Link

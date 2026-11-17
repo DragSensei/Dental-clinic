@@ -281,18 +281,18 @@ export function AdminDemoGate({
                             <Button
                               type="button"
                               variant="outline"
-                              size="sm"
+                              size="default"
                               onClick={() => handleDemoLogin("admin")}
-                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
+                              className="min-h-11 rounded-xl text-sm font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
                             >
                               Admin
                             </Button>
                             <Button
                               type="button"
                               variant="outline"
-                              size="sm"
+                              size="default"
                               onClick={() => handleDemoLogin("patient")}
-                              className="min-h-11 rounded-xl text-xs font-semibold text-primary hover:bg-secondary border-primary/40 shadow-xs"
+                              className="min-h-11 rounded-xl text-sm font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
                             >
                               Patient
                             </Button>
@@ -431,18 +431,18 @@ export function AdminDemoGate({
                             <Button
                               type="button"
                               variant="outline"
-                              size="sm"
+                              size="default"
                               onClick={() => handleDemoLogin("admin")}
-                              className="min-h-11 rounded-xl text-xs font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
+                              className="min-h-11 rounded-xl text-sm font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
                             >
                               Admin
                             </Button>
                             <Button
                               type="button"
                               variant="outline"
-                              size="sm"
+                              size="default"
                               onClick={() => handleDemoLogin("patient")}
-                              className="min-h-11 rounded-xl text-xs font-semibold text-primary hover:bg-secondary border-primary/40 shadow-xs"
+                              className="min-h-11 rounded-xl text-sm font-semibold text-foreground hover:bg-secondary border-primary/40 shadow-xs"
                             >
                               Patient
                             </Button>
